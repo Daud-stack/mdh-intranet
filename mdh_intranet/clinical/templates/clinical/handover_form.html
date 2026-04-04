@@ -1,45 +1,87 @@
 {% extends "base.html" %}
-{% block title %}Shift Handover - OpsHub{% endblock %}
+{% block title %}Shift Handover (SBAR) - OpsHub{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
+        <div class="col-lg-10">
             <div class="glass-card border-0 shadow-sm p-4">
-                <h4 class="fw-bold mb-4 d-flex align-items-center gap-2">
-                    <i class="fas fa-exchange-alt text-primary"></i> Register Shift Handover
-                </h4>
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                    <h4 class="fw-bold mb-0 text-primary">
+                        <i class="fas fa-exchange-alt me-2"></i>Shift Handover Workspace (SBAR)
+                    </h4>
+                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 fw-bold">Nurse Communication Card</span>
+                </div>
 
                 <form method="post">
                     {% csrf_token %}
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            <label class="form-label small fw-bold text-muted text-uppercase mb-1">Incoming Nurse</label>
+                    
+                    <!-- Shift Details Row -->
+                    <div class="row g-4 mb-5 p-3 bg-light bg-opacity-25 rounded-4 border">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted text-uppercase mb-2">Incoming Nurse</label>
                             {{ form.incoming_nurse }}
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label small fw-bold text-muted text-uppercase mb-1">Shift Date</label>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted text-uppercase mb-2">Shift Date</label>
                             {{ form.shift_date }}
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label small fw-bold text-muted text-uppercase mb-1">Shift Type</label>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted text-uppercase mb-2">Shift Type</label>
                             {{ form.shift_type }}
                         </div>
-                        
-                        <div class="col-md-12">
-                            <label class="form-label small fw-bold text-muted text-uppercase mb-1">Patients for Handover</label>
+                        <div class="col-12 mt-3">
+                            <label class="form-label small fw-bold text-muted text-uppercase mb-2">Patients Included in Handover</label>
                             {{ form.patients }}
-                            <small class="text-muted d-block mt-1">Select patients currently in ward care.</small>
+                            <div class="form-text mt-1 small opacity-75">Select all patients currently under your care in the ward.</div>
+                        </div>
+                    </div>
+
+                    <!-- SBAR Structured Sections -->
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="sbar-section p-3 border rounded-4 bg-light bg-opacity-25 border-start border-4 border-info h-100">
+                                <label class="form-label small fw-bold text-info text-uppercase mb-2"><i class="fas fa-exclamation-circle me-1"></i> Situation</label>
+                                {{ form.situation }}
+                                <div class="form-text mt-1 small opacity-75">General ward status, staffing, or major events.</div>
+                            </div>
                         </div>
 
-                        <div class="col-md-12">
-                            <label class="form-label small fw-bold text-muted text-uppercase mb-1">General Ward Notes</label>
-                            {{ form.general_ward_notes }}
+                        <div class="col-md-6">
+                            <div class="sbar-section p-3 border rounded-4 bg-light bg-opacity-25 h-100">
+                                <label class="form-label small fw-bold text-muted text-uppercase mb-2"><i class="fas fa-history me-1"></i> Background</label>
+                                {{ form.background }}
+                                <div class="form-text mt-1 small opacity-75">Admissions, discharges, or key changes since last shift.</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="sbar-section p-3 border rounded-4 bg-light bg-opacity-25 border-start border-4 border-primary h-100">
+                                <label class="form-label small fw-bold text-primary text-uppercase mb-2"><i class="fas fa-stethoscope me-1"></i> Assessment</label>
+                                {{ form.assessment }}
+                                <div class="form-text mt-1 small opacity-75">Overview of critical patients or clinical concerns.</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="sbar-section p-3 border rounded-4 bg-light bg-opacity-25 border-start border-4 border-success h-100">
+                                <label class="form-label small fw-bold text-success text-uppercase mb-2"><i class="fas fa-check-double me-1"></i> Recommendation</label>
+                                {{ form.recommendation }}
+                                <div class="form-text mt-1 small opacity-75">Specific tasks/plans for the incoming shift.</div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="p-3 border rounded-4 bg-light bg-opacity-10 shadow-sm mt-2">
+                                <label class="form-label small fw-bold text-muted text-uppercase mb-2">Supplemental Ward Notes</label>
+                                {{ form.general_ward_notes }}
+                            </div>
                         </div>
 
                         <div class="col-12 mt-4 text-end">
+                            <hr class="mb-4">
                             <a href="{% url 'clinical:nursing_dashboard' %}" class="btn btn-outline-secondary rounded-pill px-4 me-2">Cancel</a>
-                            <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">Submit Handover</button>
+                            <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow">Submit Shift Handover</button>
                         </div>
                     </div>
                 </form>
@@ -49,7 +91,11 @@
 </div>
 
 <style>
-    .select2-container--default .select2-selection--multiple { border-radius: 12px; border: 1px solid #e2e8f0; padding: 5px; }
-    input, select, textarea { width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; }
+    .select2-container--default .select2-selection--multiple { border-radius: 12px; border: 1px solid #e2e8f0; padding: 8px; background: white; }
+    input, select { width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; background: white; }
+    textarea { width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; font-size: 0.9rem; background: white; }
+    textarea:focus, input:focus, select:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 4px rgba(59,130,246,0.1); }
+    .sbar-section { transition: all 0.2s; }
+    .sbar-section:focus-within { background: white !important; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateY(-3px); }
 </style>
 {% endblock %}

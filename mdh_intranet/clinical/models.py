@@ -357,6 +357,13 @@ class ShiftHandover(models.Model):
     shift_type = models.CharField(max_length=10, choices=[('day', 'Day Shift'), ('night', 'Night Shift')])
     
     patients = models.ManyToManyField(Patient, related_name='handovers')
+    
+    # SBAR Format for Shift Handover
+    situation = models.TextField(blank=True, help_text="Current ward status, staffing, or major events")
+    background = models.TextField(blank=True, help_text="Relevant history since last shift (e.g. admissions, discharges)")
+    assessment = models.TextField(blank=True, help_text="Clinical overview of critical patients or concerns")
+    recommendation = models.TextField(blank=True, help_text="Action plan for the incoming shift")
+    
     general_ward_notes = models.TextField(blank=True)
     is_completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

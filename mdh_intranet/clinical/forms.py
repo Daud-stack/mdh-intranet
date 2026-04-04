@@ -74,10 +74,15 @@ class FluidBalanceForm(forms.ModelForm):
 class ShiftHandoverForm(forms.ModelForm):
     class Meta:
         model = ShiftHandover
-        fields = ['incoming_nurse', 'shift_date', 'shift_type', 'patients', 'general_ward_notes']
+        fields = ['incoming_nurse', 'shift_date', 'shift_type', 'patients', 'situation', 'background', 'assessment', 'recommendation', 'general_ward_notes']
         widgets = {
             'shift_date': forms.DateInput(attrs={'type': 'date'}),
             'patients': forms.SelectMultiple(attrs={'class': 'select2'}),
+            'situation': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Ward status, staffing, major events...'}),
+            'background': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Recent admissions/discharges, key history...'}),
+            'assessment': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Critical patients or clinical concerns...'}),
+            'recommendation': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Tasks for the incoming shift...'}),
+            'general_ward_notes': forms.Textarea(attrs={'rows': 2}),
         }
 
 class PatientAllergyForm(forms.ModelForm):
