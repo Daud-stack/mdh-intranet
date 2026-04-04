@@ -104,6 +104,7 @@ def patient_detail(request, pk):
     return render(request, 'clinical/patient_detail.html', {
         'patient': patient,
         'consultations': consultations,
+        'nursing_notes': patient.nursing_notes.all().order_by('-recorded_at'),
         'latest_vitals': latest_vitals,
         'allergies': allergies,
         'conditions': conditions,
@@ -590,9 +591,9 @@ def nursing_dashboard(request):
     current_handovers = ShiftHandover.objects.filter(is_completed=False).order_by('-created_at')
     recent_notes = NursingNote.objects.all().order_by('-recorded_at')[:10]
     
-    # Simple ward view: patients with active consultations today
+    # Ward view: patients with consultations in the last 7 days (broadened for visibility)
     ward_patients = Patient.objects.filter(
-        consultations__date__date=timezone.now().date()
+        consultations__date__gte=timezone.now() - timezone.timedelta(days=7)
     ).distinct()
     
     return render(request, 'clinical/nursing_dashboard.html', {
@@ -616,7 +617,16 @@ def log_nursing_note(request, patient_id):
     else:
         form = NursingNoteForm()
     
-    return render(request, 'clinical/log_nursing_note.html', {'form': form, 'patient': patient})
+    # Context for better clinical decision making
+    latest_vitals = patient.vitals.first()
+    previous_notes = patient.nursing_notes.all().order_by('-recorded_at')[:5]
+    
+    return render(request, 'clinical/log_nursing_note.html', {
+        'form': form, 
+        'patient': patient,
+        'latest_vitals': latest_vitals,
+        'previous_notes': previous_notes,
+    })
 
 @login_required
 def log_fluid_balance(request, patient_id):

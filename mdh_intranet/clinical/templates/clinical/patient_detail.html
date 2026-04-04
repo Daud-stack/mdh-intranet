@@ -212,20 +212,6 @@
                                     <div class="fw-bold mb-1 opacity-75">Assessment & Diagnosis:</div>
                                     {{ consult.assessment|truncatechars:250 }}
                                 </div>
-                                <div class="d-flex gap-4">
-                                    {% if consult.prescriptions.exists %}
-                                    <div class="d-flex align-items-center gap-2">
-                                        <div class="p-1 rounded bg-warning bg-opacity-10"><i class="fas fa-pills text-warning"></i></div>
-                                        <span class="small fw-bold">Prescription</span>
-                                    </div>
-                                    {% endif %}
-                                    {% if consult.lab_requests.exists %}
-                                    <div class="d-flex align-items-center gap-2">
-                                        <div class="p-1 rounded bg-info bg-opacity-10"><i class="fas fa-flask text-info"></i></div>
-                                        <span class="small fw-bold">Lab Tests</span>
-                                    </div>
-                                    {% endif %}
-                                </div>
                             </div>
                             <div class="col-md-4 text-end">
                                 <div class="d-grid gap-2">
@@ -245,6 +231,52 @@
                         <a href="{% url 'clinical:consultation_create' patient.pk %}" class="btn btn-primary rounded-pill mt-2">Start First Consultation</a>
                     </div>
                     {% endfor %}
+                </div>
+            </div>
+
+            <div class="glass-card border-0 shadow-sm p-0 overflow-hidden mb-4">
+                <div class="p-3 bg-light border-bottom d-flex align-items-center justify-content-between">
+                    <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-user-nurse text-primary me-2"></i>Nursing Care Timeline (SBAR)</h6>
+                    <span class="badge bg-primary rounded-pill">{{ nursing_notes|length }} Notes</span>
+                </div>
+                <div class="p-4" style="max-height: 500px; overflow-y: auto;">
+                    <div class="timeline-v">
+                        {% for note in nursing_notes %}
+                        <div class="mb-4 ps-4 border-start border-3 border-primary border-opacity-25 position-relative">
+                            <div class="position-absolute top-0 start-0 translate-middle-x bg-white p-1" style="margin-left: -1.5px;">
+                                <i class="fas fa-circle text-primary fs-xs"></i>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold mb-0">Note by Sr. {{ note.nurse.last_name }}</h6>
+                                <small class="text-muted"><i class="far fa-clock me-1"></i>{{ note.recorded_at|date:"d M H:i" }}</small>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="p-2 bg-light rounded-3 small">
+                                        <div class="fw-bold text-primary opacity-75 text-uppercase mb-1" style="font-size: 0.65rem;">Situation</div>
+                                        {{ note.situation }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-2 bg-light rounded-3 small">
+                                        <div class="fw-bold text-primary opacity-75 text-uppercase mb-1" style="font-size: 0.65rem;">Assessment</div>
+                                        {{ note.assessment }}
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="p-2 bg-info bg-opacity-5 rounded-3 small border-start border-3 border-info">
+                                        <div class="fw-bold text-info text-uppercase mb-1" style="font-size: 0.65rem;">Recommendation</div>
+                                        {{ note.recommendation }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-4 text-muted small">
+                            No nursing notes recorded for this patient.
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>

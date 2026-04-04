@@ -1,66 +1,148 @@
 {% extends "base.html" %}
-{% block title %}Nursing Note: {{ patient }} - OpsHub{% endblock %}
+{% block title %}Clinical Note: {{ patient }} - OpsHub{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
-    <div class="row justify-content-center">
+    <div class="row g-4">
+        <!-- Sidebar: Patient Context -->
+        <div class="col-lg-4">
+            <div class="glass-card border-0 shadow-sm p-4 sticky-top" style="top: 1rem;">
+                <div class="text-center mb-4 pb-4 border-bottom">
+                    <div class="avatar-lg mx-auto bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold mb-3 fs-4">
+                        {{ patient.first_name|first }}{{ patient.last_name|first }}
+                    </div>
+                    <h5 class="fw-bold mb-1">{{ patient }}</h5>
+                    <p class="text-muted small mb-0">{{ patient.age }}Y | {{ patient.get_gender_display }}</p>
+                </div>
+
+                <!-- Latest Vitals Snapshot -->
+                <div class="mb-4">
+                    <h6 class="fw-bold small text-uppercase text-muted mb-3">Latest Vitals</h6>
+                    {% if latest_vitals %}
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="p-2 border rounded-3 text-center bg-light">
+                                    <div class="small fw-bold text-muted" style="font-size: 0.6rem;">BP</div>
+                                    <div class="fw-bold small">{{ latest_vitals.blood_pressure_sys }}/{{ latest_vitals.blood_pressure_dia }}</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-2 border rounded-3 text-center bg-light">
+                                    <div class="small fw-bold text-muted" style="font-size: 0.6rem;">TEMP</div>
+                                    <div class="fw-bold small">{{ latest_vitals.temperature }}°C</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-2 border rounded-3 text-center bg-light">
+                                    <div class="small fw-bold text-muted" style="font-size: 0.6rem;">HEART RATE</div>
+                                    <div class="fw-bold small">{{ latest_vitals.heart_rate }} bpm</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-2 border rounded-3 text-center bg-light {% if latest_vitals.oxygen_saturation < 94 %}bg-danger bg-opacity-10{% endif %}">
+                                    <div class="small fw-bold text-muted" style="font-size: 0.6rem;">SPO2</div>
+                                    <div class="fw-bold small">{{ latest_vitals.oxygen_saturation }}%</div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-3 bg-light rounded-3 text-muted small italic">
+                            No vitals recorded recently.
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Previous Notes (SBAR) -->
+                <div>
+                    <h6 class="fw-bold small text-uppercase text-muted mb-3">Previous Notes</h6>
+                    <div class="timeline-compact shadow-none">
+                        {% for note in previous_notes %}
+                            <div class="mb-3 ps-3 border-start border-2 border-primary border-opacity-25 ripple-on-hover p-2 rounded-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <div class="fw-bold small">Sr. {{ note.nurse.last_name }}</div>
+                                    <div class="text-muted" style="font-size: 0.65rem;">{{ note.recorded_at|timesince }} ago</div>
+                                </div>
+                                <div class="text-dark small text-truncate">{{ note.assessment }}</div>
+                            </div>
+                        {% empty %}
+                            <p class="text-muted small italic">No previous notes.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Form: SBAR Entry -->
         <div class="col-lg-8">
             <div class="glass-card border-0 shadow-sm p-4">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="fw-bold mb-0">Record Nursing Note (SBAR)</h4>
-                    <span class="badge bg-light text-primary rounded-pill px-3">{{ patient }}</span>
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                    <h4 class="fw-bold mb-0 text-primary"><i class="fas fa-file-medical me-2"></i>New Nursing Note (SBAR)</h4>
+                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 fw-bold">Ward Care Record</span>
                 </div>
 
                 <form method="post">
                     {% csrf_token %}
                     
                     <div class="row g-4">
-                        <div class="col-md-12">
-                            <label class="form-label small fw-bold text-muted text-uppercase mb-1">Situation</label>
-                            {{ form.situation }}
-                            <small class="text-muted d-block mt-1">What is currently happening with the patient?</small>
-                        </div>
-                        
-                        <div class="col-md-12">
-                            <label class="form-label small fw-bold text-muted text-uppercase mb-1">Background</label>
-                            {{ form.background }}
-                            <small class="text-muted d-block mt-1">Context or previous history relevant to this note.</small>
-                        </div>
-                        
-                        <div class="col-md-12">
-                            <label class="form-label small fw-bold text-muted text-uppercase mb-1">Assessment</label>
-                            {{ form.assessment }}
-                            <small class="text-muted d-block mt-1">Nurse's observation and findings.</small>
-                        </div>
-                        
-                        <div class="col-md-12">
-                            <label class="form-label small fw-bold text-muted text-uppercase mb-1">Recommendation</label>
-                            {{ form.recommendation }}
-                            <small class="text-muted d-block mt-1">What action needs to be taken?</small>
-                        </div>
-
-                        <hr class="my-2">
-
-                        <div class="col-md-4">
-                            <label class="form-label small fw-bold text-muted text-uppercase mb-1">Pain Score (0-10)</label>
-                            {{ form.pain_score }}
-                        </div>
-                        
-                        <div class="col-md-8 d-flex align-items-center">
-                            <div class="form-check form-switch mt-3">
-                                {{ form.dressing_done }}
-                                <label class="form-check-label fw-bold small text-muted ms-2" for="id_dressing_done">Wound Dressing Performed</label>
+                        <div class="col-12">
+                            <div class="sbar-section p-3 border rounded-4 bg-light bg-opacity-25 border-start border-4 border-info">
+                                <label class="form-label small fw-bold text-info text-uppercase mb-2"><i class="fas fa-exclamation-circle me-1"></i> Situation</label>
+                                {{ form.situation }}
+                                <div class="form-text mt-1 small opacity-75">What is currently happening? Briefly describe the immediate concern.</div>
                             </div>
                         </div>
 
-                        <div class="col-md-12">
-                            <label class="form-label small fw-bold text-muted text-uppercase mb-1">Wound Care Notes</label>
-                            {{ form.wound_care_notes }}
+                        <div class="col-12">
+                            <div class="sbar-section p-3 border rounded-4 bg-light bg-opacity-25">
+                                <label class="form-label small fw-bold text-muted text-uppercase mb-2"><i class="fas fa-history me-1"></i> Background</label>
+                                {{ form.background }}
+                                <div class="form-text mt-1 small opacity-75">Context or relevant history (e.g. recent surgery, meds).</div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="sbar-section p-3 border rounded-4 bg-light bg-opacity-25 border-start border-4 border-primary">
+                                <label class="form-label small fw-bold text-primary text-uppercase mb-2"><i class="fas fa-stethoscope me-1"></i> Assessment</label>
+                                {{ form.assessment }}
+                                <div class="form-text mt-1 small opacity-75">Current observations, findings, and your nursing judgment.</div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="sbar-section p-3 border rounded-4 bg-light bg-opacity-25 border-start border-4 border-success">
+                                <label class="form-label small fw-bold text-success text-uppercase mb-2"><i class="fas fa-check-double me-1"></i> Recommendation</label>
+                                {{ form.recommendation }}
+                                <div class="form-text mt-1 small opacity-75">What action do you recommend? Plan for the next few hours.</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded-4">
+                                <label class="form-label small fw-bold text-muted text-uppercase mb-2">Pain Score (0-10)</label>
+                                {{ form.pain_score }}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 d-flex align-items-center justify-content-center">
+                            <div class="p-3 border rounded-4 w-100 h-100 d-flex align-items-center">
+                                <div class="form-check form-switch w-100">
+                                    {{ form.dressing_done }}
+                                    <label class="form-check-label fw-bold text-muted ms-2" for="id_dressing_done">Wound Dressing Done</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="p-3 border rounded-4 bg-light bg-opacity-10">
+                                <label class="form-label small fw-bold text-muted text-uppercase mb-2">Wound Care Details</label>
+                                {{ form.wound_care_notes }}
+                            </div>
                         </div>
 
                         <div class="col-12 mt-4 text-end">
+                            <hr class="mb-4">
                             <a href="{% url 'clinical:patient_detail' patient.pk %}" class="btn btn-outline-secondary rounded-pill px-4 me-2">Cancel</a>
-                            <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">Save Note</button>
+                            <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow">Save Clinical Note</button>
                         </div>
                     </div>
                 </form>
@@ -70,9 +152,12 @@
 </div>
 
 <style>
-    textarea { width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; font-size: 0.9rem; }
+    textarea { width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; font-size: 0.9rem; background: white; }
     textarea:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 4px rgba(59,130,246,0.1); }
-    input[type="number"] { width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; }
-    .form-check-input:checked { background-color: #3b82f6; border-color: #3b82f6; }
+    input[type="number"] { width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; font-size: 1.1rem; font-weight: bold; text-align: center; }
+    .avatar-lg { width: 64px; height: 64px; line-height: 64px; }
+    .ripple-on-hover:hover { background: rgba(59,130,246,0.02); }
+    .sbar-section { transition: all 0.2s; }
+    .sbar-section:focus-within { background: white !important; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(5px); }
 </style>
 {% endblock %}
