@@ -219,15 +219,15 @@
             <i class="fas fa-hospital-user"></i>
             <span>OpsHub</span>
         </div>
-        <nav class="nav flex-column" aria-label="Main navigation">
+        <nav class="nav flex-column" aria-label="Main navigation" id="sidebarNav">
             <div class="nav-section-title">Main</div>
-            <a href="{% url 'dashboard:home' %}" class="nav-link active" aria-current="page">
+            <a href="{% url 'dashboard:home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' and request.resolver_match.app_name == 'dashboard' %}active{% endif %}" aria-current="page">
                 <i class="fas fa-th-large" aria-hidden="true"></i> Dashboard
             </a>
-            <a href="{% url 'sop_manual:index' %}" class="nav-link">
+            <a href="{% url 'sop_manual:index' %}" class="nav-link {% if request.resolver_match.app_name == 'sop_manual' %}active{% endif %}">
                 <i class="fas fa-book" aria-hidden="true"></i> SOP Manual
             </a>
-            <a href="{% url 'sop_assistant:index' %}" class="nav-link" aria-label="Navigate to SOP Assistant">
+            <a href="{% url 'sop_assistant:index' %}" class="nav-link {% if request.resolver_match.app_name == 'sop_assistant' %}active{% endif %}" aria-label="Navigate to SOP Assistant">
                 <i class="fas fa-robot" aria-hidden="true"></i> SOP Assistant
             </a>
             <a href="{% url 'hr_management:dashboard' %}"
@@ -281,11 +281,11 @@
                 <i class="fas fa-flask" aria-hidden="true"></i> Laboratory
             </a>
             <a href="{% url 'clinical:imaging_dashboard' %}" 
-                class="nav-link">
+                class="nav-link {% if request.resolver_match.url_name == 'imaging_dashboard' %}active{% endif %}">
                 <i class="fas fa-x-ray" aria-hidden="true"></i> Imaging & Scans
             </a>
             <a href="{% url 'clinical:theatre_dashboard' %}" 
-                class="nav-link">
+                class="nav-link {% if request.resolver_match.url_name == 'theatre_dashboard' %}active{% endif %}">
                 <i class="fas fa-procedures" aria-hidden="true"></i> Operating Theatre
             </a>
 
@@ -308,7 +308,7 @@
             </a>
 
             <div class="nav-section-title">Operations</div>
-            <a href="{% url 'incident_log:index' %}" class="nav-link">
+            <a href="{% url 'incident_log:index' %}" class="nav-link {% if request.resolver_match.app_name == 'incident_log' %}active{% endif %}">
                 <i class="fas fa-clipboard-list" aria-hidden="true"></i> Incident Log
             </a>
             <a href="{% url 'stock_management:index' %}"
@@ -316,7 +316,7 @@
                 aria-label="Navigate to Stock Management">
                 <i class="fas fa-box"></i> Stock & Requisitions
             </a>
-            <a href="{% url 'projects:index' %}" class="nav-link">
+            <a href="{% url 'projects:index' %}" class="nav-link {% if request.resolver_match.app_name == 'projects' %}active{% endif %}">
                 <i class="fas fa-tasks" aria-hidden="true"></i> Projects
             </a>
             <a href="{% url 'leave_management:leave_list' %}"
@@ -331,13 +331,13 @@
             </a>
 
             <div class="nav-section-title">Support</div>
-            <a href="{% url 'helpdesk:index' %}" class="nav-link">
+            <a href="{% url 'helpdesk:index' %}" class="nav-link {% if request.resolver_match.app_name == 'helpdesk' %}active{% endif %}">
                 <i class="fas fa-headset" aria-hidden="true"></i> IT Helpdesk
             </a>
-            <a href="{% url 'icd11_tools:index' %}" class="nav-link">
+            <a href="{% url 'icd11_tools:index' %}" class="nav-link {% if request.resolver_match.app_name == 'icd11_tools' %}active{% endif %}">
                 <i class="fas fa-stethoscope" aria-hidden="true"></i> ICD-11 Tools
             </a>
-            <a href="{% url 'documents:index' %}" class="nav-link">
+            <a href="{% url 'documents:index' %}" class="nav-link {% if request.resolver_match.app_name == 'documents' %}active{% endif %}">
                 <i class="fas fa-file-alt" aria-hidden="true"></i> Documents
             </a>
             <a href="{% url 'feedback:index' %}"
@@ -519,6 +519,44 @@
             });
             input.addEventListener('focus', function () {
                 if (dropdown.innerHTML.trim()) dropdown.classList.remove('d-none');
+            });
+        })();
+    </script>
+
+    <!-- Sidebar Scroll Persistence & Active Link Visibility -->
+    <script>
+        (function() {
+            const sidebar = document.querySelector('.sidebar');
+            const activeLink = document.querySelector('.nav-link.active');
+            if (!sidebar) return;
+            
+            // 1. Restore scroll position
+            const savedScroll = sessionStorage.getItem('sidebarScroll');
+            if (savedScroll !== null) {
+                sidebar.scrollTop = parseInt(savedScroll, 10);
+            }
+            
+            // 2. Ensure active link is visible
+            if (activeLink) {
+                const sidebarRect = sidebar.getBoundingClientRect();
+                const linkRect = activeLink.getBoundingClientRect();
+                
+                // If link is outside the visible area of the sidebar
+                if (linkRect.top < sidebarRect.top || linkRect.bottom > sidebarRect.bottom) {
+                    activeLink.scrollIntoView({ behavior: 'auto', block: 'center' });
+                }
+            }
+            
+            // 3. Save scroll position on interaction
+            sidebar.addEventListener('scroll', () => {
+                sessionStorage.setItem('sidebarScroll', sidebar.scrollTop);
+            });
+            
+            // Save on click (just in case they navigate before scroll event fires)
+            sidebar.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    sessionStorage.setItem('sidebarScroll', sidebar.scrollTop);
+                });
             });
         })();
     </script>
