@@ -2,6 +2,109 @@
 
 {% block title %}New Preauthorization Request - OpsHub{% endblock %}
 
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const queryInput = document.getElementById('icdQueryInput');
+        const resultsList = document.getElementById('icdResultsList');
+        const initialState = document.getElementById('initialState');
+        const diagnosisField = document.querySelector('textarea[name="diagnosis"]');
+        const icdCodeField = document.querySelector('input[name="icd_code"]');
+        const modal = document.getElementById('icdSearchModal');
+        
+        let debounceTimer;
+        
+        queryInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            const query = this.value.trim();
+            
+            if (query.length < 2) {
+                resultsList.innerHTML = '';
+                initialState.style.display = 'block';
+                return;
+            }
+            
+            debounceTimer = setTimeout(() => {
+                fetch(`{% url 'icd11_tools:api_search' %}?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        renderResults(data.results);
+                    })
+                    .catch(err => console.error('Search error:', err));
+            }, 300);
+        });
+        
+        function renderResults(results) {
+            initialState.style.display = 'none';
+            resultsList.innerHTML = '';
+            
+            if (results.length === 0) {
+                resultsList.innerHTML = `
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-search-minus mb-2 opacity-50"></i>
+                        <p>No matches found in the reference document.</p>
+                    </div>`;
+                return;
+            }
+            
+            results.forEach(res => {
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'list-group-item list-group-item-action border-0 py-3 px-4 mb-1 rounded-3';
+                item.style.transition = 'all 0.2s ease';
+                item.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="fw-bold text-primary mb-1">${res.code}</div>
+                            <div class="small text-muted text-wrap">${res.description}</div>
+                        </div>
+                        <i class="fas fa-plus-circle text-primary opacity-0 hover-opacity-100"></i>
+                    </div>`;
+                
+                item.onclick = function() {
+                    diagnosisField.value = res.description;
+                    icdCodeField.value = res.code;
+                    bootstrap.Modal.getInstance(modal).hide();
+                    
+                    // Trigger custom animation/glow on target fields
+                    [diagnosisField, icdCodeField].forEach(f => {
+                        f.style.boxShadow = '0 0 0 0.5rem rgba(13, 110, 253, 0.25)';
+                        f.style.borderColor = '#0d6efd';
+                        setTimeout(() => {
+                            f.style.boxShadow = '';
+                            f.style.borderColor = '';
+                        }, 1000);
+                    });
+                };
+                
+                resultsList.appendChild(item);
+            });
+        }
+
+        // Focus search input when modal opens
+        modal.addEventListener('shown.bs.modal', function () {
+            queryInput.focus();
+        });
+    });
+</script>
+
+<style>
+    .hover-opacity-100 { opacity: 0; }
+    .list-group-item:hover .hover-opacity-100 { opacity: 1; }
+    .list-group-item:hover {
+        background-color: rgba(13, 110, 253, 0.05) !important;
+        transform: translateX(5px);
+    }
+    .modal-content {
+        animation: modalScaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes modalScaleUp {
+        from { transform: scale(0.9); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row mb-5 align-items-end">
     <div class="col-md-8">
@@ -118,8 +221,12 @@
         <div class="p-4 bg-white">
             <div class="row g-3">
                 <div class="col-12">
-                    <label class="form-label fw-bold small text-uppercase tracking-wider">Diagnosis / Clinical
-                        Indication <span class="text-danger">*</span></label>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label fw-bold small text-uppercase tracking-wider mb-0">Diagnosis / Clinical Indication <span class="text-danger">*</span></label>
+                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#icdSearchModal">
+                            <i class="fas fa-search me-1"></i> Search ICD Reference
+                        </button>
+                    </div>
                     {{ form.diagnosis }}
                 </div>
                 <div class="col-md-6">
@@ -139,6 +246,37 @@
                     <label class="form-label fw-bold small text-uppercase tracking-wider">Clinical Notes /
                         Justification</label>
                     {{ form.clinical_notes }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ICD Search Modal -->
+    <div class="modal fade" id="icdSearchModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg overflow-hidden" style="border-radius: 20px;">
+                <div class="modal-header bg-primary text-white border-0 p-4">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fas fa-search-plus me-2"></i> ICD-11 Reference Search
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <div class="input-group input-group-lg mb-4 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                        <span class="input-group-text bg-white border-0"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" id="icdQueryInput" class="form-control border-0" placeholder="Type diagnosis or code (e.g. Diabetes, BA00)..." autocomplete="off">
+                    </div>
+                    
+                    <div id="icdResultsWrapper" class="overflow-auto" style="max-height: 400px;">
+                        <div class="text-center py-5 text-muted" id="initialState">
+                            <i class="fas fa-book-medical display-4 mb-3 opacity-25"></i>
+                            <p>Start typing to search the indexed ICD-11 database</p>
+                        </div>
+                        <div class="list-group list-group-flush shadow-sm rounded-3" id="icdResultsList"></div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-white border-0 p-3">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>

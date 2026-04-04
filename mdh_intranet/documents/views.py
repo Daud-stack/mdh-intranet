@@ -132,6 +132,24 @@ def delete_document(request, pk):
 
 
 @login_required
+def index_document_request(request, pk):
+    """Trigger indexing of an Excel document for ICD-11 search"""
+    document = get_object_or_404(Document, pk=pk)
+    
+    if not request.user.is_staff:
+        messages.error(request, 'You do not have permission to index documents.')
+        return redirect('documents:detail', pk=pk)
+        
+    success, message = index_icd_document(pk)
+    if success:
+        messages.success(request, message)
+    else:
+        messages.error(request, message)
+        
+    return redirect('documents:detail', pk=pk)
+
+
+@login_required
 def document_detail(request, pk):
     """View document details"""
     document = get_object_or_404(Document, pk=pk)
