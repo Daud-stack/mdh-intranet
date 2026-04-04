@@ -70,6 +70,9 @@ def audit_delete(sender, instance, **kwargs):
     ip = get_current_ip()
     
     log_action(
+        user=user,
+        action='delete',
+        obj=instance,
         description=f"Deleted {instance._meta.verbose_name}: {str(instance)}",
         ip_address=ip
     )
