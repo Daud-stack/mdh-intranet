@@ -107,6 +107,41 @@ def download_document(request, pk):
         return redirect('documents:index')
 
 
+def public_document_download(request, pk):
+    """
+    Publicly accessible endpoint for file downloads.
+    REQUIRED for external services like Microsoft Office Web Viewer.
+    Only serves files marked as is_public=True.
+    """
+    from django.http import HttpResponseForbidden, FileResponse
+    document = get_object_or_404(Document, pk=pk)
+    
+    # Only allow if public. Office Online Viewer is an external service
+    # and cannot pass Django session cookies.
+    if not document.is_public:
+        return HttpResponseForbidden("This document is not public and cannot be viewed externally.")
+    
+    # Serve file as a stream
+    try:
+        response = FileResponse(document.file.open('rb'))
+        # Set content type based on extension for better viewer compatibility
+        content_types = {
+            'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'doc': 'application/msword',
+            'xls': 'application/vnd.ms-excel',
+            'ppt': 'application/vnd.ms-powerpoint',
+        }
+        ext = document.file_type.lower()
+        if ext in content_types:
+            response['Content-Type'] = content_types[ext]
+            
+        return response
+    except Exception:
+        return HttpResponseForbidden("File access error.")
+
+
 @login_required
 def delete_document(request, pk):
     """Delete a document - staff only or owner"""
@@ -697,9 +732,10 @@ def office_web_viewer(request, doc_id):
     if file_ext not in supported_extensions:
         error = f"Microsoft Office Web Viewer does not support .{file_ext} files. Supported formats: Word (.docx), Excel (.xlsx), PowerPoint (.pptx)"
     else:
-        # Build the absolute URL to the document
+        # Build the absolute URL to the document download endpoint
         # Microsoft Office Web Viewer requires a publicly accessible URL
-        document_url = request.build_absolute_uri(document.file.url)
+        from django.urls import reverse
+        document_url = request.build_absolute_uri(reverse('documents:public_download', args=[document.pk]))
         
         # Encode the URL
         from urllib.parse import quote
@@ -710,11 +746,7 @@ def office_web_viewer(request, doc_id):
         viewer_url = f"https://view.officeapps.live.com/op/embed.aspx?src={encoded_url}"
         
         print(f"Office Web Viewer URL: {viewer_url}")
-        print(f"Document URL: {document_url}")
-        
-        # Note: For this to work, the document URL must be publicly accessible
-        # In development, you might need to use a tunneling service like ngrok
-        # or ensure your Django server is accessible from the internet
+        print(f"Document Public URL: {document_url}")
     
     context = {
         'document': document,

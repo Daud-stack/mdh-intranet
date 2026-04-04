@@ -146,6 +146,12 @@
                                     title="Info">
                                     <i class="fas fa-info-circle"></i>
                                 </a>
+                                {% if doc.file_type in 'docx,xlsx,pptx,doc,xls,ppt' %}
+                                <a href="{% url 'documents:office_web_viewer' doc.pk %}"
+                                    class="btn btn-white btn-sm px-3" title="View in Office Online">
+                                    <i class="fas fa-desktop text-primary"></i>
+                                </a>
+                                {% endif %}
                                 <a href="{% url 'documents:collabora_editor' doc.pk %}"
                                     class="btn btn-white btn-sm px-3" title="Editor">
                                     <i class="fas fa-pen text-warning"></i>

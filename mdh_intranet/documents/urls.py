@@ -20,6 +20,7 @@ urlpatterns = [
     # Collabora / WOPI routes
     path('collabora/<int:doc_id>/', views.collabora_editor, name='collabora_editor'),
     path('office-viewer/<int:doc_id>/', views.office_web_viewer, name='office_web_viewer'),
+    path('p/<int:pk>/', views.public_document_download, name='public_download'),
     path('wopi/files/<int:file_id>', wopi.check_file_info, name='wopi_check_file_info'),
     path('wopi/files/<int:file_id>/contents', wopi.file_contents, name='wopi_get_file'),
 ]
