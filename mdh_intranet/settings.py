@@ -33,7 +33,8 @@ SECRET_KEY = os.environ.get(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
+DEBUG = True
+# DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
 # In production, set DJANGO_ALLOWED_HOSTS to your domain(s)
 ALLOWED_HOSTS = os.environ.get(
