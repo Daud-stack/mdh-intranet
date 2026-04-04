@@ -57,6 +57,8 @@ def upload_document(request):
         return redirect('documents:index')
     
     if request.method == 'POST':
+        print(f"DEBUG: POST data: {request.POST}")
+        print(f"DEBUG: FILES data: {request.FILES}")
         form = DocumentUploadForm(request.POST, request.FILES)
         if form.is_valid():
             document = form.save(commit=False)
@@ -64,6 +66,9 @@ def upload_document(request):
             document.save()
             messages.success(request, f'Document "{document.title}" uploaded successfully!')
             return redirect('documents:index')
+        else:
+            print(f"DEBUG: Form errors: {form.errors}")
+            messages.error(request, f"Upload failed: {form.errors.as_text()}")
     else:
         form = DocumentUploadForm()
     
