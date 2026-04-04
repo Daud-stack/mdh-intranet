@@ -661,7 +661,7 @@ def create_sop(request):
                     category=form.cleaned_data['category'],
                     uploaded_by=request.user,
                     description=f"SOP: {form.cleaned_data['sop_title']} (v{form.cleaned_data['version']})",
-                    is_public=False  # SOPs private by default until released
+                    is_public=True  # SOPs public by default for viewer testing
                 )
                 
                 # Generate safe filename
