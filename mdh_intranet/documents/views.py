@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.views.decorators.http import require_POST
 from .models import Document, DocumentCategory
 from .forms import DocumentUploadForm, SOPGeneratorForm
+from mdh_intranet.icd11_tools.services import index_icd_document
 from django.core.cache import cache
 from django.template.loader import render_to_string
 from django.utils import timezone
