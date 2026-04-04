@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}ICD-11 Tools - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="fw-bold">
+                <i class="fas fa-stethoscope text-success"></i> ICD-11 Coding Tools
+            </h1>
+            <p class="text-muted">Medical diagnosis coding reference and lookup</p>
+        </div>
+    </div>
+
+    <!-- Search Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3">Search ICD-11 Codes</h5>
+                    <form method="get">
+                        <div class="input-group input-group-lg">
+                            <input type="text" name="search" class="form-control"
+                                placeholder="Search by disease, symptom, or code..." value="{{ search_query }}">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                    </form>
+                    <small class="text-muted">Example: "diabetes", "J00", "respiratory infection"</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if results %}
+    <!-- Search Results -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0 fw-bold">Search Results for "{{ search_query }}"</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for code in results %}
+                        <a href="{% url 'icd11_tools:detail' code.pk %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong class="text-primary">{{ code.code }}</strong>
+                                    <span class="ms-2">{{ code.description }}</span>
+                                    <small class="text-muted d-block">{{ code.chapter }}</small>
+                                </div>
+                                <i class="fas fa-chevron-right text-muted"></i>
+                            </div>
+                        </a>
+                        {% empty %}
+                        <div class="p-4 text-center text-muted">
+                            <i class="fas fa-search-minus fa-2x mb-3"></i>
+                            <p>No matches found for "{{ search_query }}"</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-database text-primary fa-3x mb-2"></i>
+                    <h4 class="fw-bold">{{ total_codes }}</h4>
+                    <p class="text-muted mb-0">Total Codes</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-folder-open text-warning fa-3x mb-2"></i>
+                    <h4 class="fw-bold">{{ active_chapters }}</h4>
+                    <p class="text-muted mb-0">Chapters</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock text-info fa-3x mb-2"></i>
+                    <h4 class="fw-bold">{{ recent_codes.count }}</h4>
+                    <p class="text-muted mb-0">Recently Used</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Chapters and Recent -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0 fw-bold">ICD-11 Chapters</h5>
+                </div>
+                <div class="card-body">
+                    {% if chapters %}
+                    <div class="list-group list-group-flush">
+                        {% for chapter in chapters %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong class="text-dark">{{ chapter.name }}</strong>
+                                    {% if chapter.range %}
+                                    <small class="text-muted d-block">Codes: {{ chapter.range }}</small>
+                                    {% endif %}
+                                </div>
+                                <span class="badge bg-light text-dark">{{ chapter.count }} codes</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted">No chapters loaded via database yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0 fw-bold">Recently Used Codes</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for recent in recent_codes %}
+                        <a href="{% url 'icd11_tools:detail' recent.code.pk %}"
+                            class="list-group-item list-group-item-action px-3 py-2">
+                            <div class="d-flex justify-content-between w-100">
+                                <strong class="text-primary">{{ recent.code.code }}</strong>
+                                <small class="text-muted">{{ recent.viewed_at|timesince }} ago</small>
+                            </div>
+                            <small class="text-muted d-block text-truncate">{{ recent.code.description }}</small>
+                        </a>
+                        {% empty %}
+                        <div class="p-4 text-center">
+                            <p class="text-muted small mb-0">No history yet.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

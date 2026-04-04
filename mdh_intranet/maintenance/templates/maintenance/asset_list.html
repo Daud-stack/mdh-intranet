@@ -1,0 +1,73 @@
+<!-- prettier-ignore-start -->
+{% extends "base.html" %}
+{% block title %}Hospital Assets - OpsHub{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">Asset Management</h1>
+            <p class="text-muted">Tracking
+                {{ assets.count }}
+                medical and facility assets.</p>
+        </div>
+        <a href="{% url 'maintenance:asset_create' %}" class="btn btn-primary rounded-pill"><i
+                class="fas fa-plus me-2"></i>Add Asset</a>
+    </div>
+
+    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Asset Name</th>
+                            <th>ID/Tag</th>
+                            <th>Category</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Condition</th>
+                            <th class="pe-4 text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for a in assets %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold text-dark">
+                                    {{ a.name }}
+                                </div>
+                            </td>
+                            <td><code class="text-primary small">
+{{ a.asset_id }}
+                            </code></td>
+                            <td>
+                                {{ a.category }}
+                            </td>
+                            <td>
+                                {{ a.location }}
+                            </td>
+                            <td>
+                                <span
+                                    class="badge rounded-pill {% if a.status == 'OPERATIONAL' %}bg-success{% elif a.status == 'DOWN' %}bg-danger{% else %}bg-warning{% endif %} px-3">
+                                    {{ a.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-muted border px-3 rounded-pill">
+                                    {{ a.get_criticality_display }}
+                                </span>
+                            </td>
+                            <td class="pe-4 text-end">
+                                <a href="{% url 'maintenance:asset_detail' a.pk %}"
+                                    class="btn btn-sm btn-outline-primary rounded-pill px-3">View Health</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+<!-- prettier-ignore-end -->

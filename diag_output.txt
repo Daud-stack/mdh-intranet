@@ -1,0 +1,7 @@
+INSTALLED_APPS: ['django.contrib.admin', 'django.contrib.auth', 'django.contrib.contenttypes', 'django.contrib.sessions', 'django.contrib.messages', 'django.contrib.staticfiles', 'mdh_intranet.dashboard', 'mdh_intranet.sop_manual', 'mdh_intranet.incident_log', 'mdh_intranet.icd11_tools', 'mdh_intranet.documents', 'mdh_intranet.projects', 'mdh_intranet.feedback', 'mdh_intranet.stock_management', 'mdh_intranet.user_management', 'mdh_intranet.medical_aid', 'mdh_intranet.helpdesk', 'mdh_intranet.leave_management', 'widget_tweaks']
+TEMPLATES: [{'BACKEND': 'django.template.backends.django.DjangoTemplates', 'DIRS': [WindowsPath('C:/Users/HomePC/mdh_intranet/mdh_intranet/templates')], 'APP_DIRS': True, 'OPTIONS': {'context_processors': ['django.template.context_processors.debug', 'django.template.context_processors.request', 'django.contrib.auth.context_processors.auth', 'django.contrib.messages.context_processors.messages']}}]
+SUCCESS: Template found at C:\Users\HomePC\mdh_intranet\mdh_intranet\leave_management\templates\leave_management\leave_list.html
+App Path: C:\Users\HomePC\mdh_intranet\mdh_intranet\leave_management
+Template dir exists: True
+Full template path: C:\Users\HomePC\mdh_intranet\mdh_intranet\leave_management\templates\leave_management\leave_list.html
+File exists: True

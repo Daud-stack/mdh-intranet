@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Conduct Audit - OpsHub{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-primary py-4 text-center border-0 text-white"
+                    style="background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%) !important;">
+                    <h2 class="fw-bold mb-1"><i class="fas fa-search-plus me-3"></i>{{ template.title }}</h2>
+                    <p class="mb-0 text-white-50">{{ template.description }}</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5 bg-white">
+                    <form method="post" novalidate id="auditForm">
+                        {% csrf_token %}
+                        <!-- Meta Info -->
+                        <div class="mb-5 pb-4 border-bottom">
+                            <h5 class="fw-bold mb-3 text-dark"><i class="fas fa-info-circle text-primary me-2"></i>Audit
+                                Context</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-dark">Location/Department being
+                                        Audited</label>
+                                    {{ form.department_audited }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Questions -->
+                        <h5 class="fw-bold mb-4 text-dark"><i class="fas fa-tasks text-success me-2"></i>Inspection
+                            Checklist</h5>
+                        {% for question in questions %}
+                        <div class="bg-light p-4 rounded-4 mb-4 border border-opacity-50 border-secondary">
+                            <p class="fw-bold fs-6 mb-3 text-dark">{{ forloop.counter }}. {{ question.text }}</p>
+                            <div class="d-flex gap-3 mb-3">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input border-2 border-success" type="radio"
+                                        name="q_{{ question.id }}" id="q_{{ question.id }}_pass" value="yes" required>
+                                    <label class="form-check-label text-success fw-bold"
+                                        for="q_{{ question.id }}_pass">Pass</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input border-2 border-danger" type="radio"
+                                        name="q_{{ question.id }}" id="q_{{ question.id }}_fail" value="no" required>
+                                    <label class="form-check-label text-danger fw-bold"
+                                        for="q_{{ question.id }}_fail">Fail</label>
+                                </div>
+                            </div>
+                            <div>
+                                <input type="text" class="form-control form-control-sm bg-white"
+                                    name="notes_{{ question.id }}"
+                                    placeholder="Optional notes/CAPA reference for this item">
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <!-- Overall Notes -->
+                        <div class="mb-5 mt-5">
+                            <label class="form-label fw-bold text-dark"><i
+                                    class="fas fa-edit text-warning me-2"></i>Overall Comments</label>
+                            {{ form.notes }}
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="d-flex gap-3 justify-content-end pt-3 border-top mt-5">
+                            <a href="{% url 'quality_audit:dashboard' %}"
+                                class="btn btn-light btn-lg rounded-pill px-4 text-muted fw-bold">Cancel</a>
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm fw-bold"><i
+                                    class="fas fa-check-double me-2"></i>Complete Audit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Radio Button Enhancement */
+    .form-check-input[type="radio"]:checked {
+        background-color: transparent !important;
+        position: relative;
+    }
+
+    .form-check-input[type="radio"][value="yes"]:checked {
+        border-color: #198754 !important;
+        background-color: #198754 !important;
+    }
+
+    .form-check-input[type="radio"][value="no"]:checked {
+        border-color: #dc3545 !important;
+        background-color: #dc3545 !important;
+    }
+
+    .form-control {
+        border-radius: 0.75rem;
+    }
+</style>
+{% endblock %}

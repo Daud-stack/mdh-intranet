@@ -1,0 +1,508 @@
+{% extends "base.html" %}
+{% block title %}SOP Assistant — OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="mb-1" style="font-weight:700; letter-spacing:-0.5px;">
+                <i class="fas fa-robot me-2" style="color:#6366f1;"></i>
+                SOP Assistant
+            </h1>
+            <p class="text-muted mb-0">Generate professional SOPs using templates and system data</p>
+        </div>
+        <a href="{% url 'sop_manual:index' %}" class="btn btn-outline-secondary" style="border-radius:10px;">
+            <i class="fas fa-arrow-left me-1"></i>Back to SOP Manual
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- ─── LEFT: Configuration Panel ─── -->
+        <div class="col-lg-5">
+            <div class="card border-0" id="config-panel"
+                style="border-radius:20px; overflow:hidden; background:rgba(255,255,255,0.88); backdrop-filter:blur(16px); box-shadow:0 8px 32px rgba(0,0,0,0.08);">
+
+                <!-- Gradient header -->
+                <div style="background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 50%,#a855f7 100%); padding:24px 28px;">
+                    <h4 class="mb-1 text-white" style="font-weight:700;">
+                        <i class="fas fa-magic me-2"></i>Configure Your SOP
+                    </h4>
+                    <p class="mb-0" style="color:rgba(255,255,255,0.8); font-size:0.9rem;">
+                        Choose a template and link relevant data
+                    </p>
+                </div>
+
+                <div class="card-body p-4">
+
+                    <!-- Step 1: Title -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <span class="badge bg-primary rounded-circle me-1"
+                                style="width:24px;height:24px;line-height:18px;">1</span>
+                            SOP Title <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" id="sop-title" class="form-control form-control-lg"
+                            placeholder="e.g. Sharps Injury Management Protocol"
+                            style="border-radius:12px; border:2px solid #e2e8f0; font-weight:500;">
+                    </div>
+
+                    <!-- Step 2: Template Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <span class="badge bg-primary rounded-circle me-1"
+                                style="width:24px;height:24px;line-height:18px;">2</span>
+                            SOP Template
+                        </label>
+                        <div class="row g-2" id="template-grid">
+                            {% for t in templates %}
+                            <div class="col-6">
+                                <div class="template-card p-3 text-center" data-template="{{ t.key }}"
+                                    onclick="selectTemplate(this, '{{ t.key }}')"
+                                    style="border:2px solid #e2e8f0; border-radius:12px; cursor:pointer; transition:all 0.2s;">
+                                    <i class="{{ t.icon }} fa-lg mb-1" style="color:#6366f1;"></i>
+                                    <div style="font-size:0.82rem; font-weight:600; color:#334155;">{{ t.label }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" id="selected-template" value="administrative">
+                    </div>
+
+                    <!-- Step 3: Category -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <span class="badge bg-primary rounded-circle me-1"
+                                style="width:24px;height:24px;line-height:18px;">3</span>
+                            Category / Department
+                        </label>
+                        <select id="sop-category" class="form-select" style="border-radius:10px;">
+                            <option value="">— Select Category —</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.pk }}" data-name="{{ cat.name }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Step 4: Link Data -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <span class="badge bg-primary rounded-circle me-1"
+                                style="width:24px;height:24px;line-height:18px;">4</span>
+                            Link System Data <small class="text-muted fw-normal">(optional)</small>
+                        </label>
+
+                        <!-- Incidents -->
+                        <div class="mb-3">
+                            <label class="form-label small text-muted mb-1">
+                                <i class="fas fa-exclamation-triangle text-warning me-1"></i>Reference Incidents
+                            </label>
+                            <select id="linked-incidents" class="form-select" multiple size="3"
+                                style="border-radius:10px; font-size:0.88rem;">
+                                {% for inc in incidents %}
+                                <option value="{{ inc.pk }}">{{ inc.incident_number }} — {{ inc.title|truncatechars:40  }} ({{ inc.severity }})</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Hold Ctrl to select multiple</small>
+                        </div>
+
+                        <!-- CAPAs -->
+                        <div class="mb-3">
+                            <label class="form-label small text-muted mb-1">
+                                <i class="fas fa-clipboard-check text-info me-1"></i>Reference CAPAs
+                            </label>
+                            <select id="linked-capas" class="form-select" multiple size="3"
+                                style="border-radius:10px; font-size:0.88rem;">
+                                {% for c in capas %}
+                                <option value="{{ c.pk }}">CAPA-{{ c.pk|stringformat:"04d" }} — {{  c.title|truncatechars:40 }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: Additional Context -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <span class="badge bg-primary rounded-circle me-1"
+                                style="width:24px;height:24px;line-height:18px;">5</span>
+                            Additional Notes <small class="text-muted fw-normal">(optional)</small>
+                        </label>
+                        <textarea id="additional-context" class="form-control" rows="3"
+                            placeholder="Any specific instructions, department rules, or context to include..."
+                            style="border-radius:10px;"></textarea>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <button id="btn-generate" onclick="generateSOP()" class="btn btn-lg w-100" style="border-radius:14px; font-weight:700; padding:14px;
+                               background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 100%);
+                               color:#fff; border:none; box-shadow:0 4px 15px rgba(99,102,241,0.4);
+                               transition:all 0.3s;">
+                        <i class="fas fa-magic me-2"></i>Generate SOP
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── RIGHT: Preview Panel ─── -->
+        <div class="col-lg-7">
+            <div class="card border-0" id="preview-panel"
+                style="border-radius:20px; overflow:hidden; background:rgba(255,255,255,0.92); backdrop-filter:blur(16px); box-shadow:0 8px 32px rgba(0,0,0,0.08); min-height:600px;">
+
+                <!-- Preview header -->
+                <div class="d-flex justify-content-between align-items-center px-4 py-3"
+                    style="background:rgba(15,23,42,0.03); border-bottom:1px solid rgba(0,0,0,0.06);">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-eye me-2 text-primary"></i>Preview
+                    </h5>
+                    <div id="preview-actions" style="display:none;">
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="copyContent()">
+                            <i class="fas fa-copy me-1"></i>Copy
+                        </button>
+                        <button class="btn btn-sm btn-success" onclick="showSaveModal()">
+                            <i class="fas fa-save me-1"></i>Save as SOP
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Empty state -->
+                <div id="preview-empty" class="text-center py-5" style="padding:80px 40px !important;">
+                    <div style="font-size:5rem; opacity:0.12; margin-bottom:16px;">
+                        <i class="fas fa-file-medical-alt"></i>
+                    </div>
+                    <h4 class="text-muted fw-bold mb-2">Your SOP will appear here</h4>
+                    <p class="text-muted mb-0" style="max-width:400px; margin:0 auto;">
+                        Configure the template, link data, and click
+                        <strong>"Generate SOP"</strong> to create a professional document
+                    </p>
+                </div>
+
+                <!-- Loading state -->
+                <div id="preview-loading" class="text-center py-5" style="display:none;">
+                    <div class="spinner-border text-primary mb-3" style="width:3rem; height:3rem;" role="status">
+                        <span class="visually-hidden">Generating...</span>
+                    </div>
+                    <h5 class="text-muted">Generating your SOP...</h5>
+                    <p class="text-muted small">Pulling data and building sections</p>
+                </div>
+
+                <!-- Content -->
+                <div id="preview-content" class="p-4" style="display:none;">
+                    <div id="sop-output" class="sop-content sop-content-formatted"
+                        style="font-size:0.98rem; line-height:1.8; color:#1e293b;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Save Modal -->
+<div class="modal fade" id="saveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-radius:16px; overflow:hidden;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#10b981 0%,#059669 100%); border:none;">
+                <h5 class="modal-title text-white fw-bold">
+                    <i class="fas fa-save me-2"></i>Save Generated SOP
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'sop_manual:assistant_save' %}">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    <p class="text-muted mb-3">
+                        The SOP will be saved as a <strong>Draft</strong>. You can review and edit it before publishing.
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Title</label>
+                        <input type="text" name="title" id="save-title" class="form-control" style="border-radius:10px;"
+                            required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Category</label>
+                        <select name="category" id="save-category" class="form-select" style="border-radius:10px;">
+                            <option value="">— Auto-assign —</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.pk }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <textarea name="content" id="save-content" style="display:none;"></textarea>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"
+                        style="border-radius:10px;">Cancel</button>
+                    <button type="submit" class="btn btn-success px-4" style="border-radius:10px; font-weight:600;">
+                        <i class="fas fa-save me-2"></i>Save as Draft
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .template-card.active {
+        border-color: #6366f1 !important;
+        background: rgba(99, 102, 241, 0.08) !important;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+
+    .template-card:hover {
+        border-color: #a5b4fc;
+        background: rgba(99, 102, 241, 0.04);
+        transform: translateY(-1px);
+    }
+
+    #btn-generate:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+    }
+
+    .sop-content-formatted h5.text-primary {
+        font-size: 1.05rem;
+        background: linear-gradient(90deg, #f0f7ff 0%, transparent 100%);
+        padding: 8px 14px;
+        border-left: 4px solid #6366f1;
+        margin-top: 1.5rem !important;
+        margin-bottom: 0.8rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.03rem;
+        border-radius: 0 6px 6px 0;
+    }
+
+    .sop-content-formatted table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0.8rem 0;
+        font-size: 0.9rem;
+    }
+
+    .sop-content-formatted th {
+        background: #f1f5f9;
+        color: #334155;
+        font-weight: 700;
+        padding: 8px 12px;
+        border: 1px solid #e2e8f0;
+        text-transform: uppercase;
+        font-size: 0.78rem;
+        letter-spacing: 0.5px;
+    }
+
+    .sop-content-formatted td {
+        padding: 8px 12px;
+        border: 1px solid #e2e8f0;
+        vertical-align: top;
+    }
+
+    .sop-content-formatted .sop-header-block {
+        border: 2px solid #6366f1;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .sop-content-formatted .sop-header-block th {
+        background: #6366f1 !important;
+        color: #fff !important;
+        border-color: #6366f1 !important;
+    }
+
+    .sop-content-formatted .sop-header-block td {
+        background: #faf5ff;
+    }
+
+    @media (max-width: 991px) {
+
+        #config-panel,
+        #preview-panel {
+            margin-bottom: 1.5rem;
+        }
+    }
+</style>
+
+<script>
+    let selectedTemplate = 'administrative';
+
+    // Auto-select the default template on load
+    document.addEventListener('DOMContentLoaded', function () {
+        const defaultCard = document.querySelector('.template-card[data-template="administrative"]');
+        if (defaultCard) defaultCard.classList.add('active');
+    });
+
+    function selectTemplate(el, key) {
+        document.querySelectorAll('.template-card').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        selectedTemplate = key;
+        document.getElementById('selected-template').value = key;
+    }
+
+    function generateSOP() {
+        const title = document.getElementById('sop-title').value.trim();
+        if (!title) {
+            alert('Please enter an SOP title.');
+            document.getElementById('sop-title').focus();
+            return;
+        }
+
+        const categorySelect = document.getElementById('sop-category');
+        const categoryName = categorySelect.selectedOptions[0]?.dataset.name || '';
+
+        const incidentSelect = document.getElementById('linked-incidents');
+        const incidentIds = Array.from(incidentSelect.selectedOptions).map(o => parseInt(o.value));
+
+        const capaSelect = document.getElementById('linked-capas');
+        const capaIds = Array.from(capaSelect.selectedOptions).map(o => parseInt(o.value));
+
+        const additionalContext = document.getElementById('additional-context').value.trim();
+
+        // Show loading
+        document.getElementById('preview-empty').style.display = 'none';
+        document.getElementById('preview-content').style.display = 'none';
+        document.getElementById('preview-loading').style.display = 'block';
+        document.getElementById('preview-actions').style.display = 'none';
+
+        fetch("{% url 'sop_manual:assistant_generate' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({
+                title: title,
+                template: selectedTemplate,
+                category: categoryName,
+                additional_context: additionalContext,
+                incident_ids: incidentIds,
+                capa_ids: capaIds,
+            }),
+        })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('preview-loading').style.display = 'none';
+                if (data.error) {
+                    alert(data.error);
+                    document.getElementById('preview-empty').style.display = 'block';
+                    return;
+                }
+                document.getElementById('sop-output').innerHTML = data.content;
+                document.getElementById('preview-content').style.display = 'block';
+                document.getElementById('preview-actions').style.display = 'block';
+
+                // Store for saving
+                window._generatedTitle = data.title;
+                window._generatedContent = data.content;
+            })
+            .catch(err => {
+                document.getElementById('preview-loading').style.display = 'none';
+                document.getElementById('preview-empty').style.display = 'block';
+                alert('Error generating SOP. Please try again.');
+                console.error(err);
+            });
+    }
+
+    function copyContent() {
+        const content = document.getElementById('sop-output').innerText;
+        navigator.clipboard.writeText(content).then(() => {
+            const btn = event.target.closest('button');
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check me-1"></i>Copied!';
+            btn.classList.replace('btn-outline-primary', 'btn-success');
+            setTimeout(() => {
+                btn.innerHTML = orig;
+                btn.classList.replace('btn-success', 'btn-outline-primary');
+            }, 2000);
+        });
+    }
+
+    function showSaveModal() {
+        document.getElementById('save-title').value = window._generatedTitle || '';
+        document.getElementById('save-content').value = window._generatedContent || '';
+        // Sync category
+        const catVal = document.getElementById('sop-category').value;
+        document.getElementById('save-category').value = catVal;
+        new bootstrap.Modal(document.getElementById('saveModal')).show();
+    }
+</script>
+
+<style>
+    /* Preview Styling to match actual SOP detail view */
+    #sopPreview {
+        font-family: 'Inter', -apple-system, sans-serif;
+        line-height: 1.6;
+        color: #2c3e50;
+    }
+
+    .sop-header-block {
+        border: 2px solid #0d6efd;
+        border-radius: 8px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #f8fbff 0%, #e8f4ff 100%);
+        margin-bottom: 2rem;
+    }
+
+    .sop-header-block table {
+        margin: 0 !important;
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .sop-header-block th {
+        background: #0d6efd !important;
+        color: white !important;
+        padding: 0.75rem 1rem !important;
+    }
+
+    .sop-header-block td {
+        padding: 0.75rem 1rem !important;
+        border: 1px solid #dee2e6 !important;
+    }
+
+    .sop-content-formatted h5.text-primary {
+        font-size: 1.1rem;
+        color: #0d6efd !important;
+        background: linear-gradient(90deg, #f0f7ff 0%, transparent 100%);
+        padding: 0.5rem 1rem;
+        border-left: 4px solid #0d6efd;
+        margin-top: 2rem !important;
+        margin-bottom: 1rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.03rem;
+        font-weight: bold;
+    }
+
+    .sop-content-formatted table {
+        width: 100%;
+        margin: 1rem 0;
+        border-collapse: collapse;
+        background: white;
+        border: 1px solid #dee2e6;
+    }
+
+    .sop-content-formatted th {
+        background-color: #f8f9fa;
+        color: #0d6efd;
+        padding: 0.6rem 0.8rem;
+        border: 1px solid #dee2e6;
+        font-weight: bold;
+    }
+
+    .sop-content-formatted td {
+        padding: 0.6rem 0.8rem;
+        border: 1px solid #dee2e6;
+        vertical-align: top;
+    }
+
+    .sop-content-formatted ul,
+    .sop-content-formatted ol {
+        padding-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .sop-content-formatted li {
+        margin-bottom: 0.5rem;
+    }
+
+    .sop-content-formatted p {
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}

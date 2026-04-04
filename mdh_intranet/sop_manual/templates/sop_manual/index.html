@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}SOP Manual - OpsHub{% endblock %}
+
+{% block content %}
+<div class="row mb-5 align-items-center">
+    <div class="col-md-7">
+        <h4 class="text-muted fw-medium mb-1">Standard Operating Procedures</h4>
+        <h1 class="display-6 fw-bold tracking-tight">Institutional SOPs</h1>
+        <p class="lead text-muted">A comprehensive library of guidelines and protocols to ensure operational excellence.
+        </p>
+    </div>
+    <div class="col-md-5 text-md-end mt-3 mt-md-0">
+        {% if user.is_staff %}
+        <a href="{% url 'sop_manual:create' %}" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm fw-bold">
+            <i class="fas fa-plus me-2"></i>Create New SOP
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Stats row -->
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="glass-card p-4 border-0 h-100 stat-card" style="--accent: #3b82f6;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="stat-icon-wrapper p-3 rounded-4 bg-primary bg-opacity-10 text-primary">
+                    <i class="fas fa-book-medical fa-lg"></i>
+                </div>
+            </div>
+            <div class="text-muted small fw-semibold text-uppercase tracking-wider">Total Procedures</div>
+            <div class="h2 fw-bold my-1 tracking-tighter">{{ total_sops }}</div>
+            <div class="small text-muted mt-2">Active Protocols</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-card p-4 border-0 h-100 stat-card" style="--accent: #10b981;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="stat-icon-wrapper p-3 rounded-4 bg-success bg-opacity-10 text-success">
+                    <i class="fas fa-history fa-lg"></i>
+                </div>
+            </div>
+            <div class="text-muted small fw-semibold text-uppercase tracking-wider">Recent Updates</div>
+            <div class="h2 fw-bold my-1 tracking-tighter">{{ recent_updates }}</div>
+            <div class="small text-muted mt-2">Past 30 days</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-card p-4 border-0 h-100 stat-card" style="--accent: #f59e0b;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="stat-icon-wrapper p-3 rounded-4 bg-warning bg-opacity-10 text-warning">
+                    <i class="fas fa-layer-group fa-lg"></i>
+                </div>
+            </div>
+            <div class="text-muted small fw-semibold text-uppercase tracking-wider">Categories</div>
+            <div class="h2 fw-bold my-1 tracking-tighter">{{ categories.count }}</div>
+            <div class="small text-muted mt-2">Business Units</div>
+        </div>
+    </div>
+</div>
+
+<!-- Search area -->
+<div class="glass-card p-4 mb-5 border-0">
+    <h6 class="fw-bold mb-3">Search SOP Library</h6>
+    <form action="{% url 'sop_manual:list' %}" method="get" class="row g-3">
+        <div class="col-md-10">
+            <div class="position-relative">
+                <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                <input type="text" name="search" class="form-control rounded-pill border-light bg-light py-2 ps-5"
+                    placeholder="Search by title, department or keyword...">
+            </div>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-dark w-100 rounded-pill py-2 fw-bold">Search</button>
+        </div>
+    </form>
+</div>
+
+<!-- Category Grids -->
+<div class="row g-4 mb-5">
+    {% for category in categories %}
+    <div class="col-lg-4 col-md-6">
+        <div class="glass-card p-0 border-0 overflow-hidden h-100 hover-translate-y">
+            <div class="p-4">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-4 text-primary">
+                        <i
+                            class="{% if category.icon %}{{ category.icon }}{% else %}fas fa-folder{% endif %} fa-xl"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-0">{{ category.name }}</h5>
+                        <span class="small text-muted">{{ category.sops.count }} Procedures</span>
+                    </div>
+                </div>
+                <p class="small text-muted mb-4 opacity-75">{{ category.description|truncatewords:20 }}</p>
+                <div class="d-grid">
+                    <a href="{% url 'sop_manual:category_list' category.id %}"
+                        class="btn btn-light rounded-pill border-0 py-2 fw-bold small text-primary">
+                        Browse Department SOPs <i class="fas fa-arrow-right ms-2 small"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <div class="opacity-25 mb-3">
+            <i class="fas fa-book-open fa-3x"></i>
+        </div>
+        <p class="text-muted">No categories defined yet.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+    .tracking-tight {
+        letter-spacing: -0.025em;
+    }
+
+    .tracking-tighter {
+        letter-spacing: -0.05em;
+    }
+
+    .tracking-wider {
+        letter-spacing: 0.05em;
+    }
+
+    .stat-card {
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .hover-translate-y {
+        transition: transform 0.3s ease;
+    }
+
+    .hover-translate-y:hover {
+        transform: translateY(-8px);
+    }
+</style>
+{% endblock %}

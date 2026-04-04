@@ -1,0 +1,765 @@
+{% extends "base.html" %}
+
+{% block title %}{{ document.title }} - Document Viewer{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --page-width: 816px;
+        --page-min-height: 1056px;
+        --page-padding: 72px;
+    }
+
+    .viewer-container {
+        display: flex;
+        min-height: calc(100vh - 180px);
+    }
+
+    /* Header */
+    .header-bar {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: white;
+        padding: 12px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .doc-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .doc-info i.fa-file-word {
+        font-size: 2rem;
+    }
+
+    .doc-info .title {
+        font-weight: 600;
+        font-size: 1.15rem;
+    }
+
+    .doc-info .meta {
+        font-size: 0.85rem;
+        opacity: 0.8;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        width: 280px;
+        background: #f8f9fa;
+        border-right: 1px solid #dee2e6;
+        display: flex;
+        flex-direction: column;
+        transition: width 0.3s ease;
+    }
+
+    .sidebar.collapsed {
+        width: 0;
+        overflow: hidden;
+    }
+
+    .sidebar-header {
+        padding: 15px;
+        background: white;
+        border-bottom: 1px solid #dee2e6;
+        font-weight: 600;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .sidebar-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px;
+    }
+
+    .toc-item {
+        padding: 8px 12px;
+        margin: 2px 0;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.85rem;
+    }
+
+    .toc-item:hover {
+        background: #e9ecef;
+    }
+
+    .toc-item.h1 {
+        font-weight: 600;
+    }
+
+    .toc-item.h2 {
+        padding-left: 20px;
+    }
+
+    .toc-item.h3 {
+        padding-left: 32px;
+        font-size: 0.8rem;
+        color: #666;
+    }
+
+    /* Main Content */
+    .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    /* Toolbar */
+    .viewer-toolbar {
+        background: white;
+        padding: 8px 15px;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .toolbar-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .tool-btn {
+        background: white;
+        border: 1px solid #dee2e6;
+        padding: 6px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #495057;
+        font-size: 13px;
+    }
+
+    .tool-btn:hover {
+        background: #f8f9fa;
+    }
+
+    .tool-btn.active {
+        background: #0d6efd;
+        color: white;
+    }
+
+    /* Document Wrapper */
+    .document-wrapper {
+        flex: 1;
+        background: #525659;
+        padding: 20px;
+        overflow: auto;
+    }
+
+    .document-wrapper.dark-mode {
+        background: #1a1a1a;
+    }
+
+    .document-page {
+        background: white;
+        max-width: var(--page-width);
+        min-height: 200px;
+        margin: 0 auto;
+        padding: var(--page-padding);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+        font-family: 'Calibri', 'Segoe UI', Arial, sans-serif;
+        font-size: 11pt;
+        line-height: 1.6;
+        color: #000;
+        transform-origin: top center;
+    }
+
+    /* Typography */
+    .document-page h1 {
+        font-size: 24pt;
+        font-weight: bold;
+        margin: 20pt 0 10pt;
+        color: #1a1a1a;
+    }
+
+    .document-page h2 {
+        font-size: 18pt;
+        font-weight: bold;
+        margin: 16pt 0 8pt;
+        color: #2c3e50;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 6pt;
+    }
+
+    .document-page h3 {
+        font-size: 14pt;
+        font-weight: bold;
+        margin: 14pt 0 6pt;
+        color: #34495e;
+    }
+
+    .document-page h4 {
+        font-size: 12pt;
+        font-weight: bold;
+        margin: 12pt 0 5pt;
+        color: #555;
+    }
+
+    .document-page p {
+        margin-bottom: 10pt;
+        text-align: justify;
+    }
+
+    .document-page a {
+        color: #0563C1;
+    }
+
+    .document-page table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 12pt 0;
+    }
+
+    .document-page th {
+        background: #3498db;
+        color: white;
+        padding: 10pt;
+    }
+
+    .document-page td {
+        border: 1px solid #ddd;
+        padding: 8pt;
+    }
+
+    .document-page tr:nth-child(even) {
+        background: #f8f9fa;
+    }
+
+    .document-page ul,
+    .document-page ol {
+        margin: 0 0 10pt 20pt;
+    }
+
+    .document-page li {
+        margin-bottom: 4pt;
+    }
+
+    .document-page img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .document-page blockquote {
+        border-left: 4px solid #3498db;
+        padding: 12pt;
+        margin: 12pt 0 12pt 20pt;
+        background: #f8f9fa;
+    }
+
+    /* Pagination Controls */
+    .pagination-bar {
+        background: white;
+        padding: 12px 20px;
+        border-top: 1px solid #dee2e6;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .page-btn {
+        padding: 8px 16px;
+        border: 1px solid #dee2e6;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .page-btn:hover:not(:disabled) {
+        background: #e9ecef;
+    }
+
+    .page-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .page-btn.primary {
+        background: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+    }
+
+    .page-info {
+        font-weight: 500;
+    }
+
+    .page-jump {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .page-jump input {
+        width: 60px;
+        padding: 6px 10px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        text-align: center;
+    }
+
+    /* Loading States */
+    .loading-more {
+        text-align: center;
+        padding: 30px;
+        color: white;
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Large Document Warning */
+    .large-doc-banner {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 10px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Info Bar */
+    .info-bar {
+        background: white;
+        padding: 10px 20px;
+        border-top: 1px solid #dee2e6;
+        font-size: 0.85rem;
+        color: #6c757d;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    /* Progress Bar */
+    .progress-bar-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: rgba(0, 0, 0, 0.1);
+        z-index: 9999;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        transition: width 0.3s;
+    }
+
+    @media (max-width: 992px) {
+        .sidebar {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="progress-bar-container" id="progressContainer" style="display: none;">
+    <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-0">
+    <!-- Header -->
+    <div class="header-bar">
+        <div class="doc-info">
+            <a href="{% url 'documents:index' %}" class="text-white text-decoration-none me-2">
+                <i class="fas fa-arrow-left fa-lg"></i>
+            </a>
+            <i class="fas fa-file-word"></i>
+            <div>
+                <div class="title">{{ document.title }}</div>
+                <div class="meta">
+                    <span class="badge bg-light text-dark">{{ document.category.name }}</span>
+                    <span class="ms-2">{{ document.file_size_formatted }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            {% if can_edit %}
+            <a href="{% url 'documents:edit_word' document.pk %}" class="btn btn-warning btn-sm">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            {% endif %}
+            <a href="{% url 'documents:download' document.pk %}" class="btn btn-success btn-sm">
+                <i class="fas fa-download"></i> Download
+            </a>
+            <button onclick="window.print()" class="btn btn-light btn-sm">
+                <i class="fas fa-print"></i>
+            </button>
+        </div>
+    </div>
+
+    {% if is_large_document %}
+    <div class="large-doc-banner">
+        <div>
+            <i class="fas fa-file-alt me-2"></i>
+            <strong>Large Document ({{ file_size_kb }} KB)</strong> - Loading in sections for better performance
+        </div>
+        <div id="loadingStatus">
+            <i class="fas fa-spinner fa-spin me-2"></i>Loading...
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="viewer-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <span><i class="fas fa-list me-2"></i>Contents</span>
+                <button class="btn btn-sm btn-light" onclick="toggleSidebar()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+            <div class="sidebar-content" id="tocContainer">
+                <p class="text-muted small">Loading...</p>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Toolbar -->
+            <div class="viewer-toolbar">
+                <div class="toolbar-group">
+                    <button class="tool-btn" onclick="toggleSidebar()" title="Contents">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <button class="tool-btn" onclick="toggleDarkMode()" id="darkModeBtn" title="Dark Mode">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+
+                <div class="toolbar-group">
+                    <button class="tool-btn" onclick="zoomOut()"><i class="fas fa-search-minus"></i></button>
+                    <span class="px-2" id="zoomLevel">100%</span>
+                    <button class="tool-btn" onclick="zoomIn()"><i class="fas fa-search-plus"></i></button>
+                </div>
+
+                <div class="toolbar-group">
+                    <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Search..."
+                        style="width: 150px;" onkeyup="if(event.key==='Enter') performSearch()">
+                    <button class="tool-btn" onclick="performSearch()"><i class="fas fa-search"></i></button>
+                </div>
+
+                <div class="toolbar-group text-muted small">
+                    <span id="wordCount"></span>
+                    <span class="mx-1">•</span>
+                    <span id="pageStatus">Page 1</span>
+                </div>
+            </div>
+
+            <!-- Document -->
+            <div class="document-wrapper" id="documentWrapper">
+                {% if error_message %}
+                <div class="alert alert-warning m-4">
+                    <i class="fas fa-exclamation-triangle me-2"></i>{{ error_message }}
+                </div>
+                {% else %}
+                <div class="document-page" id="documentPage">
+                    {% if html_content %}{{ html_content|safe }}{% endif %}
+                </div>
+
+                <div class="loading-more" id="loadingMore" style="display: none;">
+                    <div class="loading-spinner"></div>
+                    <p class="mt-2">Loading more content...</p>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if is_large_document %}
+            <!-- Pagination -->
+            <div class="pagination-bar">
+                <button class="page-btn" id="prevBtn" onclick="loadPage(currentPage - 1)" disabled>
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+
+                <div class="page-info">
+                    <span>Page </span>
+                    <span id="currentPageNum">1</span>
+                    <span> of </span>
+                    <span id="totalPages">?</span>
+                </div>
+
+                <div class="page-jump">
+                    <input type="number" id="pageInput" min="1" value="1" onkeyup="if(event.key==='Enter') goToPage()">
+                    <button class="page-btn" onclick="goToPage()">Go</button>
+                </div>
+
+                <button class="page-btn primary" id="nextBtn" onclick="loadPage(currentPage + 1)">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            {% endif %}
+
+            <!-- Info Bar -->
+            <div class="info-bar">
+                <div>
+                    <i class="fas fa-user me-1"></i>
+                    {{ document.uploaded_by.get_full_name|default:document.uploaded_by.username }}
+                    <span class="mx-2">•</span>
+                    <i class="fas fa-calendar me-1"></i>
+                    {{ document.uploaded_at|date:"M d, Y" }}
+                </div>
+                <div id="loadProgress"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const isLargeDocument = {{ is_large_document_js }};
+    const documentId = {{ document.pk }};
+    const contentUrl = '{% url "documents:get_content" document.pk %}';
+
+    let currentPage = 1;
+    let totalPages = 1;
+    let currentZoom = 100;
+    let allContent = '';
+    let tocData = [];
+
+    document.addEventListener('DOMContentLoaded', function () {
+        if (isLargeDocument) {
+            loadPage(1);
+        } else {
+            generateTOC();
+            calculateStats();
+        }
+    });
+
+    async function loadPage(page) {
+        if (page < 1) return;
+
+        const loadingMore = document.getElementById('loadingMore');
+        const docPage = document.getElementById('documentPage');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+
+        progressContainer.style.display = 'block';
+        progressBar.style.width = '30%';
+
+        if (loadingMore) loadingMore.style.display = 'block';
+
+        try {
+            // Updated per_page default to 50 in views.py, matching here
+            const response = await fetch(`${contentUrl}?page=${page}&per_page=50`);
+            const data = await response.json();
+
+            progressBar.style.width = '70%';
+
+            if (data.success) {
+                currentPage = data.page;
+                totalPages = data.total_pages;
+
+                // Update content
+                docPage.innerHTML = data.html;
+                allContent += data.html;
+
+                // Update TOC on first page
+                if (data.toc && data.toc.length > 0) {
+                    tocData = data.toc;
+                    renderTOC();
+                }
+
+                // Update UI
+                document.getElementById('currentPageNum').textContent = currentPage;
+                document.getElementById('totalPages').textContent = totalPages;
+                document.getElementById('pageInput').max = totalPages;
+                document.getElementById('pageInput').value = currentPage;
+
+                document.getElementById('prevBtn').disabled = !data.has_prev;
+                document.getElementById('nextBtn').disabled = !data.has_next;
+
+                document.getElementById('pageStatus').textContent = `Page ${currentPage} of ${totalPages}`;
+                document.getElementById('loadingStatus').innerHTML = `<i class="fas fa-check me-2"></i>Page ${currentPage} loaded`;
+                document.getElementById('loadProgress').textContent = `${data.total_sections} sections total`;
+
+                // Scroll to top
+                document.getElementById('documentWrapper').scrollTop = 0;
+
+                calculateStats();
+
+                progressBar.style.width = '100%';
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                    progressBar.style.width = '0%';
+                }, 300);
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error) {
+            console.error('Error loading page:', error);
+            docPage.innerHTML = `<div class="alert alert-danger">Error loading content: ${error.message}</div>`;
+        }
+
+        if (loadingMore) loadingMore.style.display = 'none';
+        return Promise.resolve();
+    }
+
+    function goToPage() {
+        const pageNum = parseInt(document.getElementById('pageInput').value);
+        if (pageNum >= 1 && pageNum <= totalPages) {
+            loadPage(pageNum);
+        }
+    }
+
+    function renderTOC() {
+        const container = document.getElementById('tocContainer');
+        if (tocData.length === 0) {
+            container.innerHTML = '<p class="text-muted small">No headings found</p>';
+            return;
+        }
+
+        let html = '';
+        tocData.forEach((item, idx) => {
+            if (idx < 50) { // Limit TOC items
+                html += `<div class="toc-item ${item.level}" onclick="handleTocClick(${idx})">${item.text}</div>`;
+            }
+        });
+
+        if (tocData.length > 50) {
+            html += `<div class="text-muted small p-2">... and ${tocData.length - 50} more</div>`;
+        }
+
+        container.innerHTML = html;
+    }
+
+    function handleTocClick(idx) {
+        const item = tocData[idx];
+        if (item) {
+            if (item.page && item.page !== currentPage) {
+                loadPage(item.page).then(() => {
+                    setTimeout(() => searchForHeading(item.text), 300);
+                });
+            } else {
+                searchForHeading(item.text);
+            }
+        }
+    }
+
+    function searchForHeading(text) {
+        document.getElementById('searchInput').value = text;
+        performSearch();
+    }
+
+    function generateTOC() {
+        const page = document.getElementById('documentPage');
+        const container = document.getElementById('tocContainer');
+        if (!page || !container) return;
+
+        const headings = page.querySelectorAll('h1, h2, h3');
+        if (headings.length === 0) {
+            container.innerHTML = '<p class="text-muted small">No headings found</p>';
+            return;
+        }
+
+        let html = '';
+        headings.forEach((h, i) => {
+            if (i < 50) {
+                const id = 'hd-' + i;
+                h.id = id;
+                const cls = h.tagName.toLowerCase();
+                const text = h.textContent.substring(0, 40) + (h.textContent.length > 40 ? '...' : '');
+                html += `<div class="toc-item ${cls}" onclick="document.getElementById('${id}').scrollIntoView({behavior:'smooth'})">${text}</div>`;
+            }
+        });
+        container.innerHTML = html;
+    }
+
+    function calculateStats() {
+        const page = document.getElementById('documentPage');
+        if (!page) return;
+        const text = page.textContent || '';
+        const words = text.trim().split(/\s+/).filter(w => w).length;
+        document.getElementById('wordCount').textContent = words.toLocaleString() + ' words';
+    }
+
+    // Zoom
+    function zoomIn() { if (currentZoom < 150) { currentZoom += 10; applyZoom(); } }
+    function zoomOut() { if (currentZoom > 70) { currentZoom -= 10; applyZoom(); } }
+
+    function applyZoom() {
+        const page = document.getElementById('documentPage');
+        if (page) page.style.transform = `scale(${currentZoom / 100})`;
+        document.getElementById('zoomLevel').textContent = currentZoom + '%';
+    }
+
+    // Search
+    function performSearch() {
+        const query = document.getElementById('searchInput').value.trim();
+        if (!query) return;
+
+        const page = document.getElementById('documentPage');
+        if (!page) return;
+
+        // Remove existing highlights
+        page.innerHTML = page.innerHTML.replace(/<mark class="highlight" style=".*?">(.*?)<\/mark>/g, '$1');
+
+        // Add new highlights
+        // Simple text search - in real world would use TreeWalker to avoid breaking HTML
+        // But for this viewer, basic innerHTML replacement is acceptable for search visualization
+        try {
+            const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+
+            // Only replace text nodes content if we iterate properly, OR
+            // risky replace on innerHTML. Given "overwhelmed" constraint, we must be careful not to crash browser with regex on huge string.
+            // But we are PAGINATED now! Only 50 blocks.
+            // So innerHTML replace is safe and fast.
+
+            page.innerHTML = page.innerHTML.replace(regex, '<mark class="highlight" style="background:#ffeb3b;padding:2px 4px;border-radius:3px;color:black;">$1</mark>');
+
+            // Scroll to first match
+            const first = page.querySelector('.highlight');
+            if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } catch (e) {
+            console.error("Search error", e);
+        }
+    }
+
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('collapsed');
+    }
+
+    function toggleDarkMode() {
+        document.getElementById('documentWrapper').classList.toggle('dark-mode');
+        document.getElementById('darkModeBtn').classList.toggle('active');
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function (e) {
+        if (e.ctrlKey && e.key === 'f') {
+            e.preventDefault();
+            document.getElementById('searchInput').focus();
+        }
+        if (isLargeDocument) {
+            if (e.key === 'ArrowRight' && currentPage < totalPages) loadPage(currentPage + 1);
+            if (e.key === 'ArrowLeft' && currentPage > 1) loadPage(currentPage - 1);
+        }
+    });
+</script>
+{% endblock %}

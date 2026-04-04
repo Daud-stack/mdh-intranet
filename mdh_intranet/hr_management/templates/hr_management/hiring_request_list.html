@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Hiring Requests - OpsHub{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">Recruitment Requests</h1>
+            <p class="text-muted">Track and manage requests to employ new staff.</p>
+        </div>
+        <a href="{% url 'hr_management:hiring_request_create' %}" class="btn btn-primary rounded-pill px-4">
+            <i class="fas fa-plus me-2"></i>New Request
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Position</th>
+                            <th>Department</th>
+                            <th>Requester</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th class="pe-4 text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in requests %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold text-dark">{{ r.position_title }}</div>
+                                <small class="text-muted">{{ r.get_employment_type_display }}</small>
+                            </td>
+                            <td>{{ r.department }}</td>
+                            <td>{{ r.requester.get_full_name|default:r.requester.username }}</td>
+                            <td>{{ r.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                {% if r.status == 'PENDING' %}
+                                <span class="badge bg-warning text-dark px-3 rounded-pill">Pending</span>
+                                {% elif r.status == 'APPROVED' %}
+                                <span class="badge bg-success px-3 rounded-pill">Approved</span>
+                                {% elif r.status == 'REJECTED' %}
+                                <span class="badge bg-danger px-3 rounded-pill">Rejected</span>
+                                {% else %}
+                                <span class="badge bg-info px-3 rounded-pill">Filled</span>
+                                {% endif %}
+                            </td>
+                            <td class="pe-4 text-end">
+                                {% if user.is_staff and r.status == 'PENDING' %}
+                                <div class="btn-group">
+                                    <a href="{% url 'hr_management:hiring_request_status_update' r.pk 'APPROVED' %}"
+                                        class="btn btn-sm btn-outline-success">Approve</a>
+                                    <a href="{% url 'hr_management:hiring_request_status_update' r.pk 'REJECTED' %}"
+                                        class="btn btn-sm btn-outline-danger">Reject</a>
+                                </div>
+                                {% endif %}
+                                <button type="button" class="btn btn-sm btn-light rounded-pill px-3 ms-2"
+                                    data-bs-toggle="modal" data-bs-target="#modal-{{ r.pk }}">Details</button>
+
+                                <!-- Details Modal -->
+                                <div class="modal fade" id="modal-{{ r.pk }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg text-start">
+                                        <div class="modal-content border-0 shadow" style="border-radius: 20px;">
+                                            <div class="modal-header bg-primary text-white border-0 py-3">
+                                                <h5 class="modal-title fw-bold">Request Details: {{ r.position_title }}
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white"
+                                                    data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body p-4">
+                                                <div class="row g-4">
+                                                    <div class="col-md-6">
+                                                        <h6 class="fw-bold text-primary small text-uppercase">Reason
+                                                        </h6>
+                                                        <p>{{ r.get_reason_display }}{% if r.replacement_for %}
+                                                            (Replacing: {{ r.replacement_for }}){% endif %}</p>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h6 class="fw-bold text-primary small text-uppercase">Proposed
+                                                            Start</h6>
+                                                        <p>{{ r.proposed_start_date|date:"F d, Y" }}</p>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h6 class="fw-bold text-primary small text-uppercase">Salary
+                                                            Range</h6>
+                                                        <p>{{ r.salary_range|default:"Not specified" }}</p>
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <h6 class="fw-bold text-primary small text-uppercase">
+                                                            Justification</h6>
+                                                        <p class="small text-muted">{{ r.justification|linebreaksbr }}
+                                                        </p>
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <h6 class="fw-bold text-primary small text-uppercase">Job
+                                                            Description</h6>
+                                                        <p class="small text-muted">{{ r.job_description|linebreaksbr }}
+                                                        </p>
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <h6 class="fw-bold text-primary small text-uppercase">
+                                                            Qualifications Required</h6>
+                                                        <p class="small text-muted">{{ r.qualifications|linebreaksbr }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer border-0">
+                                                <button type="button" class="btn btn-light rounded-pill px-4"
+                                                    data-bs-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">No recruitment requests found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

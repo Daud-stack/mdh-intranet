@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Initiate Approval - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard:home' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:approvals' %}">Approval Centre</a></li>
+            <li class="breadcrumb-item active">New Approval Request</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="glass-card border-0 overflow-hidden shadow-lg">
+                <!-- Header -->
+                <div class="p-4 border-bottom text-white" style="background: linear-gradient(135deg, #1e293b, #0f172a);">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="p-3 rounded-circle bg-warning bg-opacity-20 text-warning scale-hover">
+                            <i class="fas fa-file-signature fa-lg"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold mb-0">Initiate Approval Workflow</h4>
+                            <p class="text-white-50 mb-0 small">Secure multi-step verification pipeline for any item.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="post" id="approvalForm">
+                    {% csrf_token %}
+                    <div class="row g-0">
+                        <!-- Left Panel: Context -->
+                        <div class="col-md-5 p-4 border-end bg-light bg-opacity-50">
+                            <h6 class="fw-bold mb-3 text-uppercase small text-muted">1. Basic Information</h6>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Item Subject/Description</label>
+                                {{ form.object_repr }}
+                                <small class="text-muted">What are you getting approved?</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Target Module</label>
+                                {{ form.module }}
+                                <small class="text-muted">e.g. SOP, CAPA, Incident, Leave, Maintenance</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Submission Notes</label>
+                                {{ form.notes }}
+                                <small class="text-muted">Any additional context for the approvers.</small>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Pipeline -->
+                        <div class="col-md-7 p-4">
+                            <h6 class="fw-bold mb-3 text-uppercase small text-muted d-flex justify-content-between">
+                                2. Verification Pipeline
+                                <span class="badge bg-primary bg-opacity-10 text-primary">Dynamic Steps</span>
+                            </h6>
+
+                            <div id="approverList" class="mb-3">
+                                <!-- Steps will be added here -->
+                                <div class="approver-step glass-card border p-3 mb-3 position-relative shadow-sm" data-step="1">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="node-circle bg-primary text-white">1</div>
+                                        <div class="flex-grow-1">
+                                            <div class="row g-2">
+                                                <div class="col-md-7">
+                                                    <label class="small fw-bold mb-1 d-block">Select Approver</label>
+                                                    <select name="approver_1" class="form-select form-select-sm" required>
+                                                        <option value="">Select User...</option>
+                                                        {% for user in users %}
+                                                        <option value="{{ user.id }}">{{ user.get_full_name|default:user.username }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <label class="small fw-bold mb-1 d-block">Role/Designation</label>
+                                                    <input type="text" name="role_1" class="form-control form-control-sm" placeholder="e.g. Dept Head" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" id="addStepBtn">
+                                <i class="fas fa-plus me-1"></i> Add Verification Step
+                            </button>
+
+                            <hr class="my-4">
+
+                            <div class="d-flex align-items-center justify-content-between p-3 rounded-4 bg-primary bg-opacity-10 border border-primary border-opacity-10">
+                                <div class="small">
+                                    <i class="fas fa-info-circle text-primary me-1"></i> 
+                                    Submission is **immutable** once the workflow starts.
+                                </div>
+                                <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow">
+                                    Submit Request <i class="fas fa-paper-plane ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" name="step_count" id="step_count" value="1">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #approverList {
+        max-height: 400px;
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+    .node-circle {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.8rem;
+    }
+    .approver-step {
+        transition: all 0.2s ease;
+        border-left: 4px solid #3b82f6 !important;
+    }
+    .approver-step:hover {
+        transform: translateX(4px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .remove-step {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: #94a3b8;
+        cursor: pointer;
+    }
+    .remove-step:hover { color: #ef4444; }
+</style>
+
+<script>
+    document.getElementById('addStepBtn').addEventListener('click', function() {
+        let list = document.getElementById('approverList');
+        let countInput = document.getElementById('step_count');
+        let newCount = parseInt(countInput.value) + 1;
+        
+        let template = `
+            <div class="approver-step glass-card border p-3 mb-3 position-relative shadow-sm" data-step="${newCount}">
+                <i class="fas fa-times remove-step" onclick="removeStep(this)"></i>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="node-circle bg-primary text-white">${newCount}</div>
+                    <div class="flex-grow-1">
+                        <div class="row g-2">
+                            <div class="col-md-7">
+                                <select name="approver_${newCount}" class="form-select form-select-sm" required>
+                                    <option value="">Select User...</option>
+                                    {% for user in users %}
+                                    <option value="{{ user.id }}">{{ user.get_full_name|default:user.username }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <input type="text" name="role_${newCount}" class="form-control form-control-sm" placeholder="e.g. Role label" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        list.insertAdjacentHTML('beforeend', template);
+        countInput.value = newCount;
+    });
+
+    function removeStep(el) {
+        let step = el.parentElement;
+        step.remove();
+        // Re-index steps
+        let steps = document.querySelectorAll('.approver-step');
+        let countInput = document.getElementById('step_count');
+        countInput.value = steps.length;
+        
+        steps.forEach((s, i) => {
+            let num = i + 1;
+            s.setAttribute('data-step', num);
+            s.querySelector('.node-circle').innerText = num;
+            s.querySelector('select').name = `approver_${num}`;
+            s.querySelector('input').name = `role_${num}`;
+        });
+    }
+</script>
+{% endblock %}

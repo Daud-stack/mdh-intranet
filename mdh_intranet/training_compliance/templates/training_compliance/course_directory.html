@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Course Directory - OpsHub{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <div>
+            <h1 class="h3 mb-0 fw-bold text-dark"><i class="fas fa-book-open me-2"></i>Medical Course Directory</h1>
+            <p class="text-muted mb-0">Browse all available compliance and continuing education courses.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'training_compliance:dashboard' %}" class="btn btn-outline-secondary rounded-pill"><i
+                    class="fas fa-arrow-left me-2"></i>Back to My Compliance</a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for course in courses %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100"
+                style="border-radius: 15px; border-top: 4px solid {% if course.is_mandatory %}#ef4444{% else %}#3b82f6{% endif %} !important;">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="fw-bold mb-0 text-dark">{{ course.title }}</h5>
+                        {% if course.is_mandatory %}
+                        <span class="badge bg-danger rounded-pill px-2 py-1"><i
+                                class="fas fa-star text-white me-1 text-xs"></i>Mandatory</span>
+                        {% else %}
+                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2 py-1">Optional</span>
+                        {% endif %}
+                    </div>
+
+                    <p class="text-muted small mb-4 flex-grow-1">{{ course.description }}</p>
+
+                    <div class="bg-light p-3 rounded-3 mb-4">
+                        <div class="row text-start text-muted small g-2">
+                            <div class="col-6"><i class="fas fa-university me-1"></i> Provider</div>
+                            <div class="col-6 fw-bold text-dark text-end">{{ course.provider|default:"Internal" }}
+                            </div>
+                            <div class="col-6 mt-2"><i class="fas fa-hourglass-half me-1"></i> Validity</div>
+                            <div class="col-6 mt-2 fw-bold text-dark text-end">{% if course.validity_months > 0 %}{{                                 course.validity_months }} Months{% else %}Never Expires{% endif %}</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-auto pt-2 border-top d-flex gap-2">
+                        {% if course.training_materials %}
+                        <a href="{{ course.training_materials.url }}"
+                            class="btn btn-outline-primary btn-sm rounded-pill flex-grow-1" target="_blank"><i
+                                class="fas fa-file-pdf me-1"></i>Material</a>
+                        {% endif %}
+                        <a href="{% url 'training_compliance:log_certification' %}?course={{ course.id }}"
+                            class="btn btn-success btn-sm rounded-pill flex-grow-1"><i class="fas fa-plus me-1"></i>Log
+                            Finish</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 py-5 text-center text-muted">
+            <p>No courses have been configured in the system yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

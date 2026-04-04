@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}Search Results - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard:home' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Search</li>
+        </ol>
+    </nav>
+
+    <!-- Search Bar -->
+    <div class="glass-card border-0 p-4 mb-4">
+        <form method="get" action="{% url 'core:search' %}">
+            <div class="input-group input-group-lg">
+                <span class="input-group-text bg-transparent border-end-0">
+                    <i class="fas fa-search text-primary"></i>
+                </span>
+                <input type="text" name="q" class="form-control border-start-0"
+                    placeholder="Search Patients, SOPs, documents, incidents, tickets..." value="{{ query }}" autofocus>
+                <button class="btn btn-primary rounded-end px-5" type="submit">Search</button>
+            </div>
+        </form>
+    </div>
+
+    {% if query %}
+    <p class="text-muted mb-4">
+        <strong>{{ total }}</strong> result{{ total|pluralize }} for "<strong>{{ query }}</strong>"
+    </p>
+
+    {% if results.patients %}
+    <!-- Patients -->
+    <div class="glass-card border-0 overflow-hidden mb-4 border-start border-4 border-success">
+        <div class="p-3 border-bottom d-flex align-items-center gap-2" style="background: #f8fafc;">
+            <i class="fas fa-user-injured text-success"></i>
+            <h6 class="fw-bold mb-0">Clinical Patients</h6>
+            <span class="badge bg-success bg-opacity-10 text-success rounded-pill ms-auto">{{ results.patients|length }}</span>
+        </div>
+        {% for p in results.patients %}
+        <a href="{% url 'clinical:patient_detail' p.pk %}" class="d-flex align-items-center gap-3 p-3 border-bottom text-decoration-none text-dark hover-bg-light">
+            <div class="avatar-sm bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:40px; height:40px;">
+                {{ p.first_name|first }}{{ p.last_name|first }}
+            </div>
+            <div>
+                <h6 class="mb-0 fw-semibold">{{ p }}</h6>
+                <small class="text-muted">ID: #P{{ p.id|stringformat:"05d" }} · DOB: {{ p.date_of_birth }} · Medical Aid: {{ p.medical_aid_name|default:"Cash" }}</small>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if results.sops %}
+    <!-- SOPs -->
+    <div class="glass-card border-0 overflow-hidden mb-4">
+        <div class="p-3 border-bottom d-flex align-items-center gap-2" style="background: #f8fafc;">
+            <i class="fas fa-book text-primary"></i>
+            <h6 class="fw-bold mb-0">SOPs</h6>
+            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill ms-auto">{{ results.sops|length }}</span>
+        </div>
+        {% for sop in results.sops %}
+        <a href="{% url 'sop_manual:detail' sop.pk %}"
+            class="d-flex align-items-center gap-3 p-3 border-bottom text-decoration-none text-dark"
+            style="transition: background 0.2s;">
+            <div class="p-2 rounded-3 bg-primary bg-opacity-10">
+                <i class="fas fa-book text-primary"></i>
+            </div>
+            <div>
+                <h6 class="mb-0 fw-semibold">{{ sop.title }}</h6>
+                <small class="text-muted">Version {{ sop.version }} · {{ sop.category }}</small>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if results.documents %}
+    <!-- Documents -->
+    <div class="glass-card border-0 overflow-hidden mb-4">
+        <div class="p-3 border-bottom d-flex align-items-center gap-2" style="background: #f8fafc;">
+            <i class="fas fa-file-alt text-info"></i>
+            <h6 class="fw-bold mb-0">Documents</h6>
+            <span class="badge bg-info bg-opacity-10 text-info rounded-pill ms-auto">{{ results.documents|length }}</span>
+        </div>
+        {% for doc in results.documents %}
+        <div class="d-flex align-items-center gap-3 p-3 border-bottom">
+            <div class="p-2 rounded-3 bg-info bg-opacity-10">
+                <i class="fas fa-file-alt text-info"></i>
+            </div>
+            <div>
+                <h6 class="mb-0 fw-semibold">{{ doc.title }}</h6>
+                <small class="text-muted">{{ doc.description|truncatechars:80 }}</small>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if results.incidents %}
+    <!-- Incidents -->
+    <div class="glass-card border-0 overflow-hidden mb-4">
+        <div class="p-3 border-bottom d-flex align-items-center gap-2" style="background: #f8fafc;">
+            <i class="fas fa-exclamation-triangle text-danger"></i>
+            <h6 class="fw-bold mb-0">Incidents</h6>
+            <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill ms-auto">{{ results.incidents|length }}</span>
+        </div>
+        {% for inc in results.incidents %}
+        <a href="{% url 'incident_log:detail' inc.pk %}"
+            class="d-flex align-items-center gap-3 p-3 border-bottom text-decoration-none text-dark">
+            <div class="p-2 rounded-3 bg-danger bg-opacity-10">
+                <i class="fas fa-exclamation-triangle text-danger"></i>
+            </div>
+            <div>
+                <h6 class="mb-0 fw-semibold">{{ inc.title }}</h6>
+                <small class="text-muted">{{ inc.status }} · {{ inc.severity }} · {{ inc.created_at|date:"M d, Y" }}</small>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if results.tickets %}
+    <!-- Tickets -->
+    <div class="glass-card border-0 overflow-hidden mb-4">
+        <div class="p-3 border-bottom d-flex align-items-center gap-2" style="background: #f8fafc;">
+            <i class="fas fa-headset text-warning"></i>
+            <h6 class="fw-bold mb-0">Helpdesk Tickets</h6>
+            <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill ms-auto">{{ results.tickets|length }}</span>
+        </div>
+        {% for ticket in results.tickets %}
+        <a href="{% url 'helpdesk:detail' ticket.pk %}"
+            class="d-flex align-items-center gap-3 p-3 border-bottom text-decoration-none text-dark">
+            <div class="p-2 rounded-3 bg-warning bg-opacity-10">
+                <i class="fas fa-headset text-warning"></i>
+            </div>
+            <div>
+                <h6 class="mb-0 fw-semibold">{{ ticket.title }}</h6>
+                <small class="text-muted">{{ ticket.status }} · {{ ticket.created_at|date:"M d, Y" }}</small>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if results.projects %}
+    <!-- Projects -->
+    <div class="glass-card border-0 overflow-hidden mb-4">
+        <div class="p-3 border-bottom d-flex align-items-center gap-2" style="background: #f8fafc;">
+            <i class="fas fa-tasks text-success"></i>
+            <h6 class="fw-bold mb-0">Projects</h6>
+            <span class="badge bg-success bg-opacity-10 text-success rounded-pill ms-auto">{{ results.projects|length }}</span>
+        </div>
+        {% for project in results.projects %}
+        <div class="d-flex align-items-center gap-3 p-3 border-bottom">
+            <div class="p-2 rounded-3 bg-success bg-opacity-10">
+                <i class="fas fa-tasks text-success"></i>
+            </div>
+            <div>
+                <h6 class="mb-0 fw-semibold">{{ project.name }}</h6>
+                <small class="text-muted">{{ project.status }} · {{ project.description|truncatechars:80 }}</small>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if results.capas %}
+    <!-- CAPAs -->
+    <div class="glass-card border-0 overflow-hidden mb-4">
+        <div class="p-3 border-bottom d-flex align-items-center gap-2" style="background: #f8fafc;">
+            <i class="fas fa-clipboard-check" style="color:#6366f1;"></i>
+            <h6 class="fw-bold mb-0">CAPA Records</h6>
+            <span class="badge rounded-pill ms-auto" style="background:rgba(99,102,241,0.1); color:#6366f1;">{{ results.capas|length }}</span>
+        </div>
+        {% for capa in results.capas %}
+        <a href="{% url 'capa:detail' capa.pk %}"
+            class="d-flex align-items-center gap-3 p-3 border-bottom text-decoration-none text-dark"
+            style="transition: background 0.2s;">
+            <div class="p-2 rounded-3" style="background:rgba(99,102,241,0.1);">
+                <i class="fas fa-clipboard-check" style="color:#6366f1;"></i>
+            </div>
+            <div>
+                <h6 class="mb-0 fw-semibold">{{ capa.capa_number }}: {{ capa.title }}</h6>
+                <small class="text-muted">{{ capa.get_status_display }} · {{ capa.get_priority_display }} · {{ capa.created_at|date:"M d, Y" }}</small>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if total == 0 %}
+    <div class="glass-card border-0 p-5 text-center">
+        <i class="fas fa-search fa-3x text-muted opacity-25 mb-3"></i>
+        <h5 class="fw-bold text-muted">No results found</h5>
+        <p class="text-muted">Try different keywords or check your spelling.</p>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="glass-card border-0 p-5 text-center">
+        <i class="fas fa-search fa-3x text-primary opacity-25 mb-3"></i>
+        <h5 class="fw-bold">Search across OpsHub</h5>
+        <p class="text-muted">Find SOPs, documents, incidents, helpdesk tickets, and projects — all in one place.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

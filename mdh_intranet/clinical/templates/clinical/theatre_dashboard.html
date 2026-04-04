@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Operating Theatre (OT) Worklist - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard:home' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Surgery & Theatre</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="row align-items-center mb-4 g-3">
+        <div class="col-md-8">
+            <h3 class="fw-bold mb-1">Operating Theatre (OT) Management</h3>
+            <p class="text-muted mb-0">Track scheduled surgeries, O.R. status, and surgical team assignments.</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="glass-card border-0 p-3 d-inline-flex align-items-center gap-3 shadow-sm bg-white border-top border-4 border-danger">
+                <div class="p-2 rounded-circle bg-danger bg-opacity-10">
+                    <i class="fas fa-procedures text-danger"></i>
+                </div>
+                <div class="text-start">
+                    <div class="fw-bold lh-1">{{ bookings|length }}</div>
+                    <small class="text-muted uppercase" style="font-size: 0.7rem;">Active OT Bookings</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OT Worklist -->
+    <div class="row">
+        <div class="col-12">
+            <div class="glass-card border-0 p-0 shadow-sm overflow-hidden border-top border-4 border-danger">
+                <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-white">
+                    <h6 class="fw-bold mb-0 text-danger-emphasis"><i class="fas fa-calendar-alt me-2"></i>Surgical Schedule</h6>
+                    <button class="btn btn-sm btn-light rounded-pill px-3 shadow-xs"><i class="fas fa-sync-alt me-1"></i> Refresh Worklist</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 theatre-table">
+                        <thead class="bg-light text-uppercase">
+                            <tr>
+                                <th class="ps-4">Patient</th>
+                                <th>Procedure Name</th>
+                                <th>Surgical Team</th>
+                                <th>Scheduled Date/Time</th>
+                                <th>Priority</th>
+                                <th>O.R. Status</th>
+                                <th class="text-end pe-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for b in bookings %}
+                            <tr>
+                                <td class="ps-4 py-3">
+                                    <h6 class="fw-bold mb-0 text-dark">{{ b.patient }}</h6>
+                                    <small class="text-muted">UID: P{{ b.patient.id|stringformat:"05d" }} | Sex: {{ b.patient.get_gender_display }}</small>
+                                </td>
+                                <td>
+                                    <div class="badge bg-danger bg-opacity-10 text-danger px-2 py-1 rounded fw-bold mb-1" style="font-size: 0.75rem;">Major Procedure</div>
+                                    <div class="fw-bold text-dark">{{ b.procedure_name }}</div>
+                                </td>
+                                <td>
+                                    <div class="small fw-semibold"><i class="fas fa-user-nurse me-1 text-muted"></i>Surgeon: Dr. {{ b.surgeon.username }}</div>
+                                    {% if b.anaesthetist %}<div class="small text-muted"><i class="fas fa-syringe me-1"></i>Anaesthetist: {{ b.anaesthetist }}</div>{% endif %}
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-primary">{{ b.proposed_date|date:"d M Y" }}</div>
+                                    <div class="small text-muted"><i class="fas fa-clock me-1"></i>{{ b.proposed_date|time:"H:i" }} (est {{ b.estimated_duration }}min)</div>
+                                </td>
+                                <td>
+                                    {% if b.priority == 'emergency' %}
+                                    <span class="badge bg-danger rounded-pill px-3 py-1 pulsate-red">EMERGENCY</span>
+                                    {% elif b.priority == 'urgent' %}
+                                    <span class="badge bg-warning text-dark rounded-pill px-3 py-1 fw-bold">URGENT</span>
+                                    {% else %}
+                                    <span class="badge bg-light text-dark border rounded-pill px-3 py-1">ELECTIVE</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if b.status == 'scheduled' %}
+                                    <span class="text-primary small fw-bold"><i class="fas fa-calendar-check me-1"></i>Scheduled</span>
+                                    {% elif b.status == 'pre-op' %}
+                                    <span class="text-warning small fw-bold">Pre-Op Ready</span>
+                                    {% elif b.status == 'in-theatre' %}
+                                    <span class="text-danger small fw-bold pulsate">IN THEATRE</span>
+                                    {% elif b.status == 'post-op' %}
+                                    <span class="text-info small fw-bold">In Recovery</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-4">
+                                    <a href="{% url 'clinical:theatre_booking_detail' b.pk %}" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm text-white">Open Booking <i class="fas fa-chevron-right ms-2 scale-hover"></i></a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="py-5 text-center text-muted">
+                                    <i class="fas fa-procedures opacity-25 fa-3x mb-3 d-block text-danger"></i>
+                                    No surgical cases scheduled for the current period.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .theatre-table th { font-size: 0.7rem; color: #64748b; letter-spacing: 0.05rem; }
+    .theatre-table td { font-size: 0.88rem; border-bottom: 1px solid #f1f5f9; padding: 1rem 0.5rem; }
+    .scale-hover { transition: transform 0.2s; }
+    tr:hover .scale-hover { transform: translateX(3px); }
+    .pulsate-red { animation: pulsate 1.5s infinite; }
+    .pulsate { animation: pulsate 1s infinite alternate; }
+    @keyframes pulsate { 0% { opacity: 1; } 100% { opacity: 0.3; } }
+</style>
+{% endblock %}

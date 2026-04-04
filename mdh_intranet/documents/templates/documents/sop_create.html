@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+
+{% block title %}Create SOP{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-file-contract me-2"></i>Create New SOP</h4>
+                        <a href="{% url 'documents:index' %}" class="btn btn-sm btn-outline-light">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-info border-0 bg-light-info text-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Fill in the standard fields below to generate a formatted SOP document.
+                        You can customize tables and specific formatting in the document editor after generation.
+                    </div>
+
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+
+                        <div class="row g-4">
+                            <!-- Section: Document Control -->
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3 text-primary">1. Document Metadata</h5>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Category</label>
+                                {{ form.category }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Department</label>
+                                {{ form.department }}
+                            </div>
+
+                            <div class="col-md-8">
+                                <label class="form-label">SOP Title</label>
+                                {{ form.sop_title }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">SOP Code</label>
+                                {{ form.sop_code }}
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Version</label>
+                                {{ form.version }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Effective Date</label>
+                                {{ form.effective_date }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Created By</label>
+                                {{ form.created_by }}
+                            </div>
+
+                            <div class="col-md-12">
+                                <label class="form-label">Approved By (Name/Role)</label>
+                                {{ form.approved_by }}
+                            </div>
+
+                            <!-- Section: Scope & Purpose -->
+                            <div class="col-12 mt-4">
+                                <h5 class="border-bottom pb-2 mb-3 text-primary">2. Scope & Purpose</h5>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">1. Purpose</label>
+                                <div class="form-text mb-2">Why is this SOP being created?</div>
+                                {{ form.purpose }}
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">2. Scope</label>
+                                <div class="form-text mb-2">Who and what does this SOP apply to?</div>
+                                {{ form.scope }}
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">3. Definitions (Optional)</label>
+                                {{ form.definitions }}
+                            </div>
+
+                            <!-- Section: Procedure -->
+                            <div class="col-12 mt-4">
+                                <h5 class="border-bottom pb-2 mb-3 text-primary">3. Procedure Details</h5>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Required Materials (Optional)</label>
+                                {{ form.materials }}
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold">6. Procedure Steps</label>
+                                <div class="form-text mb-2">Outline the step-by-step process. Use new lines for each
+                                    step.</div>
+                                {{ form.procedure }}
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">High-Alert Medication Handling (Optional)</label>
+                                {{ form.high_alert }}
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Safety Precautions</label>
+                                {{ form.safety }}
+                            </div>
+
+                            <!-- Section: Documentation -->
+                            <div class="col-12 mt-4">
+                                <h5 class="border-bottom pb-2 mb-3 text-primary">4. Final Details</h5>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Documentation & Records</label>
+                                {{ form.documentation }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">References</label>
+                                {{ form.references }}
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-5 pt-3 border-top">
+                            <button type="submit" class="btn btn-primary px-5 btn-lg">
+                                <i class="fas fa-magic me-2"></i>Generate SOP Document
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

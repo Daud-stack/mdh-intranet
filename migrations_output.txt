@@ -1,0 +1,62 @@
+System check identified some issues:
+
+WARNINGS:
+?: (staticfiles.W004) The directory 'C:\Users\HomePC\mdh_intranet\mdh_intranet\static' in the STATICFILES_DIRS setting does not exist.
+admin
+ [X] 0001_initial
+ [X] 0002_logentry_remove_auto_add
+ [X] 0003_logentry_add_action_flag_choices
+auth
+ [X] 0001_initial
+ [X] 0002_alter_permission_name_max_length
+ [X] 0003_alter_user_email_max_length
+ [X] 0004_alter_user_username_opts
+ [X] 0005_alter_user_last_login_null
+ [X] 0006_require_contenttypes_0002
+ [X] 0007_alter_validators_add_error_messages
+ [X] 0008_alter_user_username_max_length
+ [X] 0009_alter_user_last_name_max_length
+ [X] 0010_alter_group_name_max_length
+ [X] 0011_update_proxy_permissions
+ [X] 0012_alter_user_first_name_max_length
+contenttypes
+ [X] 0001_initial
+ [X] 0002_remove_content_type_name
+core
+ [X] 0001_initial
+dashboard
+ [X] 0001_initial
+documents
+ [X] 0001_initial
+feedback
+ [X] 0001_initial
+helpdesk
+ [X] 0001_initial
+ [X] 0002_ticket_attachment
+icd11_tools
+ [X] 0001_initial
+incident_log
+ [X] 0001_initial
+ [X] 0002_alter_incident_options_incident_assigned_to_and_more
+ [X] 0003_incident_attachment
+leave_management
+ [X] 0001_initial
+medical_aid
+ [X] 0001_initial
+ [X] 0002_preauthorizationrequest_amount_and_more
+ [X] 0003_alter_preauthorizationrequest_options_and_more
+ [X] 0004_preauthorizationrequest_email_sent_at_and_more
+projects
+ [X] 0001_initial
+ [X] 0002_project_attachment
+sessions
+ [X] 0001_initial
+sop_assistant
+ [X] 0001_initial
+sop_manual
+ [X] 0001_initial
+ [X] 0002_sop_linked_document_alter_sop_file_attachment
+stock_management
+ [X] 0001_initial
+user_management
+ [X] 0001_initial

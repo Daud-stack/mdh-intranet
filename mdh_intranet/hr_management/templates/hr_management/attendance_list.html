@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Attendance Log - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row g-4 mb-4">
+        <!-- My Action -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100"
+                style="border-radius: 15px; background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);">
+                <div class="card-body p-4 text-center">
+                    <h5 class="fw-bold mb-3">Your Attendance Today</h5>
+                    <div class="display-6 fw-bold mb-4 mt-2" id="liveClock">00:00:00</div>
+
+                    {% if not today_log.clock_in %}
+                    <p class="text-muted mb-4 small">You haven't checked in yet today.</p>
+                    <form action="{% url 'hr_management:clock_in' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-lg w-100 rounded-pill shadow-sm">
+                            <i class="fas fa-sign-in-alt me-2"></i>Clock In
+                        </button>
+                    </form>
+                    {% elif not today_log.clock_out %}
+                    <div class="bg-success bg-opacity-10 p-3 rounded-3 mb-4">
+                        <p class="mb-1 text-success fw-bold small">Clocked In At</p>
+                        <h4 class="mb-0">{{ today_log.clock_in|time:"H:i" }}</h4>
+                    </div>
+                    <form action="{% url 'hr_management:clock_out' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-lg w-100 rounded-pill shadow-sm">
+                            <i class="fas fa-sign-out-alt me-2"></i>Clock Out
+                        </button>
+                    </form>
+                    {% else %}
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-3 mb-4">
+                        <p class="mb-2 text-primary fw-bold small">Shift Completed Today</p>
+                        <div class="d-flex justify-content-around">
+                            <div>
+                                <small class="text-muted d-block">In</small>
+                                <span class="fw-bold">{{ today_log.clock_in|time:"H:i" }}</span>
+                            </div>
+                            <div class="vr"></div>
+                            <div>
+                                <small class="text-muted d-block">Out</small>
+                                <span class="fw-bold">{{ today_log.clock_out|time:"H:i" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary btn-lg w-100 rounded-pill" disabled>Shift Ended</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Logs Table -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                <div class="card-header bg-transparent border-0 py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">Attendance Log</h5>
+                    <span class="badge bg-light text-muted fw-normal">Recent 100 entries</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Staff</th>
+                                    <th>Date</th>
+                                    <th>Clock In</th>
+                                    <th>Clock Out</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in logs %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-xs bg-light rounded-circle me-2 d-flex align-items-center justify-content-center fw-bold"
+                                                style="width: 30px; height: 30px; font-size: 0.8rem;">
+                                                {{ log.user.username|make_list|first|upper }}
+                                            </div>
+                                            <span class="fw-medium">{{ log.user.get_full_name|default:log.user.username                                                 }}</span>
+                                        </div>
+                                    </td>
+                                    <td>{{ log.date|date:"d M Y" }}</td>
+                                    <td><span class="text-success">{{ log.clock_in|time:"H:i"|default:"--" }}</span>
+                                    </td>
+                                    <td><span class="text-danger">{{ log.clock_out|time:"H:i"|default:"--" }}</span>
+                                    </td>
+                                    <td>
+                                        {% if log.clock_in and log.clock_out %}
+                                        <span class="badge rounded-pill bg-success-soft text-success">Complete</span>
+                                        {% elif log.clock_in %}
+                                        <span class="badge rounded-pill bg-warning-soft text-warning">Active</span>
+                                        {% else %}
+                                        <span class="badge rounded-pill bg-light text-muted">Unknown</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">No logs found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateClock() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString([], { hour12: false });
+        document.getElementById('liveClock').textContent = timeString;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+</script>
+
+<style>
+    .bg-success-soft {
+        background-color: rgba(40, 167, 69, 0.1);
+    }
+
+    .bg-warning-soft {
+        background-color: rgba(255, 193, 7, 0.1);
+    }
+
+    .avatar-xs {
+        color: #4e73df;
+        border: 1px solid #e3e6f0;
+    }
+</style>
+{% endblock %}

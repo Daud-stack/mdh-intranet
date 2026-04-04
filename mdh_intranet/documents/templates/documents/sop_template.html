@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ sop_title }}</title>
+    <style>
+        body {
+            font-family: 'Calibri', sans-serif;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #000;
+            padding: 6px;
+            vertical-align: top;
+        }
+
+        th {
+            background: #f0f0f0;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        h2 {
+            margin-top: 30px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+            color: #2c3e50;
+        }
+
+        p {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER TABLE -->
+    <table>
+        <tr>
+            <th colspan="2">Department: {{ department }}</th>
+            <th>SOP Code: {{ sop_code }}</th>
+        </tr>
+        <tr>
+            <td colspan="2"><strong>Title:</strong> {{ sop_title }}</td>
+            <td>
+                <div><strong>Version No:</strong> {{ version }}</div>
+                <div><strong>Effective Date:</strong> {{ effective_date }}</div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- CONTROL BOX -->
+    <h3>Document Control</h3>
+    <table>
+        <tr>
+            <th>Code</th>
+            <th>Version</th>
+            <th>Created By</th>
+            <th>Approved By</th>
+            <th>Date</th>
+        </tr>
+        <tr>
+            <td>{{ sop_code }}</td>
+            <td>{{ version }}</td>
+            <td>{{ created_by }}</td>
+            <td>{{ approved_by }}</td>
+            <td>{{ version_date }}</td>
+        </tr>
+    </table>
+
+    <!-- DISTRIBUTION LIST -->
+    <h2>Distribution List</h2>
+    <table>
+        <tr>
+            <th>Copy No.</th>
+            <th>Distributed To</th>
+            <th>Date</th>
+            <th>Signature</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>Master File</td>
+            <td>{{ version_date }}</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>{{ department }} Head</td>
+            <td>{{ version_date }}</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Quality Assurance</td>
+            <td>{{ version_date }}</td>
+            <td></td>
+        </tr>
+    </table>
+
+    <!-- CHANGE HISTORY -->
+    <h2>Change History</h2>
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Version</th>
+            <th>Created By</th>
+            <th>Description of Change</th>
+        </tr>
+        <tr>
+            <td>{{ version_date }}</td>
+            <td>{{ version }}</td>
+            <td>{{ created_by }}</td>
+            <td>Initial Release</td>
+        </tr>
+    </table>
+
+    <h2>1. Purpose</h2>
+    <div>{{ purpose|linebreaks }}</div>
+
+    <h2>2. Scope</h2>
+    <div>{{ scope|linebreaks }}</div>
+
+    <h2>3. Definitions</h2>
+    <div>{{ definitions|linebreaks|default:"N/A" }}</div>
+
+    <h2>4. Roles & Responsibilities</h2>
+    <table>
+        <tr>
+            <th style="width: 30%">Role</th>
+            <th>Responsibility</th>
+        </tr>
+        <tr>
+            <td>Process Owner</td>
+            <td>Responsible for ensuring this procedure is followed.</td>
+        </tr>
+        <tr>
+            <td>Staff</td>
+            <td>Responsible for adhering to the steps outlined below.</td>
+        </tr>
+    </table>
+
+    <h2>5. Required Materials</h2>
+    <div>{{ materials|linebreaks|default:"N/A" }}</div>
+
+    <h2>6. Procedure</h2>
+    <div>{{ procedure|linebreaks }}</div>
+
+    <h2>7. High-Alert Medication Handling</h2>
+    <div>{{ high_alert|linebreaks|default:"N/A" }}</div>
+
+    <h2>8. Safety Precautions</h2>
+    <div>{{ safety|linebreaks|default:"Standard safety precautions apply." }}</div>
+
+    <h2>9. Documentation & Records</h2>
+    <div>{{ documentation|linebreaks|default:"All records must be maintained for 5 years." }}</div>
+
+    <h2>10. References</h2>
+    <div>{{ references|linebreaks|default:"N/A" }}</div>
+
+</body>
+
+</html>

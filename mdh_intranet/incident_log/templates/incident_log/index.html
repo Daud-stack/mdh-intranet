@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}Incident Log - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="fw-bold">
+                <i class="fas fa-clipboard-list text-danger"></i> Incident Log
+            </h1>
+            <p class="text-muted">Report and track safety incidents, near-misses, and operational issues</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'incident_log:create' %}" class="btn btn-danger">
+                <i class="fas fa-plus"></i> Report Incident
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1 small">Total Incidents</p>
+                            <h3 class="fw-bold mb-0">{{ total_incidents }}</h3>
+                        </div>
+                        <div class="bg-secondary bg-opacity-10 rounded-circle p-3">
+                            <i class="fas fa-clipboard-list text-secondary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1 small">Open Cases</p>
+                            <h3 class="fw-bold mb-0 text-warning">{{ open_incidents }}</h3>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 rounded-circle p-3">
+                            <i class="fas fa-exclamation-circle text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1 small">Resolved</p>
+                            <h3 class="fw-bold mb-0 text-success">{{ resolved_incidents }}</h3>
+                        </div>
+                        <div class="bg-success bg-opacity-10 rounded-circle p-3">
+                            <i class="fas fa-check-circle text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1 small">This Month</p>
+                            <h3 class="fw-bold mb-0">{{ this_month_count }}</h3>
+                        </div>
+                        <div class="bg-info bg-opacity-10 rounded-circle p-3">
+                            <i class="fas fa-calendar-alt text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if critical_count > 0 %}
+    <div class="alert alert-danger d-flex align-items-center mb-4" role="alert">
+        <i class="fas fa-radiation-alt fa-lg me-3"></i>
+        <div>
+            <strong>{{ critical_count }} critical incident{{ critical_count|pluralize }}</strong> currently open and
+            require{{ critical_count|pluralize:"s," }} immediate attention.
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Search & Filters -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" id="filterForm">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-muted">Search</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i
+                                    class="fas fa-search text-muted"></i></span>
+                            <input type="text" name="search" class="form-control border-start-0"
+                                placeholder="Search incidents..." value="{{ search_query }}">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold text-muted">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="">All Statuses</option>
+                            {% for val, label in status_choices %}
+                            <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold text-muted">Severity</label>
+                        <select name="severity" class="form-select">
+                            <option value="">All Severities</option>
+                            {% for val, label in severity_choices %}
+                            <option value="{{ val }}" {% if severity_filter == val %}selected{% endif %}>{{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold text-muted">Category</label>
+                        <select name="category" class="form-select">
+                            <option value="">All Categories</option>
+                            {% for val, label in category_choices %}
+                            <option value="{{ val }}" {% if category_filter == val %}selected{% endif %}>{{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1">
+                                <i class="fas fa-filter"></i> Filter
+                            </button>
+                            <a href="{% url 'incident_log:index' %}" class="btn btn-outline-secondary"
+                                title="Clear filters">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Incidents Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">Incident Reports</h5>
+            <span class="badge bg-secondary">{{ incidents|length }} result{{ incidents|length|pluralize }}</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Severity</th>
+                            <th>Reported By</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for incident in incidents %}
+                        <tr class="{% if incident.is_overdue %}table-warning{% endif %}">
+                            <td>
+                                <span class="badge bg-dark font-monospace">{{ incident.incident_number }}</span>
+                            </td>
+                            <td>
+                                <a href="{% url 'incident_log:detail' incident.pk %}"
+                                    class="text-decoration-none fw-bold text-dark">{{ incident.title|truncatechars:40 }}</a>
+                                {% if incident.is_overdue %}<span class="badge bg-danger ms-1"
+                                    style="font-size:0.6rem;">OVERDUE</span>{% endif %}
+                            </td>
+                            <td><span class="badge bg-primary bg-opacity-75">{{ incident.get_category_display }}</span>
+                            </td>
+                            <td>
+                                {% if incident.severity == 'Critical' %}
+                                <span class="badge bg-danger">Critical</span>
+                                {% elif incident.severity == 'High' %}
+                                <span class="badge bg-warning text-dark">High</span>
+                                {% elif incident.severity == 'Medium' %}
+                                <span class="badge bg-info text-dark">Medium</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Low</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ incident.reported_by.get_full_name|default:incident.reported_by.username }}</td>
+                            <td><small>{{ incident.date_reported|date:"M d, Y" }}</small></td>
+                            <td>
+                                {% if incident.status == 'Open' %}
+                                <span class="badge bg-warning text-dark">Open</span>
+                                {% elif incident.status == 'Under Investigation' %}
+                                <span class="badge bg-info">Investigating</span>
+                                {% elif incident.status == 'Resolved' %}
+                                <span class="badge bg-success">Resolved</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Closed</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'incident_log:detail' incident.pk %}"
+                                        class="btn btn-outline-primary" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if user.is_staff or user == incident.reported_by %}
+                                    <a href="{% url 'incident_log:update' incident.pk %}"
+                                        class="btn btn-outline-secondary" title="Update">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-5">
+                                <i class="fas fa-clipboard-check fa-3x text-muted mb-3 opacity-25"></i>
+                                <p class="text-muted mb-2">No incidents found.</p>
+                                {% if search_query or status_filter or severity_filter or category_filter %}
+                                <a href="{% url 'incident_log:index' %}" class="btn btn-sm btn-outline-primary">Clear
+                                    Filters</a>
+                                {% else %}
+                                <a href="{% url 'incident_log:create' %}" class="btn btn-sm btn-danger">Report First
+                                    Incident</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

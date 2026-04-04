@@ -1,0 +1,461 @@
+{% extends "base.html" %}
+
+{% block title %}Draft Content - SOP Assistant - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'sop_assistant:index' %}">SOP Assistant</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Draft Content</li>
+        </ol>
+    </nav>
+
+    {% include "sop_assistant/_wizard_steps.html" with current_step=3 total_steps=total_steps %}
+
+    <div class="row">
+        <!-- Main Content Area -->
+        <div class="col-lg-9">
+            <div class="glass-card border-0 overflow-hidden mb-4">
+                <div class="p-4 border-bottom" style="background: linear-gradient(135deg, #f8fafc, #eef2ff);">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="p-3 rounded-4 bg-info bg-opacity-10 text-info">
+                                <i class="fas fa-pen-fancy fa-lg"></i>
+                            </div>
+                            <div>
+                                <h4 class="fw-bold mb-0">{{ draft.title|default:"Draft Content" }}</h4>
+                                <p class="text-muted mb-0 small">Focus on quality. Required fields marked with <span
+                                        class="text-danger">*</span></p>
+                            </div>
+                        </div>
+                        <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-2">
+                            <i class="fas fa-puzzle-piece me-1"></i> {{ sections|length }} sections
+                        </span>
+                    </div>
+                </div>
+
+                <form method="post" id="content-form">
+                    {% csrf_token %}
+                    <div class="p-4">
+                        {% for section in sections %}
+                        <div class="section-block mb-4" id="section-{{ section.section_key }}">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <label for="id_section_{{ section.section_key }}" class="form-label fw-bold mb-0">
+                                    {{ section.section_label }}
+                                    {% if section.is_required %}<span class="text-danger">*</span>{% endif %}
+                                </label>
+                                <div class="d-flex align-items-center gap-2">
+                                    <button type="button"
+                                        class="btn btn-xs btn-outline-primary rounded-pill ai-suggest-btn"
+                                        data-key="{{ section.section_key }}" data-bs-toggle="tooltip"
+                                        title="Let AI suggest a professional baseline for this section">
+                                        <i class="fas fa-magic me-1"></i> AI Draft
+                                    </button>
+                                    <span class="section-char-count text-muted" style="font-size: 0.75rem;"
+                                        id="count-{{ section.section_key }}">0 chars</span>
+                                </div>
+                            </div>
+                            <p class="text-muted mb-3" style="font-size: 0.8rem; line-height: 1.4;">
+                                <i class="fas fa-info-circle me-1 opacity-50"></i>
+                                {% if section.section_key == 'purpose' %}Define the goal of this procedure clearly.{%
+                                elif section.section_key == 'scope' %}Who does this apply to and where?{% elif
+                                section.section_key == 'procedure_steps' %}Provide a logical, numbered sequence of
+                                actions.{% else %}Fill in details following clinical guidelines.{% endif %}
+                            </p>
+                            <textarea name="section_{{ section.section_key }}" id="id_section_{{ section.section_key }}"
+                                class="form-control section-textarea" rows="5" data-key="{{ section.section_key }}"
+                                data-draft-id="{{ draft.pk }}"
+                                placeholder="">{{ section.content|default:"" }}</textarea>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="p-4 border-top bg-light">
+                        <div class="d-flex gap-2 justify-content-between">
+                            <a href="{% url 'sop_assistant:draft_metadata' draft.pk %}"
+                                class="btn btn-outline-secondary rounded-pill px-4">
+                                <i class="fas fa-arrow-left me-1"></i> Back
+                            </a>
+                            <div class="d-flex gap-2">
+                                <button type="submit" name="save" class="btn btn-outline-primary rounded-pill px-4">
+                                    <i class="fas fa-save me-1"></i> Save Draft
+                                </button>
+                                <button type="submit" class="btn rounded-pill px-5 fw-bold sop-cta-btn">
+                                    {% if draft.is_clinical %}
+                                    Continue to ICD‑11 <i class="fas fa-arrow-right ms-2"></i>
+                                    {% else %}
+                                    Continue to Validation <i class="fas fa-arrow-right ms-2"></i>
+                                    {% endif %}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Intelligence Side Panel -->
+        <div class="col-lg-3">
+            <div class="glass-card border-0 mb-3" style="position: sticky; top: 1rem;">
+                <ul class="nav nav-tabs nav-justified border-0 p-2 bg-light mb-3 rounded-top" id="sidebarTabs"
+                    role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active rounded-pill small fw-bold py-1 px-2 border-0" id="sections-tab"
+                            data-bs-toggle="tab" data-bs-target="#sections-pane" type="button" role="tab"
+                            style="font-size: 0.75rem;">
+                            Outline
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link rounded-pill small fw-bold py-1 px-2 border-0" id="intel-tab"
+                            data-bs-toggle="tab" data-bs-target="#intel-pane" type="button" role="tab"
+                            onclick="loadContext()" style="font-size: 0.75rem;">
+                            Intelligence
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link rounded-pill small fw-bold py-1 px-2 border-0 text-warning"
+                            id="audit-tab" data-bs-toggle="tab" data-bs-target="#audit-pane" type="button" role="tab"
+                            onclick="runLiveAudit()" style="font-size: 0.75rem;">
+                            Audit
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="sidebarTabsContent">
+                    <!-- Sections Tab -->
+                    <div class="tab-pane fade show active px-4 pb-2" id="sections-pane" role="tabpanel">
+                        <h6 class="fw-bold mb-3 small text-uppercase text-muted"
+                            style="font-size: 0.7rem; letter-spacing: 1px;">Document Outline</h6>
+                        <nav class="section-nav">
+                            {% for section in sections %}
+                            <a href="#section-{{ section.section_key }}"
+                                class="section-nav-item d-flex align-items-center gap-2 py-2 text-decoration-none border-bottom border-light">
+                                <span class="section-status-dot {% if section.content %}filled{% endif %}"></span>
+                                <span
+                                    class="small {% if section.content %}text-dark fw-semibold{% else %}text-muted{% endif %}">
+                                    {{ section.section_label }}
+                                </span>
+                            </a>
+                            {% endfor %}
+                        </nav>
+                    </div>
+
+                    <!-- Intelligence Tab -->
+                    <div class="tab-pane fade px-4 pb-2" id="intel-pane" role="tabpanel">
+                        <h6 class="fw-bold mb-3 small text-uppercase text-muted"
+                            style="font-size: 0.7rem; letter-spacing: 1px;">Smart Snippets</h6>
+                        <div class="d-grid gap-2 mb-4">
+                            <button type="button" class="btn btn-xs btn-outline-secondary text-start"
+                                onclick="insertSnippet('alert-info')"><i class="fas fa-info-circle me-1"></i> Info
+                                Callout</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary text-start"
+                                onclick="insertSnippet('alert-warning')"><i
+                                    class="fas fa-exclamation-triangle me-1"></i> Safety Alert</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary text-start"
+                                onclick="insertSnippet('table')"><i class="fas fa-table me-1"></i> Blank Table</button>
+                        </div>
+
+                        <h6 class="fw-bold mb-3 small text-uppercase text-muted"
+                            style="font-size: 0.7rem; letter-spacing: 1px;">Historical Data</h6>
+                        <div id="intelLoader" class="text-center py-4">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                        </div>
+                        <div id="intelContent" style="display: none;">
+                            <div class="mb-4">
+                                <p class="small fw-bold text-danger mb-2"><i class="fas fa-exclamation-triangle"></i>
+                                    Incidents</p>
+                                <div id="incidentsList" class="small"></div>
+                            </div>
+                            <div class="mb-4">
+                                <p class="small fw-bold text-success mb-2"><i class="fas fa-clipboard-check"></i> CAPA
+                                    Findings</p>
+                                <div id="capasList" class="small"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Audit Tab -->
+                    <div class="tab-pane fade px-4 pb-2" id="audit-pane" role="tabpanel">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h6 class="fw-bold mb-0 small text-uppercase text-muted"
+                                style="font-size: 0.7rem; letter-spacing: 1px;">Quality Check</h6>
+                            <span id="liveScore" class="badge rounded-pill bg-secondary fw-bold">--</span>
+                        </div>
+                        <div id="auditLoader" class="text-center py-4" style="display: none;">
+                            <div class="spinner-border spinner-border-sm text-warning" role="status"></div>
+                        </div>
+                        <div id="auditResults" class="small">
+                            <p class="text-muted italic">Click tab to audit.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-4 pb-4">
+                    <hr class="my-3 mt-0">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small text-muted mb-1">
+                            <span>Completion</span>
+                            <span class="fw-bold">{{ draft.completion_percentage }}%</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-primary" style="width: {{ draft.completion_percentage }}%;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 text-muted small">
+                        <i class="fas fa-shield-alt text-success"></i>
+                        <span>OpsHub Secure Drafting</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Styling for Advanced SOP Assistant */
+    .sop-cta-btn {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        border: none;
+        transition: all 0.25s ease-in-out;
+    }
+
+    .sop-cta-btn:hover {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px -5px rgba(99, 102, 241, 0.4);
+    }
+
+    .section-block {
+        border-left: 4px solid #f1f5f9;
+        padding-left: 1.25rem;
+        transition: border-color 0.2s ease;
+    }
+
+    .section-block:focus-within {
+        border-left-color: #6366f1;
+    }
+
+    .section-textarea {
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        font-size: 0.95rem;
+        line-height: 1.7;
+    }
+
+    .section-status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #e2e8f0;
+        flex-shrink: 0;
+    }
+
+    .section-status-dot.filled {
+        background: #10b981;
+    }
+
+    .section-nav-item {
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+        font-size: 0.85rem;
+    }
+
+    .section-nav-item:hover {
+        background: #f8fafc;
+        color: #6366f1 !important;
+    }
+
+    .btn-xs {
+        padding: 0.2rem 0.6rem;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+</style>
+
+<!-- CKEditor 5 CDN -->
+<script src="https://cdn.ckeditor.com/ckeditor5/40.0.0/classic/ckeditor.js"></script>
+
+<script>
+    const editors = {};
+    const draftId = "{{ draft.pk }}";
+
+    // Enhanced CKEditor Config
+    const editorConfig = {
+        toolbar: {
+            items: [
+                'heading', '|',
+                'bold', 'italic', 'fontColor', 'fontBackgroundColor', '|',
+                'link', 'bulletedList', 'numberedList', 'blockQuote', '|',
+                'insertTable', '|',
+                'undo', 'redo'
+            ],
+            shouldNotGroupWhenFull: true
+        },
+        table: {
+            contentToolbar: [
+                'tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties'
+            ]
+        }
+    };
+
+    let lastFocusedEditor = null;
+
+    // Initialize CKEditors
+    document.querySelectorAll('.section-textarea').forEach(function (textarea) {
+        ClassicEditor
+            .create(textarea, editorConfig)
+            .then(editor => {
+                const key = textarea.dataset.key;
+                editors[key] = editor;
+
+                editor.editing.view.document.on('focus', () => {
+                    lastFocusedEditor = editor;
+                });
+
+                if (!lastFocusedEditor) {
+                    lastFocusedEditor = editor;
+                }
+
+                editor.model.document.on('change:data', () => {
+                    const data = editor.getData();
+                    const cleanText = data.replace(/<[^>]*>/g, '');
+                    const counter = document.getElementById('count-' + key);
+                    if (counter) counter.textContent = cleanText.length + ' chars';
+
+                    const dot = document.querySelector(`[href="#section-${key}"] .section-status-dot`);
+                    if (dot) {
+                        if (cleanText.trim().length > 0) dot.classList.add('filled');
+                        else dot.classList.remove('filled');
+                    }
+                    debouncedAutoSave(key, data);
+                });
+            });
+    });
+
+    // AI Suggestions
+    document.querySelectorAll('.ai-suggest-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const key = this.dataset.key;
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Thinking...';
+            this.disabled = true;
+
+            fetch(`/sop-assistant/api/ai-suggest/${draftId}/?section_key=${key}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.suggestion) {
+                        editors[key].setData(data.suggestion);
+                    }
+                })
+                .finally(() => {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                });
+        });
+    });
+
+    // Intelligence Context Loading
+    function loadContext() {
+        const intelLoader = document.getElementById('intelLoader');
+        const intelContent = document.getElementById('intelContent');
+
+        if (intelContent.style.display === 'block') return;
+
+        fetch(`/sop-assistant/api/context/${draftId}/`)
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('incidentsList').innerHTML = data.incidents.length ?
+                    data.incidents.map(inc => `<div class="p-2 border-bottom mb-1 bg-light rounded shadow-sm">
+                        <div class="fw-bold text-danger" style="font-size: 0.7rem;">INC-${inc.pk}</div>
+                        <div style="font-size: 0.8rem;">${inc.title}</div>
+                        <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none text-primary" onclick="insertRef('INC-${inc.pk}: ${inc.title}')" style="font-size: 0.7rem;">Cite Data</button>
+                    </div>`).join('') : '<p class="text-muted small italic">No related incidents found.</p>';
+
+                document.getElementById('capasList').innerHTML = data.capas.length ?
+                    data.capas.map(cap => `<div class="p-2 border-bottom mb-1 bg-light rounded shadow-sm">
+                        <div class="fw-bold text-success" style="font-size: 0.7rem;">CAPA-${cap.pk}</div>
+                        <div style="font-size: 0.8rem;">${cap.title}</div>
+                        <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none text-success" onclick="insertRef('CAPA-${cap.pk}: ${cap.title}')" style="font-size: 0.7rem;">Cite Finding</button>
+                    </div>`).join('') : '<p class="text-muted small italic">No related CAPAs found.</p>';
+
+                intelLoader.style.display = 'none';
+                intelContent.style.display = 'block';
+            });
+    }
+
+    // Live Audit
+    function runLiveAudit() {
+        const loader = document.getElementById('auditLoader');
+        const container = document.getElementById('auditResults');
+        const scoreBadge = document.getElementById('liveScore');
+
+        loader.style.display = 'block';
+        container.classList.add('opacity-50');
+
+        fetch(`/sop-assistant/api/validate/${draftId}/`)
+            .then(r => r.json())
+            .then(data => {
+                scoreBadge.textContent = data.score + '%';
+                scoreBadge.className = 'badge rounded-pill ' + (data.score >= 80 ? 'bg-success' : (data.score >= 50 ? 'bg-warning' : 'bg-danger'));
+
+                container.innerHTML = data.results.length ? data.results.map(v => `
+                    <div class="p-2 border-bottom mb-1 rounded bg-white border-start border-${v.severity === 'error' ? 'danger' : 'warning'}" style="border-left-width: 3px !important; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                        <div class="fw-bold text-${v.severity === 'error' ? 'danger' : 'warning'}" style="font-size: 0.65rem;">${v.rule_code}</div>
+                        <div style="font-size: 0.75rem;">${v.message}</div>
+                        ${v.suggestion ? `<div class="text-muted italic mt-1" style="font-size: 0.7rem;"><i class="fas fa-lightbulb me-1"></i> ${v.suggestion}</div>` : ''}
+                    </div>
+                `).join('') : '<p class="text-success small p-2 text-center"><i class="fas fa-check-circle me-1"></i> Quality checks passed!</p>';
+            })
+            .finally(() => {
+                loader.style.display = 'none';
+                container.classList.remove('opacity-50');
+            });
+    }
+
+    const snippets = {
+        'alert-info': '<div class="alert alert-info"><strong><i class="fas fa-info-circle me-1"></i>Note:</strong> Detailed instruction here.</div>',
+        'alert-warning': '<div class="alert alert-warning"><strong><i class="fas fa-exclamation-triangle me-1"></i>Attention:</strong> High risk precaution.</div>',
+        'table': '<table class="table table-bordered"><thead><tr><th>Criteria</th><th>Standard</th></tr></thead><tbody><tr><td>Metric 1</td><td>Value 1</td></tr></tbody></table>',
+    };
+
+    function insertSnippet(type) {
+        const html = snippets[type];
+        if (lastFocusedEditor) {
+            const editor = lastFocusedEditor;
+            const viewFragment = editor.data.processor.toView(html);
+            const modelFragment = editor.data.toModel(viewFragment);
+            editor.model.insertContent(modelFragment);
+        }
+    }
+
+    function insertRef(text) {
+        if (lastFocusedEditor) {
+            lastFocusedEditor.model.change(writer => {
+                const insertPosition = lastFocusedEditor.model.document.selection.getFirstPosition();
+                writer.insertText(` [REF: ${text}] `, insertPosition);
+            });
+        }
+    }
+
+    let autoSaveTimeouts = {};
+    function debouncedAutoSave(sectionKey, content) {
+        clearTimeout(autoSaveTimeouts[sectionKey]);
+        autoSaveTimeouts[sectionKey] = setTimeout(function () {
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            fetch('/sop-assistant/api/autosave/' + draftId + '/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({ section_key: sectionKey, content: content })
+            });
+        }, 3000);
+    }
+</script>
+{% endblock %}

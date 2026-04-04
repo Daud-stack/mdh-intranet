@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}{{ document.title }} - Office Viewer{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Header -->
+    <div class="bg-white border-bottom px-3 py-2 d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'documents:detail' document.pk %}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <strong>{{ document.title }}</strong>
+            <span class="badge bg-info text-dark">Office Web Viewer</span>
+            <span class="badge bg-secondary">Read Only</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'documents:download' document.pk %}" class="btn btn-sm btn-primary">
+                <i class="fas fa-download me-1"></i>Download
+            </a>
+            {% if can_edit %}
+            <a href="{% url 'documents:collabora_editor' document.pk %}" class="btn btn-sm btn-success">
+                <i class="fas fa-edit me-1"></i>Edit in Collabora
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Viewer Frame -->
+    <div style="height: calc(100vh - 110px); position: relative;">
+        {% if error %}
+        <div class="alert alert-danger m-3">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% else %}
+        <!-- Loading overlay -->
+        <div id="loadingOverlay"
+            style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.95); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+            <div class="text-center">
+                <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="text-muted">Loading document viewer...</p>
+                <small class="text-muted">This may take a few moments for large files</small>
+            </div>
+        </div>
+
+        <!-- Office Web Viewer Iframe -->
+        <iframe id="officeFrame" src="{{ viewer_url }}" width="100%" height="100%" style="border:none;" allowfullscreen
+            onload="document.getElementById('loadingOverlay').style.display='none';">
+        </iframe>
+        {% endif %}
+    </div>
+
+    <!-- Info Banner -->
+    <div class="bg-light border-top px-3 py-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="text-muted small">
+                <i class="fas fa-info-circle me-1"></i>
+                <strong>Note:</strong> This is a read-only viewer powered by Microsoft Office Online.
+                {% if can_edit %}
+                Click "Edit in Collabora" above for full editing capabilities.
+                {% else %}
+                Download the file to edit locally.
+                {% endif %}
+            </div>
+            <div class="text-muted small">
+                <i class="fas fa-file me-1"></i>{{ document.file_type|upper }} •
+                <i class="fas fa-hdd ms-2 me-1"></i>{{ document.file_size_formatted }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Ensure iframe loads cleanly */
+    #officeFrame {
+        background: white;
+    }
+
+    /* Style the loading overlay */
+    #loadingOverlay {
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .d-flex.gap-2 {
+            flex-wrap: wrap;
+        }
+    }
+</style>
+
+<script>
+    // Fallback: Hide loading overlay after 10 seconds if iframe doesn't load
+    setTimeout(function () {
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+    }, 10000);
+
+    // Error handling for iframe
+    document.getElementById('officeFrame')?.addEventListener('error', function () {
+        document.getElementById('loadingOverlay').innerHTML = `
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Loading Error:</strong> The document viewer failed to load. 
+            <a href="{% url 'documents:download' document.pk %}" class="alert-link">Download the file</a> instead.
+        </div>
+    `;
+    });
+</script>
+{% endblock %}

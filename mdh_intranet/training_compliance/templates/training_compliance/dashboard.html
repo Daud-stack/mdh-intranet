@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}My Compliance Dashboard - OpsHub{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <h1 class="h3 mb-0 fw-bold text-success"><i class="fas fa-graduation-cap me-2"></i>Training & Compliance
+            </h1>
+            <p class="text-muted mb-0">Track your mandatory hospital certifications and continuing medical education.
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'training_compliance:course_directory' %}" class="btn btn-outline-success rounded-pill"><i
+                    class="fas fa-book-open me-2"></i>Course Directory</a>
+            <a href="{% url 'training_compliance:log_certification' %}"
+                class="btn btn-success rounded-pill shadow-sm"><i class="fas fa-certificate me-2"></i>Log Completed
+                Training</a>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center py-4" style="border-radius: 15px;">
+                <h2
+                    class="fw-bold text-{% if compliance_score >= 100 %}success{% elif compliance_score >= 50 %}warning{% else %}danger{% endif %}">
+                    {{ compliance_score }}%</h2>
+                <div class="text-muted text-uppercase small fw-bold">Mandatory Compliance Score</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm py-4 px-4 border-start border-success border-5"
+                style="border-radius: 15px;">
+                <h3 class="fw-bold text-success mb-1">{{ valid|length }}</h3>
+                <div class="text-muted text-uppercase small fw-bold">Valid Certifications</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm py-4 px-4 border-start border-warning border-5"
+                style="border-radius: 15px;">
+                <h3 class="fw-bold text-warning mb-1">{{ expiring_soon|length }}</h3>
+                <div class="text-muted text-uppercase small fw-bold">Expiring Soon (&lt;30 days)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm py-4 px-4 border-start border-danger border-5"
+                style="border-radius: 15px;">
+                <h3 class="fw-bold text-danger mb-1">{{ expired|length|add:missing_mandatory.count }}</h3>
+                <div class="text-muted text-uppercase small fw-bold">Action Required</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Active Requirements -->
+        <div class="col-lg-8">
+            <h5 class="fw-bold mb-3"><i class="fas fa-exclamation-triangle text-danger me-2"></i>Action Required</h5>
+
+            {% if not expired and not missing_mandatory %}
+            <div class="alert alert-success border-0 shadow-sm rounded-4 text-center py-4">
+                <i class="fas fa-check-circle fa-3x mb-3 text-success"></i>
+                <h5 class="fw-bold">You are fully compliant!</h5>
+                <p class="mb-0 text-muted">You have completed all mandatory training, and none of your certificates have
+                    expired.</p>
+            </div>
+            {% endif %}
+
+            <div class="list-group list-group-flush mb-4 shadow-sm" style="border-radius: 15px;">
+                {% for mm in missing_mandatory %}
+                <div class="list-group-item px-4 py-3 border-0 mb-1 bg-white border-start border-danger border-5">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-danger rounded-pill mb-2">Missing Mandatory Course</span>
+                            <h5 class="fw-bold text-dark mb-1">{{ mm.title }}</h5>
+                            <p class="text-muted small mb-0">{{ mm.description|truncatechars:80 }}</p>
+                        </div>
+                        <a href="{% url 'training_compliance:log_certification' %}?course={{ mm.id }}"
+                            class="btn btn-sm btn-outline-danger rounded-pill px-3">Log Completion</a>
+                    </div>
+                </div>
+                {% endfor %}
+
+                {% for ex in expired %}
+                <div class="list-group-item px-4 py-3 border-0 mb-1 bg-white border-start border-danger border-5">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span
+                                class="badge bg-danger bg-opacity-10 text-danger rounded-pill mb-2 border border-danger">Expired
+                                Certification</span>
+                            <h5 class="fw-bold text-dark mb-1">{{ ex.course.title }}</h5>
+                            <p class="text-muted small mb-0">Expired on {{ ex.expiry_date|date:"l, j M Y" }}</p>
+                        </div>
+                        <a href="{% url 'training_compliance:log_certification' %}?course={{ ex.course.id }}"
+                            class="btn btn-sm btn-outline-danger rounded-pill px-3">Renew Now</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <h5 class="fw-bold mb-3"><i class="fas fa-shield-alt text-success me-2"></i>My Valid Certifications</h5>
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Course Name</th>
+                                <th>Date Completed</th>
+                                <th>Expiry Date</th>
+                                <th class="pe-4 text-end">Certificate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for val in valid %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-bold text-dark">{{ val.course.title }}</div>
+                                    {% if val.course.is_mandatory %}
+                                    <small class="badge bg-light text-dark border rounded-pill"
+                                        style="font-size: 0.65rem;">Mandatory</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ val.date_completed|date:"d M Y" }}</td>
+                                <td>
+                                    {% if val.expiry_date %}
+                                    {{ val.expiry_date|date:"d M Y" }}
+                                    {% else %}
+                                    <span class="text-muted fst-italic">Does not expire</span>
+                                    {% endif %}
+                                </td>
+                                <td class="pe-4 text-end">
+                                    {% if val.certificate_file %}
+                                    <a href="{{ val.certificate_file.url }}" target="_blank"
+                                        class="btn btn-sm btn-light rounded-pill"><i
+                                            class="fas fa-download me-1"></i>View</a>
+                                    {% else %}
+                                    <span class="text-muted small fst-italic">No file attached</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">No valid certifications on record.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <h5 class="fw-bold mb-3 text-warning"><i class="fas fa-clock me-2"></i>Expiring Soon</h5>
+            <div class="list-group list-group-flush shadow-sm" style="border-radius: 15px;">
+                {% for eo in expiring_soon %}
+                <div class="list-group-item px-4 py-3 border-0 bg-white mb-1 border-start border-warning border-5">
+                    <div class="fw-bold text-dark mb-1">{{ eo.course.title }}</div>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <span class="small text-danger fw-bold"><i class="fas fa-history me-1"></i>Expires {{                             eo.expiry_date|date:"j M Y" }}</span>
+                        <a href="{% url 'training_compliance:log_certification' %}?course={{ eo.course.id }}"
+                            class="btn btn-sm btn-warning rounded-pill px-3 fw-bold shadow-sm">Renew</a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="list-group-item px-4 py-4 text-center border-0 bg-white text-muted">
+                    No certifications are expiring within the next 30 days!
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

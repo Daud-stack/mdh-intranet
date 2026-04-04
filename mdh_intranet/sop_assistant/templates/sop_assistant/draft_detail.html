@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Draft: {{ draft.title|default:"Untitled" }} - SOP Assistant - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'sop_assistant:index' %}">SOP Assistant</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Draft Details</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Draft Header -->
+            <div class="glass-card border-0 overflow-hidden mb-4">
+                <div class="p-4 border-bottom" style="background: linear-gradient(135deg, #f8fafc, #eef2ff);">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div>
+                            <h3 class="fw-bold mb-1">{{ draft.title|default:"(Untitled Draft)" }}</h3>
+                            <div class="d-flex align-items-center gap-3 text-muted small">
+                                <span><i class="fas fa-clock me-1"></i> Updated {{ draft.updated_at|timesince }}
+                                    ago</span>
+                                <span><i class="fas fa-user me-1"></i> {{ draft.author.username }}</span>
+                            </div>
+                        </div>
+                        <span
+                            class="badge bg-{{ draft.status_color }} bg-opacity-10 text-{{ draft.status_color }} rounded-pill px-3 py-2">
+                            <i class="{{ draft.status_icon }} me-1"></i>
+                            {{ draft.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <!-- Progress -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between small text-muted mb-2">
+                            <span>Content Completion</span>
+                            <span class="fw-bold">{{ draft.completion_percentage }}%</span>
+                        </div>
+                        <div class="progress" style="height: 8px; border-radius: 4px;">
+                            <div class="progress-bar bg-primary"
+                                style="width: {{ draft.completion_percentage }}%; border-radius: 4px;"></div>
+                        </div>
+                    </div>
+
+                    {% if draft.validation_score > 0 %}
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between small text-muted mb-2">
+                            <span>Validation Score</span>
+                            <span
+                                class="fw-bold {% if draft.validation_score >= 80 %}text-success{% elif draft.validation_score >= 50 %}text-warning{% else %}text-danger{% endif %}">
+                                {{ draft.validation_score }}/100
+                            </span>
+                        </div>
+                        <div class="progress" style="height: 8px; border-radius: 4px;">
+                            <div class="progress-bar {% if draft.validation_score >= 80 %}bg-success{% elif draft.validation_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}"
+                                style="width: {{ draft.validation_score }}%; border-radius: 4px;"></div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Sections -->
+                    <h6 class="fw-bold text-muted mb-3">
+                        <i class="fas fa-list-ul me-1"></i> Sections
+                    </h6>
+                    {% for section in sections %}
+                    <div class="p-3 rounded-3 mb-2"
+                        style="background: {% if section.content %}#f0fdf4{% else %}#fef2f2{% endif %}; border: 1px solid {% if section.content %}#bbf7d0{% else %}#fecaca{% endif %};">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-2">
+                                {% if section.content %}
+                                <i class="fas fa-check-circle text-success"></i>
+                                {% else %}
+                                <i class="fas fa-circle text-danger" style="font-size: 0.5rem;"></i>
+                                {% endif %}
+                                <span class="small fw-bold{% if not section.content %} text-danger{% endif %}">
+                                    {{ section.section_label }}
+                                </span>
+                                {% if section.is_required %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger"
+                                    style="font-size: 0.6rem;">Required</span>
+                                {% endif %}
+                            </div>
+                            <span class="text-muted" style="font-size: 0.7rem;">
+                                {{ section.content|length }} chars
+                            </span>
+                        </div>
+                        {% if section.content %}
+                        <p class="mb-0 mt-2 text-muted small" style="line-height: 1.5;">{{ section.content|truncatechars:200 }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Validation Results -->
+            {% if validations %}
+            <div class="glass-card border-0 overflow-hidden mb-4">
+                <div class="p-3 border-bottom bg-light">
+                    <h6 class="fw-bold mb-0">
+                        <i class="fas fa-clipboard-check text-primary me-2"></i> Validation Results
+                    </h6>
+                </div>
+                <div class="p-3">
+                    {% for v in validations %}
+                    <div class="d-flex align-items-start gap-2 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                        <i class="{{ v.severity_icon }} text-{{ v.severity_color }} mt-1"></i>
+                        <div>
+                            <span class="badge bg-{{ v.severity_color }} bg-opacity-10 text-{{ v.severity_color }} me-1"
+                                style="font-size: 0.6rem;">{{ v.rule_code }}</span>
+                            <span class="small">{{ v.message }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Actions Sidebar -->
+        <div class="col-lg-4">
+            <div class="glass-card border-0 p-4 mb-3" style="position: sticky; top: 1rem;">
+                <h6 class="fw-bold mb-3">
+                    <i class="fas fa-bolt text-primary me-2"></i> Quick Actions
+                </h6>
+
+                <div class="d-grid gap-2 mb-4">
+                    {% if draft.status == 'template_selected' %}
+                    <a href="{% url 'sop_assistant:draft_metadata' draft.pk %}" class="btn btn-primary rounded-pill">
+                        <i class="fas fa-info-circle me-1"></i> Fill Metadata
+                    </a>
+                    {% endif %}
+
+                    {% if draft.status in 'template_selected,drafting,icd_review,needs_revision' %}
+                    <a href="{% url 'sop_assistant:draft_content' draft.pk %}"
+                        class="btn btn-outline-primary rounded-pill">
+                        <i class="fas fa-pen me-1"></i> Edit Content
+                    </a>
+                    {% endif %}
+
+                    {% if draft.is_clinical and draft.status in 'drafting,icd_review,needs_revision' %}
+                    <a href="{% url 'sop_assistant:draft_icd' draft.pk %}" class="btn btn-outline-info rounded-pill">
+                        <i class="fas fa-stethoscope me-1"></i> ICD-11 Codes
+                    </a>
+                    {% endif %}
+
+                    {% if draft.status != 'published' and draft.status != 'discarded' %}
+                    <a href="{% url 'sop_assistant:draft_validate' draft.pk %}"
+                        class="btn btn-outline-warning rounded-pill">
+                        <i class="fas fa-shield-alt me-1"></i> Validate
+                    </a>
+                    {% endif %}
+
+                    {% if draft.status == 'ready' %}
+                    <a href="{% url 'sop_assistant:draft_preview' draft.pk %}"
+                        class="btn btn-success rounded-pill fw-bold">
+                        <i class="fas fa-eye me-1"></i> Preview & Publish
+                    </a>
+                    {% endif %}
+
+                    {% if draft.status == 'published' and draft.published_sop %}
+                    <a href="{% url 'sop_manual:detail' draft.published_sop.pk %}" class="btn btn-success rounded-pill">
+                        <i class="fas fa-external-link-alt me-1"></i> View Published SOP
+                    </a>
+                    {% endif %}
+                </div>
+
+                {% if draft.status != 'published' and draft.status != 'discarded' %}
+                <hr>
+                <form method="post" action="{% url 'sop_assistant:draft_discard' draft.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill w-100"
+                        onclick="return confirm('Discard this draft? This action cannot be undone.');">
+                        <i class="fas fa-trash me-1"></i> Discard Draft
+                    </button>
+                </form>
+                {% endif %}
+
+                <hr>
+
+                <!-- Metadata -->
+                <h6 class="fw-bold mb-2 small text-muted">METADATA</h6>
+                <ul class="list-unstyled small">
+                    <li class="d-flex justify-content-between py-1 border-bottom">
+                        <span class="text-muted">Template</span>
+                        <span>{{ draft.template.name|default:"—" }}</span>
+                    </li>
+                    <li class="d-flex justify-content-between py-1 border-bottom">
+                        <span class="text-muted">Version</span>
+                        <span>{{ draft.version }}</span>
+                    </li>
+                    <li class="d-flex justify-content-between py-1 border-bottom">
+                        <span class="text-muted">Category</span>
+                        <span>{{ draft.target_category.name|default:"Not set" }}</span>
+                    </li>
+                    <li class="d-flex justify-content-between py-1">
+                        <span class="text-muted">Created</span>
+                        <span>{{ draft.created_at|date:"M d, Y" }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

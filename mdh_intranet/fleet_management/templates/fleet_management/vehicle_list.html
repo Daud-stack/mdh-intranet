@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Hospital Fleet - OpsHub{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <div>
+            <h1 class="h3 mb-0 fw-bold text-dark"><i class="fas fa-truck-monster me-2"></i>Global Fleet Registry</h1>
+            <p class="text-muted mb-0">Total of {{ vehicles|length }} vehicles registered in the hospital system.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'fleet_management:dashboard' %}" class="btn btn-outline-secondary rounded-pill"><i
+                    class="fas fa-arrow-left me-2"></i>Dashboard</a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">License Plate</th>
+                            <th>Vehicle Type & Make</th>
+                            <th>Current Status</th>
+                            <th>Odometer</th>
+                            <th>Next Service</th>
+                            <th class="pe-4 text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for v in vehicles %}
+                        <tr>
+                            <td class="ps-4">
+                                <span
+                                    class="badge bg-dark bg-opacity-10 text-dark border px-3 rounded-pill fw-bold fs-6"
+                                    style="letter-spacing: 1px;">
+                                    {{ v.license_plate }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="fw-bold">{{ v.get_vehicle_type_display }}</div>
+                                <small class="text-muted">{{ v.year }} {{ v.make }} {{ v.model }}</small>
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill px-3 
+                                    {% if v.status == 'AVAILABLE' %}bg-success
+                                    {% elif v.status == 'IN_TRANSIT' %}bg-primary
+                                    {% elif v.status == 'MAINTENANCE' %}bg-warning text-dark
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ v.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="fw-bold text-muted">{{ v.current_mileage|stringformat:"d" }} km</span>
+                            </td>
+                            <td>
+                                <i class="fas fa-wrench me-1 text-muted"></i> {{ v.next_service_date|date:"d M Y" }}
+                            </td>
+                            <td class="pe-4 text-end">
+                                <a href="{% url 'fleet_management:vehicle_detail' v.id %}"
+                                    class="btn btn-sm btn-outline-primary rounded-pill px-4">View Log</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">No vehicles found in the registry. Head
+                                to the Django Admin backend to add vehicles.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

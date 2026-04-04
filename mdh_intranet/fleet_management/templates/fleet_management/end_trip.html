@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}End Trip - {{ trip.vehicle.license_plate }}{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <div class="card-header bg-danger py-4 text-center border-0 text-white"
+                    style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;">
+                    <h2 class="fw-bold mb-1"><i class="fas fa-stop-circle me-3"></i>End Dispatch</h2>
+                    <p class="mb-0 text-white-50">Log arrival information and final odometer.</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5 bg-white">
+                    <div class="bg-light p-3 rounded-4 mb-4 text-center border">
+                        <h6 class="text-uppercase text-muted fw-bold small mb-2">Trip Summary</h6>
+                        <div class="fw-bold text-dark fs-5">{{ trip.vehicle.license_plate }} · <span
+                                class="text-muted fw-normal">{{ trip.vehicle.get_vehicle_type_display }}</span></div>
+                        <div class="mt-2">{{ trip.origin }} <i class="fas fa-arrow-right mx-2 text-muted"></i> {{                             trip.destination }}</div>
+                        <div class="text-muted small mt-1">Starting Odometer: {{ trip.start_mileage }} km</div>
+                    </div>
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark">Ending Odometer (km)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i
+                                        class="fas fa-tachometer-alt text-muted"></i></span>
+                                {{ form.end_mileage }}
+                            </div>
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label fw-bold text-dark">Notes / Incident Report</label>
+                            {{ form.notes }}
+                            <small class="text-muted">Were there any issues, delays, or damages?</small>
+                        </div>
+
+                        <div class="d-flex gap-3 justify-content-end pt-3 text-end">
+                            <a href="{% url 'fleet_management:dashboard' %}"
+                                class="btn btn-light btn-lg rounded-pill px-4 text-muted fw-bold">Cancel</a>
+                            <button type="submit" class="btn btn-danger btn-lg rounded-pill px-4 shadow-sm fw-bold"><i
+                                    class="fas fa-check-double me-2"></i>Complete Trip</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

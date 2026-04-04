@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Theatre Booking #{{ booking.pk }} - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 text-dark">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'clinical:dashboard' %}">Clinical</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'clinical:theatre_dashboard' %}">Theatre Worklist</a></li>
+            <li class="breadcrumb-item active">Surgery Detail</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- Procedure Summary -->
+        <div class="col-lg-8">
+            <div class="glass-card border-0 shadow-lg p-0 overflow-hidden mb-4 border-top border-4 border-danger">
+                <div class="p-4 bg-white d-flex align-items-center justify-content-between border-bottom">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="p-2 bg-danger bg-opacity-10 text-danger rounded-circle"><i class="fas fa-procedures fa-lg"></i></div>
+                        <div>
+                            <h4 class="fw-bold mb-0">SURGICAL PROCEDURE</h4>
+                            <p class="text-muted small mb-0">Case Ref: #THR{{ booking.id|stringformat:"06d" }} | Scheduled: {{ booking.proposed_date|date:"d M Y @ H:i" }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-white">
+                    <div class="mb-4 d-flex align-items-center gap-2">
+                        <span class="small fw-bold text-muted text-uppercase text-dark me-2">Priority:</span>
+                        {% if booking.priority == 'emergency' %}
+                        <span class="badge bg-danger rounded-pill px-3 py-1 pulsate-red">EMERGENCY (LIFE-THREATENING)</span>
+                        {% elif booking.priority == 'urgent' %}
+                        <span class="badge bg-warning text-dark rounded-pill px-3 py-1 fw-bold">URGENT</span>
+                        {% else %}
+                        <span class="badge bg-light text-dark border rounded-pill px-3 py-1">ELECTIVE</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-uppercase text-muted border-bottom pb-2 mb-3 small">Procedure Information</h6>
+                        <div class="p-4 bg-danger bg-opacity-5 rounded-4 mb-3 border border-danger border-opacity-10">
+                            <h5 class="fw-bold mb-1 text-danger-emphasis">{{ booking.procedure_name }}</h5>
+                            <p class="text-muted small"><i class="fas fa-clock me-1"></i>Estimated Time To Complete: {{ booking.estimated_duration }} minutes</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-uppercase text-muted border-bottom pb-2 mb-3 small">Surgical Team</h6>
+                            <div class="list-group list-group-flush border rounded-4 overflow-hidden small">
+                                <div class="list-group-item d-flex justify-content-between py-2"><span class="text-muted">Lead Surgeon:</span> <span class="fw-bold text-dark">Dr. {{ booking.surgeon.username }}</span></div>
+                                <div class="list-group-item d-flex justify-content-between py-2"><span class="text-muted">Asst. Surgeon:</span> <span class="fw-bold text-dark">{{ booking.assistant_surgeon|default:"Not Assigned" }}</span></div>
+                                <div class="list-group-item d-flex justify-content-between py-2"><span class="text-muted">Anaesthetist:</span> <span class="fw-bold text-dark text-uppercase fs-7">{{ booking.anaesthetist|default:"Not Assigned" }}</span></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-uppercase text-muted border-bottom pb-2 mb-3 small">Theatre Assignment</h6>
+                            <div class="p-4 bg-light rounded-4 text-center border-0">
+                                <span class="text-muted d-block small mb-1">Operating Theatre Room #</span>
+                                <span class="fs-3 fw-bold text-dark">{{ booking.theatre_number|default:"TBA" }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if booking.theatre_notes %}
+                    <h6 class="fw-bold text-uppercase text-muted border-bottom pb-2 mt-4 mb-3 small">Special Instructions / Notes</h6>
+                    <div class="p-3 bg-light rounded-4 opacity-75 small italic border">
+                        {{ booking.theatre_notes|linebreaks }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Management Sidebar -->
+        <div class="col-lg-4">
+            <div class="glass-card border-0 shadow-lg p-4 h-100 position-sticky" style="top: 1rem;">
+                <h6 class="fw-bold text-uppercase text-muted small mb-4">Theatre Management</h6>
+                
+                <div class="p-3 bg-danger bg-opacity-5 text-danger rounded-4 mb-4 border border-danger border-opacity-10">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="avatar-md bg-white text-danger rounded-circle d-flex align-items-center justify-content-center fw-bold">{{ booking.patient.first_name|first }}{{ booking.patient.last_name|first }}</div>
+                        <div>
+                            <div class="fw-bold mb-0 text-dark">{{ booking.patient }}</div>
+                            <small class="text-muted">Sex: {{ booking.patient.get_gender_display }} | Age: {{ booking.patient.age }}</small>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="post" action="{% url 'clinical:update_theatre_status' booking.pk %}">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted">Intra-Op Status</label>
+                        <select name="status" class="form-select mb-3 status-selector text-dark fw-bold">
+                            <option value="scheduled" {% if booking.status == 'scheduled' %}selected{% endif %}>Scheduled (Pending)</option>
+                            <option value="pre-op" {% if booking.status == 'pre-op' %}selected{% endif %}>Pre-Op Preparation</option>
+                            <option value="in-theatre" {% if booking.status == 'in-theatre' %}selected{% endif %}>Currently in O.R.</option>
+                            <option value="post-op" {% if booking.status == 'post-op' %}selected{% endif %}>Closing / Post-Op Recovery</option>
+                            <option value="completed" {% if booking.status == 'completed' %}selected{% endif %}>Completed (Case Closed)</option>
+                            <option value="cancelled" {% if booking.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted">Assigned Theatre Room #</label>
+                        <input type="text" name="theatre_number" class="form-control" value="{{ booking.theatre_number }}" placeholder="e.g. Theatre 2, O.R. Main">
+                    </div>
+
+                    <button type="submit" class="btn btn-danger w-100 py-3 rounded-pill fw-bold shadow">
+                        UPDATE CASE STATUS <i class="fas fa-save ms-2"></i>
+                    </button>
+                    <a href="{% url 'clinical:theatre_dashboard' %}" class="btn btn-link w-100 mt-2 text-decoration-none small text-muted">Return to Roster</a>
+                </form>
+
+                <div class="mt-4 p-3 rounded-4 bg-light border-0">
+                    <div class="small fw-bold mb-1 opacity-50 uppercase" style="font-size: 0.65rem;">Compliance</div>
+                    <p class="small text-muted mb-0 lh-base" style="font-size: 0.72rem;">Updates affect the surgical dashboard. Moving to 'Completed' will notify Dr. {{ booking.surgeon.username }} that the case is closed.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-md { width: 48px; height: 48px; }
+    .btn-danger:hover { transform: translateY(-2px); transition: transform 0.25s; filter: brightness(1.1); }
+    .fs-7 { font-size: 0.8rem; }
+    .pulsate-red { animation: pulsate 1s infinite alternate; }
+    @keyframes pulsate { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0.6; transform: scale(1.05); } }
+</style>
+{% endblock %}

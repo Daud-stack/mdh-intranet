@@ -1,0 +1,75 @@
+P: MDH-FIN-001: CASH HANDLING & DAILY RECONCILIATION
+T: [['MBUYA DORCAS\nHOSPITAL', 'Department: FINANCE', 'SOP Code: MDH-FIN-001'], ['MBUYA DORCAS\nHOSPITAL', 'Title: CASH HANDLING & DAILY RECONCILIATION', 'Version: 1.0\nEffective: Jan 2026']]
+T: [['Code:', 'MDH-FIN-001'], ['Version:', '1.0'], ['Created by:', ''], ['Approved by:', ''], ['Date of version:', ''], ['Signature:', '']]
+P: Distribution List
+T: [['Copy No.', 'Distributed to', 'Date', 'Signature', 'Returned', 'Signature'], ['', '', '', '', '', ''], ['', '', '', '', '', ''], ['', '', '', '', '', '']]
+P: Change History
+T: [['Date', 'Version', 'Created by', 'Description of change'], ['Jan 2026', '1.0', '', 'Initial document release'], ['', '', '', '']]
+P: 1. Policy Statement
+P: Mbuya Dorcas Hospital is committed to ensuring that all cash transactions are handled securely, accurately, and transparently. This policy establishes the required controls to prevent fraud, misappropriation, and financial discrepancies.
+P: 2. Purpose
+P: To define the standard procedures for cash collection, receipting, safeguarding, and daily reconciliation in all revenue‑generating departments.
+P: 3. Scope
+P: This SOP applies to:
+P: This SOP applies to:
+P: Cashiers
+P: Accounts Department
+P: Front Office Staff
+P: Departmental Managers
+P: Finance Manager
+P: 4. Definitions
+P: Cash: Physical currency (notes and coins) received from patients.
+P: Float: Pre‑approved amount issued to cashiers at the start of shift.
+P: Reconciliation: Verification that cash received matches system‑generated reports.
+P: Receipt: Official hospital document acknowledging payment.
+P: 5. Roles & Responsibilities
+T: [['Role', 'Responsibility'], ['Front Office Supervisor', 'Verify receipts, monitor cashier performance'], ['Cashier Collect\nAccounts Officer', 'payments, issue receipts, safeguard cash\nPerform daily reconciliation and banking'], ['Finance Manager', 'Approve discrepancies, oversee compliance']]
+P: 6. Procedure
+P: A. Start‑of‑Day Cash Float
+P: Cashier receives authorised float from Accounts.
+P: Both parties sign the Float Issue Register.
+P: Cashier verifies amount before accepting.
+P: B. Cash Collection
+P: Cashier enters payment into the billing system.
+P: Issue an official hospital receipt immediately.
+P: Provide the patient with:
+P: Original receipt
+P: Change (if applicable)
+P: No transaction may be processed without a receipt.
+P: C. Cash Security
+P: Cash must be kept in a locked cash drawer at all times.
+P: Cashiers must not mix personal money with hospital funds.
+P: Cash drawer access is restricted to the assigned cashier only.
+P: D. End‑of‑Day Reconciliation
+P: Cashier prints:
+P: Daily Collection Report
+P: Receipt Summary
+P: Count cash physically.
+P: Compare physical cash with system totals.
+P: Record findings in the Daily Cash Reconciliation Sheet.
+P: E. Submission to Accounts
+P: Cashier submits:
+P: Cash
+P: Reconciliation Sheet
+P: System reports
+P: Accounts Officer verifies and signs off.
+P: Any discrepancies must be reported immediately.
+P: F. Banking
+P: Accounts Officer prepares banking deposit.
+P: Finance Manager reviews and approves deposit slip.
+P: Funds are banked daily.
+P: 7. Documentation & Records
+P: Float Issue Register
+P: Daily Cash Reconciliation Sheet
+P: Receipt Summary Report
+P: Banking Deposit Slip
+P: Cash Discrepancy Report (if applicable)
+P: 8. Compliance Requirements
+P: 100% of receipts must be system‑generated.
+P: Cash must be banked daily without exception.
+P: All discrepancies must be investigated within 24 hours.
+P: Surprise audits may be conducted by Finance Manager.
+P: 9. References & Related Policies
+P: Financial Management Policy
+P: Internal Audit Policy
+P: Fraud Prevention Policy

@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Create Requisition - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="fw-bold">
+                <i class="fas fa-file-medical text-primary"></i> Create New Requisition
+            </h1>
+            <p class="text-muted">Request stock items for your department</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <form method="post" id="requisitionForm">
+                {% csrf_token %}
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 fw-bold">Requisition Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Department <span class="text-danger">*</span></label>
+                                <select name="department" class="form-select" required>
+                                    <option value="">Select department...</option>
+                                    {% for value, label in departments %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Justification <span class="text-danger">*</span></label>
+                            <textarea name="justification" class="form-control" rows="3"
+                                placeholder="Explain why these items are needed..." required></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold">Requested Items</h5>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="addItemRow()">
+                            <i class="fas fa-plus"></i> Add Item
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="itemsContainer">
+                            <div class="item-row mb-3 border-bottom pb-3">
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <label class="form-label">Item <span class="text-danger">*</span></label>
+                                        <select name="item_id[]" class="form-select" required>
+                                            <option value="">Select item...</option>
+                                            {% for item in stock_items %}
+                                            <option value="{{ item.id }}">{{ item.name }} ({{ item.category.name }})
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Quantity <span class="text-danger">*</span></label>
+                                        <input type="number" name="quantity[]" class="form-control" min="1" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Notes</label>
+                                        <input type="text" name="notes[]" class="form-control" placeholder="Optional">
+                                    </div>
+                                    <div class="col-md-1 d-flex align-items-end">
+                                        <button type="button" class="btn btn-danger btn-sm"
+                                            onclick="removeItemRow(this)" disabled>
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check"></i> Submit Requisition
+                    </button>
+                    <a href="{% url 'stock_management:index' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-info-circle text-info"></i> Instructions</h6>
+                    <ul class="small text-muted">
+                        <li>Select your department</li>
+                        <li>Provide clear justification for your request</li>
+                        <li>Add all required items</li>
+                        <li>Specify accurate quantities</li>
+                        <li>Submit for approval</li>
+                    </ul>
+                    <hr>
+                    <h6 class="fw-bold mb-3">Approval Process</h6>
+                    <ol class="small text-muted">
+                        <li>Department Head Review</li>
+                        <li>Procurement Approval</li>
+                        <li>Order Processing</li>
+                        <li>Item Distribution</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let itemRowIndex = 1;
+
+    function addItemRow() {
+        const container = document.getElementById('itemsContainer');
+        const template = `
+        <div class="item-row mb-3 border-bottom pb-3">
+            <div class="row">
+                <div class="col-md-5">
+                    <label class="form-label">Item <span class="text-danger">*</span></label>
+                    <select name="item_id[]" class="form-select" required>
+                        <option value="">Select item...</option>
+                        {% for item in stock_items %}
+                        <option value="{{ item.id }}">{{ item.name }} ({{ item.category.name }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Quantity <span class="text-danger">*</span></label>
+                    <input type="number" name="quantity[]" class="form-control" min="1" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Notes</label>
+                    <input type="text" name="notes[]" class="form-control" placeholder="Optional">
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeItemRow(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+        container.insertAdjacentHTML('beforeend', template);
+        itemRowIndex++;
+    }
+
+    function removeItemRow(button) {
+        button.closest('.item-row').remove();
+    }
+</script>
+{% endblock %}

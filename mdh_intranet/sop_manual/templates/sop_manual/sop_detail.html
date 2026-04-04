@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+{% load sop_extras %}
+
+{% block title %}{{ sop.title }} - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'sop_manual:index' %}">SOP Manual</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'sop_manual:category_list' sop.category.id %}">{{  sop.category.name }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ sop.title }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom py-0">
+                    <ul class="nav nav-tabs border-0" id="sopTabs" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active fw-bold py-3 border-0 rounded-0" id="content-tab"
+                                data-bs-toggle="tab" data-bs-target="#content-pane" type="button" role="tab"
+                                style="color: #1e293b; border-bottom: 3px solid transparent !important;">
+                                <i class="fas fa-file-alt me-2 text-primary"></i> Document Content
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link fw-bold py-3 border-0 rounded-0" id="audit-tab" data-bs-toggle="tab"
+                                data-bs-target="#audit-pane" type="button" role="tab"
+                                style="color: #64748b; border-bottom: 3px solid transparent !important;">
+                                <i class="fas fa-history me-2 text-info"></i> Revision History
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link fw-bold py-3 border-0 rounded-0" id="ack-tab" data-bs-toggle="tab"
+                                data-bs-target="#ack-pane" type="button" role="tab"
+                                style="color: #64748b; border-bottom: 3px solid transparent !important;">
+                                <i class="fas fa-check-double me-2 text-success"></i> Acknowledgements
+                                <span class="badge bg-light text-muted ms-1 rounded-pill">{{ acknowledgements|length  }}</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="tab-content" id="sopTabsContent">
+                    <!-- Tab 1: Content -->
+                    <div class="tab-pane fade show active p-4" id="content-pane" role="tabpanel">
+                        <div class="sop-content">
+                            {{ sop.content|safe }}
+                        </div>
+
+                        {% with target_file=sop.linked_document.file|default:sop.file_attachment %}
+                        {% if target_file %}
+                        <hr class="my-4">
+                        <div class="alert alert-light border p-4 bg-opacity-10 bg-info">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="icon-box bg-info bg-opacity-20 rounded-3 p-2">
+                                        <i class="fas fa-paperclip text-info"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-0">Attached Document</h6>
+                                        <span class="text-muted small">
+                                            {% if sop.linked_document %}
+                                            {{ sop.linked_document.title }} (Documents Library)
+                                            {% else %}
+                                            {{ sop.file_attachment.name|slice:"-50:" }}
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                                <a href="{{ target_file.url }}" target="_blank"
+                                    class="btn btn-sm btn-outline-info rounded-pill">
+                                    <i class="fas fa-download me-1"></i> Download
+                                </a>
+                            </div>
+
+                            <div class="w-100 mt-3">
+                                <div class="ratio ratio-16x9 border rounded shadow-sm overflow-hidden">
+                                    <iframe src="{% url 'sop_manual:embed' sop.pk %}" allowfullscreen></iframe>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+
+                        <!-- Acknowledgment Button (Conditional) -->
+                        <div class="mt-5 pt-4 border-top">
+                            <div
+                                class="card border-0 bg-light rounded-4 p-3 {% if is_acknowledged %}border-start border-5 border-success{% else %}border-start border-5 border-warning{% endif %}">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h5 class="fw-bold mb-1">Standard Acknowledgment</h5>
+                                        <p class="text-muted small mb-0">Required for compliance monitoring and
+                                            accreditation. By acknowledging, you confirm you have read and understood
+                                            this protocol.</p>
+                                    </div>
+                                    {% if is_acknowledged %}
+                                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-4 py-2">
+                                        <i class="fas fa-check-circle me-1"></i> Confirmed
+                                    </span>
+                                    {% else %}
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <button type="submit" name="acknowledge"
+                                            class="btn btn-success rounded-pill px-4 fw-bold">
+                                            I Acknowledge <i class="fas fa-arrow-right ms-2"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: Audit History -->
+                    <div class="tab-pane fade" id="audit-pane" role="tabpanel">
+                        <div class="p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="fw-bold mb-0 text-info"><i class="fas fa-history me-2"></i>System-Logged
+                                    History</h5>
+                                <span class="badge bg-light text-muted rounded-pill px-3">{{ audit_logs|length }}
+                                    entries</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Action</th>
+                                            <th>Description</th>
+                                            <th>User</th>
+                                            <th>Timestamp</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for log in audit_logs %}
+                                        <tr>
+                                            <td>
+                                                <span
+                                                    class="badge bg-{{ log.action_color }} bg-opacity-10 text-{{ log.action_color }} rounded-pill px-3">
+                                                    <i class="{{ log.action_icon }} me-1"></i> {{ log.get_action_display  }}
+                                                </span>
+                                            </td>
+                                            <td class="small">{{ log.description }}</td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="avatar-mini bg-secondary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
+                                                        style="width: 24px; height: 24px;">
+                                                        <i class="fas fa-user small text-muted"></i>
+                                                    </div>
+                                                    <span class="small fw-semibold">{{  log.user.get_full_name|default:log.user.username }}</span>
+                                                </div>
+                                            </td>
+                                            <td class="text-muted small">{{ log.timestamp|date:"M d, Y H:i" }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="4" class="text-center py-5 text-muted italic">No history logged
+                                                for this document yet.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 3: Acknowledgements -->
+                    <div class="tab-pane fade" id="ack-pane" role="tabpanel">
+                        <div class="p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="fw-bold mb-0 text-success"><i class="fas fa-check-double me-2"></i>Staff
+                                    Acknowledgements</h5>
+                                <div class="text-muted small">Target: All Clinical Personnel</div>
+                            </div>
+                            <div class="row g-3">
+                                {% for ack in acknowledgements %}
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="glass-card p-3 border-0 bg-light bg-opacity-50">
+                                        <div class="d-flex align-items-start gap-3">
+                                            <div class="avatar bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center"
+                                                style="width: 40px; height: 40px; flex-shrink: 0;">
+                                                <i class="fas fa-user-check"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold small">{{  ack.user.get_full_name|default:ack.user.username }}</div>
+                                                <div class="text-muted small" style="font-size: 0.75rem;">
+                                                    <i class="fas fa-clock me-1"></i> {{ ack.acknowledged_at|date:"M d, Y" }}
+                                                </div>
+                                                {% if ack.comments %}
+                                                <div
+                                                    class="mt-2 p-2 bg-white rounded border-start border-3 border-success small italic">
+                                                    "{{ ack.comments }}"
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <div class="col-12 text-center py-5">
+                                    <div class="opacity-25 mb-3">
+                                        <i class="fas fa-users-slash fa-3x"></i>
+                                    </div>
+                                    <p class="text-muted italic">Waiting for staff acknowledgements.</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white fw-bold">Metadata</div>
+                <ul class="list-group list-group-flush small">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span class="text-muted">Status</span>
+                        <span class="badge bg-success">{{ sop.status }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span class="text-muted">Category</span>
+                        <span>{{ sop.category.name }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span class="text-muted">Author</span>
+                        <span>{{ sop.created_by.username }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span class="text-muted">Created</span>
+                        <span>{{ sop.created_at|date:"M d, Y" }}</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Export Options -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white fw-bold"><i class="fas fa-download me-1 text-primary"></i>Export</div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'sop_manual:export_docx' sop.pk %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-file-word me-1"></i> Download DOCX
+                        </a>
+                        <a href="{% url 'sop_manual:export_pdf' sop.pk %}" class="btn btn-outline-danger btn-sm">
+                            <i class="fas fa-file-pdf me-1"></i> Download PDF
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .sop-content {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: #2c3e50;
+        font-family: 'Inter', -apple-system, sans-serif;
+    }
+
+    /* Header block styling */
+    .sop-header-block {
+        border: 2px solid #0d6efd;
+        border-radius: 8px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #f8fbff 0%, #e8f4ff 100%);
+    }
+
+    .sop-header-block table {
+        margin: 0 !important;
+        border: none !important;
+    }
+
+    .sop-header-block th {
+        background: #0d6efd !important;
+        color: white !important;
+        font-weight: 700;
+        padding: 0.75rem 1rem !important;
+        border: 1px solid #0d6efd !important;
+    }
+
+    .sop-header-block td {
+        background: #f8fbff;
+        padding: 0.75rem 1rem !important;
+        border: 1px solid #dee2e6 !important;
+    }
+
+    /* Section headers */
+    .sop-content-formatted h5.text-primary {
+        font-size: 1.1rem;
+        color: #0d6efd !important;
+        background: linear-gradient(90deg, #f0f7ff 0%, transparent 100%);
+        padding: 0.5rem 1rem;
+        border-left: 4px solid #0d6efd;
+        margin-top: 2rem !important;
+        margin-bottom: 1rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.03rem;
+    }
+
+    /* Tables */
+    .sop-content-formatted .table {
+        width: 100%;
+        margin: 1rem 0;
+        border-collapse: collapse;
+        background: white;
+        border: 1px solid #dee2e6;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    .sop-content-formatted .table th {
+        background-color: #f8f9fa;
+        color: #0d6efd;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.03rem;
+        padding: 0.6rem 0.8rem !important;
+        border: 1px solid #dee2e6;
+    }
+
+    .sop-content-formatted .table td {
+        padding: 0.6rem 0.8rem !important;
+        border: 1px solid #dee2e6;
+        vertical-align: top;
+        font-size: 0.95rem;
+    }
+
+    /* Procedure steps */
+    .sop-content-formatted .ps-3 {
+        border-left: 2px solid #e9ecef;
+        margin-left: 1rem;
+    }
+
+    .sop-content-formatted .ps-3 span {
+        display: block;
+        padding: 0.25rem 0;
+    }
+
+    /* Paragraphs */
+    .sop-content-formatted p {
+        margin-bottom: 0.75rem;
+        text-align: justify;
+    }
+
+    /* Print styles */
+    @media print {
+        .sop-header-block {
+            border: 1px solid #000;
+        }
+
+        .sop-content-formatted h5.text-primary {
+            background: #f0f0f0;
+            color: #000 !important;
+            border-left-color: #000;
+        }
+
+        .btn-group,
+        .breadcrumb,
+        .navbar,
+        .col-lg-3 {
+            display: none !important;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Performance Appraisals - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">Performance Management</h1>
+            <p class="text-muted">History of employee appraisals and goals.</p>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Employee</th>
+                            <th>Review Date</th>
+                            <th>Rating</th>
+                            <th>Reviewer</th>
+                            <th>Goals Set</th>
+                            <th class="pe-4 text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in reviews %}
+                        {% with e=r.employee %}{% with p=r.employee.profile %}{% with rv=r.reviewer %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm bg-primary bg-opacity-10 text-primary rounded-circle p-2 me-2 d-flex align-items-center justify-content-center fw-bold"
+                                        style="width: 32px; height: 32px;">
+                                        {{ e.username|make_list|first|upper }}
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">
+                                            {{ e.get_full_name|default:e.username }}
+                                        </h6>
+                                        <small class="text-muted">
+                                            {{ p.role }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {{ r.review_date|date:"M d, Y" }}
+                            </td>
+                            <td>
+                                <span
+                                    class="badge rounded-pill {% if r.rating >= 4 %}bg-success{% elif r.rating >= 3 %}bg-primary{% else %}bg-warning{% endif %} px-3">
+                                    {{ r.rating }}/5
+                                </span>
+                            </td>
+                            <td>
+                                {{ rv.get_full_name|default:rv.username }}
+                            </td>
+                            <td>
+                                {% if r.goals %}
+                                <i class="fas fa-check-circle text-success me-1"></i>
+                                <small class="text-muted">Defined</small>
+                                {% else %}
+                                <i class="far fa-circle text-muted me-1"></i>
+                                <small class="text-muted">None</small>
+                                {% endif %}
+                            </td>
+                            <td class="pe-4 text-end">
+                                <a href="{% url 'hr_management:employee_detail' e.pk %}"
+                                    class="btn btn-sm btn-outline-primary rounded-pill px-3">View Profile</a>
+                            </td>
+                        </tr>
+                        {% endwith %}{% endwith %}{% endwith %}
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">No performance reviews recorded yet.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

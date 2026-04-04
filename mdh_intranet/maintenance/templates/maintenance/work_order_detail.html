@@ -1,0 +1,82 @@
+<!-- prettier-ignore-start -->
+{% extends "base.html" %}
+{% block title %}Work Order #{{ wo.id }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0 text-primary">Work Order Log #
+                        {{ wo.id }}
+                    </h5>
+                    <span
+                        class="badge rounded-pill {% if wo.priority == 'EMERGENCY' %}bg-danger{% else %}bg-primary{% endif %} px-4 py-2">
+                        {{ wo.get_priority_display }}
+                    </span>
+                </div>
+                <div class="card-body p-4 border-top">
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <h2 class="fw-bold fs-3">
+                                {{ wo.title }}
+                            </h2>
+                            <p class="text-muted mb-0">For Asset:
+                                {{ wo.asset.name }}
+                                (
+                                {{ wo.asset.asset_id }}
+                                )</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="small text-muted">Current Status</div>
+                            <h5 class="fw-bold text-dark">
+                                {{ wo.get_status_display }}
+                            </h5>
+                        </div>
+                    </div>
+
+                    <div class="bg-light p-4 rounded-3 mb-4">
+                        <h6 class="fw-bold small text-uppercase text-primary mb-2">Detailed Instructions</h6>
+                        <p class="mb-0">
+                            {{ wo.description|linebreaksbr }}
+                        </p>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-sm-6">
+                            <h6 class="fw-bold small text-muted text-uppercase mb-1">Assigned Technician</h6>
+                            <p class="mb-0 fw-bold">
+                                {{ wo.assigned_to.get_full_name|default:wo.assigned_to.username|default:"Unassigned" }}
+                            </p>
+                        </div>
+                        <div class="col-sm-6">
+                            <h6 class="fw-bold small text-muted text-uppercase mb-1">Target Date</h6>
+                            <p class="mb-0 fw-bold">
+                                {{ wo.due_date|default:"Prompt Action" }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <form method="post" class="border-top pt-4">
+                        {% csrf_token %}
+                        <h6 class="fw-bold mb-3">Update Work Order Status</h6>
+                        <div class="d-flex gap-2">
+                            <select name="status" class="form-select rounded-pill px-4" style="width: auto;">
+                                <option value="OPEN" {% if wo.status=='OPEN' %}selected{% endif %}>Open</option>
+                                <option value="IN_PROGRESS" {% if wo.status=='IN_PROGRESS' %}selected{% endif %}>In
+                                    Progress</option>
+                                <option value="ON_HOLD" {% if wo.status=='ON_HOLD' %}selected{% endif %}>On Hold
+                                </option>
+                                <option value="COMPLETED" {% if wo.status=='COMPLETED' %}selected{% endif %}>Completed
+                                </option>
+                            </select>
+                            <button type="submit" class="btn btn-primary rounded-pill px-5">Save Status Update</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+<!-- prettier-ignore-end -->

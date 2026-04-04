@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Manage Questions - {{ template.title }}{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-5 mb-4">
+            <div class="glass-card p-4">
+                <h4 class="fw-bold mb-4">Add Questions to: <br><span class="text-primary">{{ template.title }}</span></h4>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="add_question" value="1">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Question Text</label>
+                        <textarea name="text" class="form-control rounded-3" rows="3" placeholder="e.g. Are gloves being worn correctly?" required></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Display Order (optional)</label>
+                        <input type="number" name="order" class="form-control rounded-3" value="0">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill px-4">
+                        <i class="fas fa-plus me-2"></i>Add Question
+                    </button>
+                    <a href="{% url 'quality_audit:dashboard' %}" class="btn btn-light w-100 rounded-pill px-4 mt-3">
+                        Back to Dashboard
+                    </a>
+                </form>
+            </div>
+        </div>
+        <div class="col-md-7">
+            <div class="glass-card overflow-hidden">
+                <div class="p-4 border-bottom bg-light bg-opacity-50">
+                    <h5 class="fw-bold mb-0">Current Checklist ({{ questions|length }})</h5>
+                </div>
+                <div class="p-0">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-4 small fw-bold">Order</th>
+                                <th class="small fw-bold">Question Detail</th>
+                                <th class="pe-4 text-end small fw-bold">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for q in questions %}
+                            <tr>
+                                <td class="ps-4"><span class="badge bg-light text-dark rounded-circle">{{ q.order }}</span></td>
+                                <td class="small">{{ q.text }}</td>
+                                <td class="pe-4 text-end">
+                                    <form method="post" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="delete_question" value="1">
+                                        <input type="hidden" name="question_id" value="{{ q.id }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger border-0 rounded-circle" onclick="return confirm('Remove this question?')">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-center py-5 text-muted small">No questions yet. Use the form on the left.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

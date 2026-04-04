@@ -1,0 +1,117 @@
+<!-- prettier-ignore-start -->
+{% extends "base.html" %}
+{% block title %}My Shifts - OpsHub{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 fw-bold text-primary"><i class="fas fa-user-clock me-2"></i>My Upcoming Shifts</h1>
+            <p class="text-muted mb-0">Review your assigned hospital deployments.</p>
+        </div>
+        <a href="{% url 'rostering:dashboard' %}" class="btn btn-outline-secondary rounded-pill">
+            <i class="fas fa-arrow-left me-2"></i>Back to Overview
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Date</th>
+                                <th>Shift Block</th>
+                                <th>Department</th>
+                                <th>Hours</th>
+                                <th class="pe-4 text-end">Options</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for assignment in assignments %}
+                            <tr>
+                                <td class="ps-4 fw-bold text-dark">{{ assignment.shift.date|date:"l, d M Y" }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle me-3"
+                                            style="width: 12px; height: 12px; background-color: {{ assignment.shift.template.color }};">
+                                        </div>
+                                        <span>{{ assignment.shift.template.name }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% with dept=assignment.shift.roster.department %}
+                                    <span class="badge bg-light text-dark border px-3 rounded-pill">{{ dept }}</span>
+                                    {% endwith %}
+                                </td>
+                                {% with st=assignment.shift.template.start_time %}
+                                {% with et=assignment.shift.template.end_time %}
+                                <td>{{ st|time:"H:i" }} to {{ et|time:"H:i" }}</td>
+                                {% endwith %}
+                                {% endwith %}
+                                <td class="pe-4 text-end">
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3"
+                                        data-bs-toggle="modal" data-bs-target="#swapModal{{ assignment.id }}">Request
+                                        Swap</button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">You have no upcoming shifts
+                                    assigned.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Swap Modals for shifts (Must be outside the table to be valid HTML) -->
+    {% for assignment in assignments %}
+    <div class="modal fade" id="swapModal{{ assignment.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+                <div class="modal-header border-0 bg-danger text-white">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-exchange-alt me-2"></i>Swap Shift Request</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    {% with t=assignment.shift.template.name d=assignment.shift.date %}
+                    <p class="mb-4">
+                        You are asking a colleague to cover your <strong>{{ t }}</strong>
+                        on {{ d|date:"l, d M Y" }}.
+                    </p>
+                    {% endwith %}
+
+                    <form method="post" action="{% url 'rostering:swap_requests' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="CREATE">
+                        <input type="hidden" name="assignment_id" value="{{ assignment.id }}">
+
+                        <div class="mb-3 text-start">
+                            <label class="fw-bold small text-muted text-uppercase mb-1">Select Colleague</label>
+                            {{ swap_form.requested_colleague }}
+                        </div>
+                        <div class="mb-4 text-start">
+                            <label class="fw-bold small text-muted text-uppercase mb-1">Reason for Swap</label>
+                            {{ swap_form.reason }}
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="button" class="btn btn-light rounded-pill px-4 fw-bold"
+                                data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold"><i
+                                    class="fas fa-paper-plane me-2"></i>Send Request</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+<!-- prettier-ignore-end -->

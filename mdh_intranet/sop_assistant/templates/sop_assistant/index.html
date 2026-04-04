@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+
+{% block title %}SOP Drafting Assistant - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Hero Section -->
+    <div class="row mb-5 align-items-center">
+        <div class="col-lg-7">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="badge rounded-pill px-3 py-2"
+                    style="background: linear-gradient(135deg, #6366f1, #8b5cf6); font-size: 0.75rem;">
+                    <i class="fas fa-robot me-1"></i> AI-Powered
+                </span>
+                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2"
+                    style="font-size: 0.75rem;">
+                    <i class="fas fa-check-circle me-1"></i> OpsHub Compliant
+                </span>
+            </div>
+            <h1 class="display-5 fw-bold" style="letter-spacing: -0.03em;">
+                SOP Drafting Assistant
+            </h1>
+            <p class="lead text-muted mb-4">
+                Create professional, validated Standard Operating Procedures with guided templates,
+                ICD‑11 terminology integration, and automated OpsHub formatting compliance.
+            </p>
+            <a href="{% url 'sop_assistant:select_template' %}"
+                class="btn btn-lg rounded-pill px-5 py-3 fw-bold shadow-sm sop-cta-btn">
+                <i class="fas fa-plus me-2"></i> Start New SOP Draft
+            </a>
+        </div>
+        <div class="col-lg-5 text-center d-none d-lg-block">
+            <div class="workflow-visual">
+                <div class="workflow-step-mini active">
+                    <div class="step-dot"><i class="fas fa-file-alt"></i></div>
+                    <span>Template</span>
+                </div>
+                <div class="workflow-connector"></div>
+                <div class="workflow-step-mini">
+                    <div class="step-dot"><i class="fas fa-pen"></i></div>
+                    <span>Draft</span>
+                </div>
+                <div class="workflow-connector"></div>
+                <div class="workflow-step-mini">
+                    <div class="step-dot"><i class="fas fa-stethoscope"></i></div>
+                    <span>ICD‑11</span>
+                </div>
+                <div class="workflow-connector"></div>
+                <div class="workflow-step-mini">
+                    <div class="step-dot"><i class="fas fa-check-double"></i></div>
+                    <span>Validate</span>
+                </div>
+                <div class="workflow-connector"></div>
+                <div class="workflow-step-mini">
+                    <div class="step-dot"><i class="fas fa-rocket"></i></div>
+                    <span>Publish</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3 col-6">
+            <div class="glass-card p-4 border-0 h-100 stat-card-assistant">
+                <div class="stat-icon-wrap bg-primary bg-opacity-10 text-primary">
+                    <i class="fas fa-file-signature fa-lg"></i>
+                </div>
+                <div class="text-muted small fw-semibold text-uppercase mt-3" style="letter-spacing: 0.05em;">Total
+                    Drafts</div>
+                <div class="h2 fw-bold my-1" style="letter-spacing: -0.03em;">{{ total_drafts }}</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="glass-card p-4 border-0 h-100 stat-card-assistant">
+                <div class="stat-icon-wrap bg-info bg-opacity-10 text-info">
+                    <i class="fas fa-pen-fancy fa-lg"></i>
+                </div>
+                <div class="text-muted small fw-semibold text-uppercase mt-3" style="letter-spacing: 0.05em;">In
+                    Progress</div>
+                <div class="h2 fw-bold my-1" style="letter-spacing: -0.03em;">{{ in_progress }}</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="glass-card p-4 border-0 h-100 stat-card-assistant">
+                <div class="stat-icon-wrap bg-success bg-opacity-10 text-success">
+                    <i class="fas fa-check-circle fa-lg"></i>
+                </div>
+                <div class="text-muted small fw-semibold text-uppercase mt-3" style="letter-spacing: 0.05em;">Validated
+                </div>
+                <div class="h2 fw-bold my-1" style="letter-spacing: -0.03em;">{{ validated }}</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="glass-card p-4 border-0 h-100 stat-card-assistant">
+                <div class="stat-icon-wrap bg-purple bg-opacity-10" style="color: #8b5cf6;">
+                    <i class="fas fa-book-open fa-lg"></i>
+                </div>
+                <div class="text-muted small fw-semibold text-uppercase mt-3" style="letter-spacing: 0.05em;">Published
+                </div>
+                <div class="h2 fw-bold my-1" style="letter-spacing: -0.03em;">{{ published }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Drafts -->
+    {% if my_drafts %}
+    <div class="glass-card border-0 mb-5 overflow-hidden">
+        <div class="p-4 border-bottom" style="background: linear-gradient(135deg, #f8fafc, #f1f5f9);">
+            <h5 class="fw-bold mb-0">
+                <i class="fas fa-clock-rotate-left text-primary me-2"></i> My Recent Drafts
+            </h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 40%;">Title</th>
+                        <th>Template</th>
+                        <th>Status</th>
+                        <th>Score</th>
+                        <th>Last Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for draft in my_drafts %}
+                    <tr class="draft-row">
+                        <td>
+                            <a href="{% url 'sop_assistant:draft_detail' draft.pk %}"
+                                class="text-decoration-none fw-bold text-dark">
+                                {{ draft.title|default:"(Untitled Draft)" }}
+                            </a>
+                            {% if draft.is_clinical %}
+                            <span class="badge bg-info bg-opacity-10 text-info ms-2"
+                                style="font-size: 0.65rem;">Clinical</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted small">{{ draft.template.name|default:"—" }}</td>
+                        <td>
+                            <span
+                                class="badge bg-{{ draft.status_color }} bg-opacity-10 text-{{ draft.status_color }} rounded-pill px-3">
+                                <i class="{{ draft.status_icon }} me-1"></i>
+                                {{ draft.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if draft.validation_score > 0 %}
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress" style="width: 60px; height: 6px;">
+                                    <div class="progress-bar {% if draft.validation_score >= 80 %}bg-success{% elif draft.validation_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}"
+                                        style="width: {{ draft.validation_score }}%;"></div>
+                                </div>
+                                <small class="fw-bold">{{ draft.validation_score }}%</small>
+                            </div>
+                            {% else %}
+                            <span class="text-muted small">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted small">{{ draft.updated_at|timesince }} ago</td>
+                        <td>
+                            {% if draft.status == 'template_selected' %}
+                            <a href="{% url 'sop_assistant:draft_metadata' draft.pk %}"
+                                class="btn btn-sm btn-outline-primary rounded-pill px-3">Continue</a>
+                            {% elif draft.status == 'drafting' %}
+                            <a href="{% url 'sop_assistant:draft_content' draft.pk %}"
+                                class="btn btn-sm btn-outline-primary rounded-pill px-3">Edit</a>
+                            {% elif draft.status == 'icd_review' %}
+                            <a href="{% url 'sop_assistant:draft_icd' draft.pk %}"
+                                class="btn btn-sm btn-outline-info rounded-pill px-3">ICD Review</a>
+                            {% elif draft.status in 'validated,needs_revision' %}
+                            <a href="{% url 'sop_assistant:draft_validate' draft.pk %}"
+                                class="btn btn-sm btn-outline-warning rounded-pill px-3">Review</a>
+                            {% elif draft.status == 'ready' %}
+                            <a href="{% url 'sop_assistant:draft_preview' draft.pk %}"
+                                class="btn btn-sm btn-outline-success rounded-pill px-3">Preview</a>
+                            {% elif draft.status == 'published' %}
+                            <a href="{% url 'sop_manual:detail' draft.published_sop.pk %}"
+                                class="btn btn-sm btn-outline-success rounded-pill px-3">View SOP</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Available Templates Quick View -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">
+                <i class="fas fa-layer-group text-primary me-2"></i> Available Templates
+            </h5>
+            <a href="{% url 'sop_assistant:select_template' %}"
+                class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                View All <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div class="row g-3">
+            {% for tpl in templates|slice:":4" %}
+            <div class="col-md-3 col-6">
+                <div class="glass-card p-3 border-0 h-100 template-mini-card">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <div class="p-2 rounded-3 bg-primary bg-opacity-10 text-primary">
+                            <i class="{{ tpl.icon }}"></i>
+                        </div>
+                        <h6 class="fw-bold mb-0 small">{{ tpl.name }}</h6>
+                    </div>
+                    <p class="text-muted mb-0" style="font-size: 0.78rem; line-height: 1.4;">{{ tpl.description|truncatewords:12 }}</p>
+                    {% if tpl.is_clinical %}
+                    <span class="badge bg-info bg-opacity-10 text-info mt-2" style="font-size: 0.65rem;">
+                        <i class="fas fa-stethoscope me-1"></i> ICD‑11
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+    /* CTA Button */
+    .sop-cta-btn {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .sop-cta-btn:hover {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px -5px rgba(99, 102, 241, 0.4);
+    }
+
+    /* Workflow Visual */
+    .workflow-visual {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        padding: 2rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 50%, #f5f3ff 100%);
+        border-radius: 1.25rem;
+        border: 1px solid rgba(99, 102, 241, 0.1);
+    }
+
+    .workflow-step-mini {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .workflow-step-mini span {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .workflow-step-mini.active span {
+        color: #6366f1;
+    }
+
+    .step-dot {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #94a3b8;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .workflow-step-mini.active .step-dot {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        box-shadow: 0 4px 15px -3px rgba(99, 102, 241, 0.4);
+    }
+
+    .workflow-connector {
+        width: 30px;
+        height: 2px;
+        background: #cbd5e1;
+        margin: 0 2px;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Stat Cards */
+    .stat-card-assistant {
+        transition: all 0.3s ease;
+    }
+
+    .stat-card-assistant:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-icon-wrap {
+        width: 48px;
+        height: 48px;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Template Mini Cards */
+    .template-mini-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .template-mini-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Draft Rows */
+    .draft-row {
+        transition: background 0.2s ease;
+    }
+
+    .draft-row:hover {
+        background-color: #f8fafc !important;
+    }
+</style>
+{% endblock %}

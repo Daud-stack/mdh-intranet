@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}New Ticket - IT Helpdesk{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-white border-bottom py-3">
+                <h5 class="mb-0 fw-bold text-primary">
+                    <i class="fas fa-file-signature me-2"></i> Submit a New Ticket
+                </h5>
+                <small class="text-muted">Describe your issue in detail for faster resolution.</small>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Category</label>
+                            {{ form.category }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Priority</label>
+                            {{ form.priority }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3 mt-3">
+                        <label class="form-label fw-bold">Subject</label>
+                        {{ form.title }}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Description</label>
+                        {{ form.description }}
+                        <div class="form-text">Include error messages and steps to reproduce.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Attachment (Optional)</label>
+                        {{ form.attachment }}
+                        <div class="form-text small">Upload screenshots or documents related to your issue.</div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'helpdesk:index' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="fas fa-paper-plane me-2"></i> Submit Ticket
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Imaging & Scans Dashboard - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard:home' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Radiology & Imaging</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="row align-items-center mb-4 g-3">
+        <div class="col-md-8">
+            <h3 class="fw-bold mb-1">Radiology Information System (RIS)</h3>
+            <p class="text-muted mb-0">Manage X-Rays, CT Scans, MRI, and Ultrasounds. DICOM/PACS integration queue.</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="glass-card border-0 p-3 d-inline-flex align-items-center gap-3 shadow-sm bg-white border-top border-4 border-primary">
+                <div class="p-2 rounded-circle bg-primary bg-opacity-10">
+                    <i class="fas fa-x-ray text-primary"></i>
+                </div>
+                <div class="text-start">
+                    <div class="fw-bold lh-1">{{ imaging_requests|length }}</div>
+                    <small class="text-muted uppercase" style="font-size: 0.7rem;">Active Scan Requests</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Imaging Requests -->
+    <div class="row">
+        <div class="col-12">
+            <div class="glass-card border-0 p-0 shadow-sm overflow-hidden border-top border-4 border-primary">
+                <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-white">
+                    <h6 class="fw-bold mb-0 text-primary-emphasis"><i class="fas fa-desktop me-2"></i>Active Radiology Queue</h6>
+                    <button class="btn btn-sm btn-light rounded-pill px-3 shadow-xs"><i class="fas fa-sync-alt me-1"></i> Refresh Queue</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 imaging-table">
+                        <thead class="bg-light text-uppercase">
+                            <tr>
+                                <th class="ps-4">Request ID</th>
+                                <th>Patient Name</th>
+                                <th>Scan Type</th>
+                                <th>Urgency</th>
+                                <th>Requested</th>
+                                <th>Current Status</th>
+                                <th class="text-end pe-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in imaging_requests %}
+                            <tr>
+                                <td class="ps-4 py-3">
+                                    <div class="fw-bold text-dark">#IMG{{ req.id|stringformat:"06d" }}</div>
+                                    <div class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2" style="font-size: 0.65rem;">Rad-Log</div>
+                                </td>
+                                <td>
+                                    <h6 class="fw-bold mb-0">{{ req.consultation.patient }}</h6>
+                                    <small class="text-muted">UID: P{{ req.consultation.patient.id|stringformat:"05d" }} | Age: {{ req.consultation.patient.age }}</small>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-1" style="max-width: 250px;">
+                                        {% for item in req.items.all %}
+                                        <span class="badge bg-primary bg-opacity-5 text-dark border-0 fw-bold py-1 px-2 mb-1" style="font-size: 0.72rem;">
+                                            {{ item.get_modality_display }} ({{ item.view_area }})
+                                        </span>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if req.urgency == 'stat' %}
+                                    <span class="badge bg-danger rounded-pill px-3 py-1 pulsate-red">STAT</span>
+                                    {% elif req.urgency == 'urgent' %}
+                                    <span class="badge bg-warning text-dark rounded-pill px-3 py-1">URGENT</span>
+                                    {% else %}
+                                    <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-1">NORMAL</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="small text-dark fw-semibold">{{ req.created_at|date:"d M H:i" }}</div>
+                                    <small class="text-muted">{{ req.gp.username }} requesting</small>
+                                </td>
+                                <td>
+                                    {% if req.status == 'requested' %}
+                                    <span class="badge bg-secondary border-0 opacity-75 small">Pending</span>
+                                    {% elif req.status == 'scheduled' %}
+                                    <span class="badge bg-info border-0 small">Scheduled</span>
+                                    {% elif req.status == 'capturing' %}
+                                    <span class="badge bg-warning text-dark border-0 small">Capturing...</span>
+                                    {% elif req.status == 'interpreting' %}
+                                    <span class="badge bg-primary border-0 small">Interpreting</span>
+                                    {% elif req.status == 'completed' %}
+                                    <span class="badge bg-success border-0 small">Completed</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-4">
+                                    <a href="{% url 'clinical:imaging_request_detail' req.pk %}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm text-white">Open Scan <i class="fas fa-chevron-right ms-2 scale-hover"></i></a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="py-5 text-center text-muted">
+                                    <i class="fas fa-x-ray opacity-25 fa-3x mb-3 d-block text-primary"></i>
+                                    The radiologist's worklist is currently empty.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .imaging-table th { font-size: 0.7rem; color: #64748b; letter-spacing: 0.05rem; }
+    .imaging-table td { font-size: 0.88rem; border-bottom: 1px solid #f1f5f9; padding: 1rem 0.5rem; }
+    .scale-hover { transition: transform 0.2s; }
+    tr:hover .scale-hover { transform: translateX(3px); }
+    .pulsate-red { animation: pulsate 1.5s infinite; }
+    @keyframes pulsate { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+</style>
+{% endblock %}

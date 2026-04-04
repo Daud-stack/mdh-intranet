@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}Compliance Hub - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row align-items-center mb-4">
+        <div class="col-md-7">
+            <h1 class="fw-bold mb-1">Compliance & Audit Center</h1>
+            <p class="text-muted mb-0">Unified management for quality inspections, security logs, and compliance tracking.</p>
+        </div>
+        <div class="col-md-5 text-end">
+            <div class="dropdown d-inline-block">
+                <button class="btn btn-primary rounded-pill px-4 shadow-sm dropdown-toggle" type="button" id="startAuditBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-search-plus me-2"></i>Start New Audit
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 p-2" aria-labelledby="startAuditBtn" style="min-width: 250px;">
+                    <li class="dropdown-header text-uppercase small fw-bold">Select Template</li>
+                    {% for template in templates %}
+                    <li><a class="dropdown-item rounded-3 py-2" href="{% url 'quality_audit:perform_audit' template.id %}">
+                        <i class="fas fa-file-signature text-muted me-2 small"></i>{{ template.title }}
+                        <div class="small text-muted" style="font-size: 0.7rem;">{{ template.department_target|default:"General" }}</div>
+                    </a></li>
+                    {% empty %}
+                    <li class="text-center py-3 text-muted small">No active templates</li>
+                    {% endfor %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item rounded-3 py-2 text-primary fw-bold" href="{% url 'quality_audit:template_create' %}">
+                        <i class="fas fa-plus-circle me-2"></i>Create New Template
+                    </a></li>
+                </ul>
+            </div>
+            <a href="{% url 'core:audit_log' %}" class="btn btn-outline-secondary rounded-pill px-4 ms-2">
+                <i class="fas fa-fingerprint me-2"></i>Access Action Logs
+            </a>
+        </div>
+    </div>
+
+    <!-- Overview Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="glass-card border-0 p-3 h-100 text-center shadow-sm">
+                <div class="p-2 rounded-circle bg-primary bg-opacity-10 d-inline-flex mb-2">
+                    <i class="fas fa-clipboard-check text-primary"></i>
+                </div>
+                <h4 class="fw-bold mb-0">{{ total_inspections }}</h4>
+                <p class="text-muted small mb-0">Quality Inspections</p>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="glass-card border-0 p-3 h-100 text-center shadow-sm">
+                <div class="p-2 rounded-circle bg-warning bg-opacity-10 d-inline-flex mb-2">
+                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                </div>
+                <h4 class="fw-bold mb-0">{{ open_capa_count }}</h4>
+                <div class="text-muted small">Open CAPAs 
+                    {% if overdue_capa_count > 0 %}<span class="badge bg-danger ms-1" style="font-size: 0.6rem;">{{ overdue_capa_count }} Overdue</span>{% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="glass-card border-0 p-3 h-100 text-center shadow-sm">
+                <div class="p-2 rounded-circle bg-success bg-opacity-10 d-inline-flex mb-2">
+                    <i class="fas fa-eye text-success"></i>
+                </div>
+                <h4 class="fw-bold mb-0">{% widthratio ack_count total_staff 100 %}%</h4>
+                <p class="text-muted small mb-0">SOP Compliance</p>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="glass-card border-0 p-3 h-100 text-center shadow-sm">
+                <div class="p-2 rounded-circle bg-info bg-opacity-10 d-inline-flex mb-2">
+                    <i class="fas fa-fingerprint text-info"></i>
+                </div>
+                <h4 class="fw-bold mb-0">{{ raw_log_count }}</h4>
+                <p class="text-muted small mb-0">Events Tracked</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Recent Quality Audits -->
+        <div class="col-lg-6">
+            <div class="glass-card border-0 h-100">
+                <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">Recent Quality Inspections</h5>
+                    <a href="{% url 'quality_audit:dashboard' %}" class="btn btn-sm btn-link text-decoration-none p-0">View All</a>
+                </div>
+                <div class="p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4 small fw-bold">Audit Template</th>
+                                    <th class="small fw-bold">Department</th>
+                                    <th class="small fw-bold">Score</th>
+                                    <th class="pe-4 text-end small fw-bold">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for insp in recent_inspections %}
+                                <tr class="clickable-row" data-href="{% url 'quality_audit:audit_detail' insp.id %}" style="cursor: pointer;">
+                                    <td class="ps-4">
+                                        <div class="fw-bold text-dark">{{ insp.template.title }}</div>
+                                        <small class="text-muted">{{ insp.auditor.username }}</small>
+                                    </td>
+                                    <td><span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill">{{ insp.department_audited }}</span></td>
+                                    <td>
+                                        {% widthratio insp.score insp.template.questions.count 100 as score_pct %}
+                                        <div class="progress" style="height: 5px; width: 60px;">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ score_pct }}%"></div>
+                                        </div>
+                                        <small class="text-muted" style="font-size: 0.65rem;">{{ insp.score }} / {{ insp.template.questions.count }}</small>
+                                    </td>
+                                    <td class="pe-4 text-end">
+                                        <small class="text-muted">{{ insp.conducted_at|date:"M d" }}</small>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="4" class="text-center py-4 text-muted small">No inspections found</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Action Feed -->
+        <div class="col-lg-6">
+            <div class="glass-card border-0 h-100">
+                <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">Live Action Feed</h5>
+                    <a href="{% url 'core:audit_log' %}" class="btn btn-sm btn-link text-decoration-none p-0">View Full Log</a>
+                </div>
+                <div class="p-4">
+                    <div class="activity-feed">
+                        {% for log in recent_logs %}
+                        <div class="d-flex align-items-center gap-3 mb-3 pb-2 border-bottom border-light last-child-mb-0">
+                            <div class="flex-shrink-0">
+                                <div class="p-2 rounded-circle bg-{{ log.action_color }} bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                    <i class="{{ log.action_icon }} text-{{ log.action_color }}" style="font-size: 0.75rem;"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="fw-bold text-dark small text-truncate" style="max-width: 180px;">
+                                        {{ log.user.username|default:"System" }}
+                                    </div>
+                                    <small class="text-muted" style="font-size: 0.65rem;">{{ log.timestamp|timesince }}</small>
+                                </div>
+                                <div class="text-muted small text-truncate" style="font-size: 0.75rem;">
+                                    <span class="text-{{ log.action_color }} fw-semibold">{{ log.get_action_display }}</span> {{ log.object_repr }}
+                                </div>
+                            </div>
+                            <div class="flex-shrink-0">
+                                <a href="{% url 'core:audit_detail' log.id %}" class="btn btn-sm btn-light rounded-circle border-0" style="padding: 2px 6px;">
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.6rem;"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-4 text-muted small">No activity recorded</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.clickable-row').forEach(row => {
+            row.addEventListener('click', () => {
+                window.location = row.dataset.href;
+            });
+        });
+    });
+</script>
+<style>
+    .activity-feed .last-child-mb-0:last-child {
+        margin-bottom: 0 !important;
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+    }
+    .clickable-row:hover {
+        background-color: rgba(59, 130, 246, 0.03) !important;
+    }
+</style>
+{% endblock %}

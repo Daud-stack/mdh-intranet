@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Approval Detail - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard:home' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:approvals' %}">Approvals</a></li>
+            <li class="breadcrumb-item active">Workflow #{{ workflow.pk }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Workflow Header -->
+            <div class="glass-card border-0 p-3 mb-4 shadow-sm">
+                <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
+                    <div class="p-3 rounded-circle bg-{{ workflow.status_color }} bg-opacity-10">
+                        <i class="fas fa-clipboard-check text-{{ workflow.status_color }} fa-lg"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0">{{ workflow.object_repr }}</h4>
+                        <div class="d-flex align-items-center gap-2 mt-1">
+                            <span class="badge bg-{{ workflow.status_color }} bg-opacity-10 text-{{ workflow.status_color }} rounded-pill">
+                                {{ workflow.get_status_display }}
+                            </span>
+                            <span class="text-muted small">Module: <code class="bg-light px-2 py-0 rounded">{{ workflow.module }}</code></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem;">Requester</small>
+                        <strong class="small text-dark">{{ workflow.submitted_by.get_full_name|default:workflow.submitted_by.username }}</strong>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem;">Timeline</small>
+                        <div class="small text-dark">{{ workflow.submitted_at|date:"M d" }} → {{ workflow.updated_at|date:"M d" }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem;">Workflow ID</small>
+                        <code class="small text-muted">#WF-{{ workflow.pk|stringformat:"04d" }}</code>
+                    </div>
+                </div>
+
+                {% if workflow.notes %}
+                <div class="mt-3 p-3 rounded-3 bg-light bg-opacity-50 border">
+                    <small class="text-muted d-block mb-1 small fw-bold">CONTEXT/NOTES</small>
+                    <p class="mb-0 small text-dark">{{ workflow.notes }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Approval Steps Timeline -->
+            <div class="glass-card border-0 p-3 mb-4 shadow-sm">
+                <h6 class="fw-bold mb-4 text-muted text-uppercase small">Verification Pipeline</h6>
+
+                <div class="pipeline">
+                    {% for step in steps %}
+                    <div class="pipeline-item d-flex gap-4 mb-0 pb-4 {% if not forloop.last %}connector{% endif %}">
+                        <div class="pipeline-node flex-shrink-0">
+                            {% if step.status == 'approved' %}
+                            <div class="node bg-success text-white shadow-sm"><i class="fas fa-check small"></i></div>
+                            {% elif step.status == 'rejected' %}
+                            <div class="node bg-danger text-white shadow-sm"><i class="fas fa-times small"></i></div>
+                            {% elif step.order == workflow.current_step and workflow.status == 'pending' %}
+                            <div class="node bg-warning text-white pulse-warning shadow-sm"><i class="fas fa-hourglass-half small"></i></div>
+                            {% else %}
+                            <div class="node bg-light text-muted border">{{ step.order }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="pipeline-content flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h6 class="fw-bold mb-1 small">{{ step.role_label|default:"Approver" }}</h6>
+                                {% if step.acted_at %}
+                                <small class="text-muted" style="font-size: 0.65rem;">{{ step.acted_at|date:"M d, H:i" }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="small text-muted mb-1 d-flex align-items-center gap-1">
+                                <i class="fas fa-user-circle opacity-50"></i>
+                                {{ step.approver.get_full_name|default:step.approver.username }}
+                                {% if step.status != 'pending' %}
+                                · <span class="text-{{ step.status_color }} fw-bold text-uppercase" style="font-size: 0.6rem;">{{ step.status }}</span>
+                                {% endif %}
+                            </div>
+                            {% if step.comments %}
+                            <div class="mt-2 p-2 rounded-3 bg-light border-start border-3 border-{{ step.status_color }} bg-opacity-50">
+                                <p class="mb-0 small font-italic text-dark">"{{ step.comments }}"</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if can_act %}
+            <!-- Action Form -->
+            <div class="glass-card border-0 p-3 mb-4 shadow-lg overflow-hidden border-top border-4 border-warning">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <div class="p-2 rounded bg-warning bg-opacity-10 text-warning">
+                        <i class="fas fa-gavel"></i>
+                    </div>
+                    <h6 class="fw-bold mb-0">Reviewer Decision</h6>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <textarea name="comments" id="comments" class="form-control rounded-3 bg-light border-0 py-3" rows="3"
+                            placeholder="Provide feedback or justification for your decision..."></textarea>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" name="action" value="approve" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm">
+                            <i class="fas fa-check me-2"></i>Approve Request
+                        </button>
+                        <button type="submit" name="action" value="reject" class="btn btn-outline-danger rounded-pill px-4 fw-bold">
+                            <i class="fas fa-times me-2"></i>Reject
+                        </button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Progress -->
+            <div class="glass-card border-0 p-3 mb-4 shadow-sm bg-white bg-opacity-50">
+                <h6 class="fw-bold mb-3 small text-muted text-uppercase">Workflow Progress</h6>
+                <div class="d-flex justify-content-between small text-muted mb-1">
+                    <span>completion</span>
+                    <span class="fw-bold text-dark">{{ workflow.progress_pct }}%</span>
+                </div>
+                <div class="progress mb-3" style="height: 6px; border-radius: 10px;">
+                    <div class="progress-bar bg-{{ workflow.status_color }} shadow-sm"
+                        style="width:{{ workflow.progress_pct }}%;"></div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">Step {{ workflow.current_step }} / {{ workflow.total_steps }}</small>
+                    <span class="badge bg-{{ workflow.status_color }} bg-opacity-10 text-{{ workflow.status_color }} rounded-pill" style="font-size: 0.65rem;">
+                        {{ workflow.get_status_display }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Activity Log -->
+            {% if audit_entries %}
+            <div class="glass-card border-0 p-3 shadow-sm">
+                <h6 class="fw-bold mb-3 small text-muted text-uppercase">Tracking Log</h6>
+                <div class="tracking-feed">
+                    {% for entry in audit_entries %}
+                    <div class="d-flex gap-3 mb-3 {% if not forloop.last %}pb-3 border-bottom border-light{% endif %}">
+                        <div class="p-2 h-100 rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                            <i class="{{ entry.action_icon }} text-{{ entry.action_color }} small"></i>
+                        </div>
+                        <div class="overflow-hidden">
+                            <div class="small fw-semibold text-dark text-truncate">{{ entry.description }}</div>
+                            <small class="text-muted opacity-75" style="font-size: 0.65rem;">{{ entry.timestamp|timesince }} ago</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .pipeline-item { position: relative; }
+    .pipeline-item.connector::after {
+        content: '';
+        position: absolute;
+        left: 17px;
+        top: 36px;
+        bottom: 0;
+        width: 2px;
+        background: #e2e8f0;
+        z-index: 1;
+    }
+    .pipeline-node .node {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 2;
+        font-weight: 700;
+        font-size: 0.8rem;
+    }
+    .pulse-warning {
+        animation: pulseWarning 2s infinite;
+    }
+    @keyframes pulseWarning {
+        0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+    }
+</style>
+{% endblock %}

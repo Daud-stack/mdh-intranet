@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}New Performance Review - {{ employee.username }} - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-header bg-primary text-white p-4" style="border-radius: 15px 15px 0 0;">
+                    <h4 class="fw-bold mb-0">Create Performance Review</h4>
+                    <p class="mb-0 opacity-75">Employee: {{ employee.get_full_name|default:employee.username }}</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-muted">Review Date</label>
+                                <input type="date" name="review_date" class="form-control rounded-3"
+                                    value="{% now 'Y-m-d' %}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-muted">Rating (1-5)</label>
+                                <select name="rating" class="form-select rounded-3" required>
+                                    <option value="5">5 - Exceptional</option>
+                                    <option value="4">4 - Exceeds Expectations</option>
+                                    <option value="3" selected>3 - Meets Expectations</option>
+                                    <option value="2">2 - Needs Improvement</option>
+                                    <option value="1">1 - Unsatisfactory</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 mt-4">
+                                <label class="form-label fw-bold small text-muted">Strengths</label>
+                                <textarea name="strengths" class="form-control rounded-3" rows="3"
+                                    placeholder="What does this employee do well?"></textarea>
+                            </div>
+
+                            <div class="col-12 mt-3">
+                                <label class="form-label fw-bold small text-muted">Areas for Improvement</label>
+                                <textarea name="areas_for_improvement" class="form-control rounded-3" rows="3"
+                                    placeholder="Where can they develop?"></textarea>
+                            </div>
+
+                            <div class="col-12 mt-3">
+                                <label class="form-label fw-bold small text-muted">Future Goals</label>
+                                <textarea name="goals" class="form-control rounded-3" rows="2"
+                                    placeholder="Specific goals for the next period..."></textarea>
+                            </div>
+
+                            <div class="col-12 mt-3">
+                                <label class="form-label fw-bold small text-muted">Additional Comments</label>
+                                <textarea name="comments" class="form-control rounded-3" rows="2"></textarea>
+                            </div>
+
+                            <div class="col-12 mt-4 d-flex gap-2">
+                                <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 fw-bold">Save
+                                    Review</button>
+                                <a href="{% url 'hr_management:employee_detail' employee.pk %}"
+                                    class="btn btn-light rounded-pill px-4 py-2">Cancel</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

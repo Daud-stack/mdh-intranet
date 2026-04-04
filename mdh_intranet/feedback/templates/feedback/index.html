@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Feedback - OpsHub{% endblock %}
+
+{% block content %}
+<div class="row mb-5">
+    <div class="col-md-8">
+        <h4 class="text-muted fw-medium mb-1">Collaborative Improvement</h4>
+        <h1 class="display-6 fw-bold tracking-tight">Staff Feedback Hub</h1>
+        <p class="lead text-muted">Your insights drive our excellence. Share ideas or report issues to help us improve.
+        </p>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <!-- Submit Feedback Form -->
+    <div class="col-lg-8">
+        <div class="glass-card overflow-hidden h-100">
+            <div class="p-4 bg-white border-bottom d-flex align-items-center gap-3">
+                <div class="bg-primary bg-opacity-10 p-2 rounded-3 text-primary">
+                    <i class="fas fa-paper-plane"></i>
+                </div>
+                <h5 class="mb-0 fw-bold">New Feedback Submission</h5>
+            </div>
+            <div class="p-4">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-4 shadow-sm mb-4"
+                    role="alert">
+                    <i class="fas fa-check-circle me-2"></i> {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-uppercase tracking-wider">Feedback
+                                Category</label>
+                            {{ form.category }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-uppercase tracking-wider">Subject</label>
+                            {{ form.subject }}
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-uppercase tracking-wider">Detailed
+                            Description</label>
+                        {{ form.description }}
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-uppercase tracking-wider">Attach Supporting File
+                            (Optional)</label>
+                        {{ form.attachment }}
+                        <div class="form-text small">Max size: 5MB</div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="form-check form-switch">
+                            {{ form.is_anonymous }}
+                            <label class="form-check-label small text-muted" for="anonymousSwitch">Submit
+                                Anonymously</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 fw-bold">
+                            <i class="fas fa-paper-plane me-2"></i>Send Feedback
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats and Info -->
+    <div class="col-lg-4">
+        <div class="row g-4 h-100">
+            <div class="col-12">
+                <div class="glass-card p-4 text-center">
+                    <div
+                        class="stat-icon-wrapper p-3 rounded-circle bg-success bg-opacity-10 text-success d-inline-flex mb-3">
+                        <i class="fas fa-comments fa-2x"></i>
+                    </div>
+                    <h2 class="display-6 fw-bold mb-1">{{ total_feedback }}</h2>
+                    <p class="text-muted small fw-bold text-uppercase tracking-wide mb-0">Staff Submissions</p>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="glass-card p-4 text-center">
+                    <div
+                        class="stat-icon-wrapper p-3 rounded-circle bg-primary bg-opacity-10 text-primary d-inline-flex mb-3">
+                        <i class="fas fa-check-double fa-2x"></i>
+                    </div>
+                    <h2 class="display-6 fw-bold mb-1">14</h2>
+                    <p class="text-muted small fw-bold text-uppercase tracking-wide mb-0">Improvements Made</p>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="p-4 rounded-4 bg-dark text-white position-relative overflow-hidden">
+                    <div class="position-absolute top-0 end-0 opacity-10"
+                        style="font-size: 5rem; transform: translate(10%, -10%);">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <h6 class="fw-bold mb-3">Pro-Tip</h6>
+                    <p class="small opacity-75 mb-0">Specific feedback with clear examples is 3x more likely to be
+                        implemented within the first month!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Feedbacks -->
+<div class="row">
+    <div class="col-12">
+        <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+            <i class="fas fa-history text-muted"></i>
+            Community Activity
+        </h5>
+        <div class="row g-4">
+            {% for feed in recent_feedbacks %}
+            <div class="col-md-6 mb-3">
+                <div class="glass-card p-4 border-0 h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">
+                            {{ feed.get_category_display }}
+                        </span>
+                        <span class="small text-muted"><i class="far fa-clock me-1"></i>{{ feed.created_at|timesince }}
+                            ago</span>
+                    </div>
+                    <h6 class="fw-bold text-dark mb-2">{{ feed.subject }}</h6>
+                    <p class="small text-muted mb-3">{{ feed.description|truncatewords:30 }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex gap-2">
+                            {% if feed.attachment %}
+                            <a href="{{ feed.attachment.url }}" class="small text-primary fw-bold text-decoration-none"
+                                target="_blank">
+                                <i class="fas fa-paperclip me-1"></i>View Attachment
+                            </a>
+                            {% endif %}
+                            <span class="small text-muted fw-medium">
+                                {% if feed.is_anonymous %}<i class="fas fa-user-secret me-1"></i>Anonymous{% else %}<i
+                                    class="fas fa-user me-1"></i>{{ feed.user.username }}{% endif %}
+                            </span>
+                        </div>
+                        <button class="btn btn-light btn-sm rounded-circle"><i
+                                class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted">No recent activity yet. Be the first to share your feedback!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .tracking-tight {
+        letter-spacing: -0.025em;
+    }
+
+    .tracking-wider {
+        letter-spacing: 0.05em;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    }
+</style>
+{% endblock %}

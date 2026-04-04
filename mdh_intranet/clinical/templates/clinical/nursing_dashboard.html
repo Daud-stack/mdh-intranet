@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Nursing Handover Hub - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <h3 class="fw-bold mb-1">Nursing Handover Hub</h3>
+            <p class="text-muted mb-0">Ward Operations & Shift Communication</p>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'clinical:handover_create' %}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                <i class="fas fa-exchange-alt me-2"></i> Start New Handover
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Active Handovers -->
+        <div class="col-lg-8">
+            <div class="glass-card p-4 border-0 shadow-sm mb-4">
+                <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                    <i class="fas fa-clipboard-list text-primary"></i> Pending Shift Handovers
+                </h5>
+                {% if handovers %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Shift</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Patients</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for h in handovers %}
+                                    <tr>
+                                        <td class="small fw-bold">{{ h.shift_date }}</td>
+                                        <td><span class="badge bg-info bg-opacity-10 text-info fw-bold">{{ h.get_shift_type_display }}</span></td>
+                                        <td class="small">{{ h.outgoing_nurse.get_full_name }}</td>
+                                        <td class="small">{{ h.incoming_nurse.get_full_name }}</td>
+                                        <td class="small">{{ h.patients.count }}</td>
+                                        <td>
+                                            <a href="#" class="btn btn-sm btn-outline-primary rounded-pill px-3">View Details</a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="display-6 text-muted opacity-25 mb-3"><i class="fas fa-check-circle"></i></div>
+                        <p class="text-muted">No active handovers at this time.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Ward Patient List -->
+            <div class="glass-card p-4 border-0 shadow-sm">
+                <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                    <i class="fas fa-hospital-user text-success"></i> Current Ward Patients
+                </h5>
+                <div class="row g-3">
+                    {% for patient in ward_patients %}
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded-4 bg-light bg-opacity-25 hover-translate-y transition-all shadow-sm">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="fw-bold text-dark">{{ patient }}</div>
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary small">Age: {{ patient.age }}</span>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'clinical:log_nursing_note' patient.pk %}" class="btn btn-xs btn-outline-primary rounded-pill px-2 py-1 small" style="font-size: 0.75rem;">
+                                        <i class="fas fa-edit me-1"></i> Note
+                                    </a>
+                                    <a href="{% url 'clinical:log_fluid_balance' patient.pk %}" class="btn btn-xs btn-outline-info rounded-pill px-2 py-1 small" style="font-size: 0.75rem;">
+                                        <i class="fas fa-tint me-1"></i> Fluid
+                                    </a>
+                                    <a href="{% url 'clinical:patient_detail' patient.pk %}" class="btn btn-xs btn-outline-dark rounded-pill px-2 py-1 small" style="font-size: 0.75rem;">
+                                        <i class="fas fa-eye me-1"></i> Profile
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-12 text-center py-4">
+                            <p class="text-muted small">No patients currently tracked in ward.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Nursing Notes Sidebar -->
+        <div class="col-lg-4">
+            <div class="glass-card p-4 border-0 shadow-sm sticky-top" style="top: 1rem;">
+                <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                    <i class="fas fa-notes-medical text-warning"></i> Recent Ward Notes
+                </h5>
+                <div class="timeline-v" style="font-size: 0.85rem;">
+                    {% for note in recent_notes %}
+                        <div class="mb-3 ps-3 border-start border-2 border-warning border-opacity-25 position-relative">
+                            <div class="fw-bold text-dark">{{ note.patient }}</div>
+                            <div class="text-muted small mb-1">{{ note.recorded_at|timesince }} ago | Sr. {{ note.nurse.last_name }}</div>
+                            <div class="p-2 bg-light rounded-3 bg-opacity-50">
+                                <strong>Assmt:</strong> {{ note.assessment|truncatechars:100 }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .transition-all { transition: all 0.3s ease; }
+    .hover-translate-y:hover { transform: translateY(-5px); }
+    .btn-xs { padding: 0.15rem 0.4rem; font-size: 0.7rem; }
+</style>
+{% endblock %}

@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - OpsHub{% endblock %}
+
+{% block content %}
+<div class="dashboard-header mb-4">
+    <div class="row align-items-center">
+        <div class="col-md-7">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard:home' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Settings</li>
+                </ol>
+            </nav>
+            <h1 class="display-6 fw-bold tracking-tight"><i class="fas fa-cog text-secondary me-3"></i>Settings</h1>
+            <p class="lead text-muted">Manage your profile information and account preferences</p>
+        </div>
+    </div>
+</div>
+
+<!-- Messages -->
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 rounded-4 shadow-sm mb-4" role="alert">
+    <div class="d-flex align-items-center">
+        <i
+            class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} me-2"></i>
+        {{ message }}
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endfor %}
+{% endif %}
+
+<div class="row g-4">
+    <!-- Profile Settings -->
+    <div class="col-lg-8">
+        <div class="glass-card p-0 border-0 overflow-hidden mb-4">
+            <div class="p-4 border-bottom" style="background: linear-gradient(135deg, #f0f4f8 0%, #e9eef5 100%);">
+                <h5 class="fw-bold mb-1"><i class="fas fa-user-circle text-primary me-2"></i>Profile Information</h5>
+                <p class="text-muted small mb-0">Update your personal details and contact information</p>
+            </div>
+            <form method="post" enctype="multipart/form-data" class="p-4">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="profile">
+
+                <div class="row g-3">
+                    <!-- Avatar Section -->
+                    <div class="col-12 mb-3">
+                        <div class="d-flex align-items-center gap-4">
+                            <div class="position-relative">
+                                {% if profile.avatar %}
+                                <img src="{{ profile.avatar.url }}"
+                                    class="rounded-circle border border-3 border-white shadow" width="80" height="80"
+                                    style="object-fit: cover;" id="avatarPreview">
+                                {% else %}
+                                <img src="https://ui-avatars.com/api/?name={{ user.first_name|default:user.username }}+{{ user.last_name }}&background=6366f1&color=fff&size=80"
+                                    class="rounded-circle border border-3 border-white shadow" width="80" height="80"
+                                    id="avatarPreview">
+                                {% endif %}
+                                <label for="avatarInput"
+                                    class="position-absolute bottom-0 end-0 bg-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                                    style="width: 28px; height: 28px; cursor: pointer;">
+                                    <i class="fas fa-camera text-white" style="font-size: 0.7rem;"></i>
+                                </label>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-0">{{ user.get_full_name|default:user.username }}</h6>
+                                <p class="text-muted small mb-1">
+                                    {{ profile.role|default:"Staff Member" }} · {{ profile.department|default:"No Department" }}
+                                </p>
+                                <input type="file" id="avatarInput" name="avatar" accept="image/*" class="d-none"
+                                    onchange="document.getElementById('avatarPreview').src = URL.createObjectURL(this.files[0])">
+                                <label for="avatarInput" class="btn btn-light btn-sm rounded-pill px-3"
+                                    style="font-size: 0.8rem;">
+                                    <i class="fas fa-upload me-1"></i>Change Photo
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small text-muted text-uppercase"
+                            style="letter-spacing: 0.05em;">First Name</label>
+                        <input type="text" class="form-control rounded-3 border-light bg-light" name="first_name"
+                            value="{{ user.first_name }}" placeholder="Enter first name">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small text-muted text-uppercase"
+                            style="letter-spacing: 0.05em;">Last Name</label>
+                        <input type="text" class="form-control rounded-3 border-light bg-light" name="last_name"
+                            value="{{ user.last_name }}" placeholder="Enter last name">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small text-muted text-uppercase"
+                            style="letter-spacing: 0.05em;">Email Address</label>
+                        <input type="email" class="form-control rounded-3 border-light bg-light" name="email"
+                            value="{{ user.email }}" placeholder="email@example.com">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small text-muted text-uppercase"
+                            style="letter-spacing: 0.05em;">Username</label>
+                        <input type="text" class="form-control rounded-3 border-light bg-light"
+                            value="{{ user.username }}" disabled>
+                        <div class="form-text small">Username cannot be changed</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small text-muted text-uppercase"
+                            style="letter-spacing: 0.05em;">Department</label>
+                        <input type="text" class="form-control rounded-3 border-light bg-light" name="department"
+                            value="{{ profile.department }}" placeholder="e.g. Nursing, Administration">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small text-muted text-uppercase"
+                            style="letter-spacing: 0.05em;">Role / Position</label>
+                        <input type="text" class="form-control rounded-3 border-light bg-light" name="role"
+                            value="{{ profile.role }}" placeholder="e.g. Ward Nurse, IT Manager">
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-semibold shadow-sm">
+                        <i class="fas fa-save me-2"></i>Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Change Password -->
+        <div class="glass-card p-0 border-0 overflow-hidden">
+            <div class="p-4 border-bottom" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
+                <h5 class="fw-bold mb-1"><i class="fas fa-lock text-warning me-2"></i>Change Password</h5>
+                <p class="text-muted small mb-0">Update your account password for security</p>
+            </div>
+            <form method="post" class="p-4">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="password">
+
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label class="form-label fw-semibold small text-muted text-uppercase"
+                            style="letter-spacing: 0.05em;">Current Password</label>
+                        <input type="password" class="form-control rounded-3 border-light bg-light"
+                            name="current_password" required placeholder="Enter your current password">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small text-muted text-uppercase"
+                            style="letter-spacing: 0.05em;">New Password</label>
+                        <input type="password" class="form-control rounded-3 border-light bg-light" name="new_password"
+                            required minlength="8" placeholder="Minimum 8 characters" id="newPassword">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small text-muted text-uppercase"
+                            style="letter-spacing: 0.05em;">Confirm New Password</label>
+                        <input type="password" class="form-control rounded-3 border-light bg-light"
+                            name="confirm_password" required minlength="8" placeholder="Re-enter new password"
+                            id="confirmPassword">
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                    <button type="submit" class="btn btn-warning rounded-pill px-4 fw-semibold shadow-sm">
+                        <i class="fas fa-key me-2"></i>Update Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Account Info Card -->
+        <div class="glass-card p-4 border-0 mb-4">
+            <h6 class="fw-bold mb-3"><i class="fas fa-id-card text-info me-2"></i>Account Info</h6>
+            <ul class="list-unstyled mb-0">
+                <li class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted small">Username</span>
+                    <span class="fw-semibold small">{{ user.username }}</span>
+                </li>
+                <li class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted small">Account Type</span>
+                    <span class="fw-semibold small">
+                        {% if user.is_superuser %}
+                        <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill">
+                            Superuser
+                        </span>
+                        {% elif user.is_staff %}
+                        <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill">
+                            Staff
+                        </span>
+                        {% else %}
+                        <span class="badge bg-info bg-opacity-10 text-info rounded-pill">
+                            Standard
+                        </span>
+                        {% endif %}
+                    </span>
+                </li>
+                <li class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted small">Member Since</span>
+                    <span class="fw-semibold small">{{ user.date_joined|date:"d M Y" }}</span>
+                </li>
+                <li class="d-flex justify-content-between py-2">
+                    <span class="text-muted small">Last Login</span>
+                    <span class="fw-semibold small">{{ user.last_login|date:"d M Y, H:i"|default:"Never" }}</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Quick Links Card -->
+        <div class="glass-card p-4 border-0 mb-4">
+            <h6 class="fw-bold mb-3"><i class="fas fa-link text-primary me-2"></i>Quick Links</h6>
+            <div class="d-flex flex-column gap-2">
+                <a href="{% url 'dashboard:home' %}" class="btn btn-light btn-sm rounded-pill text-start fw-semibold">
+                    <i class="fas fa-tachometer-alt me-2 text-primary"></i>Dashboard
+                </a>
+                <a href="{% url 'dashboard:schedule' %}"
+                    class="btn btn-light btn-sm rounded-pill text-start fw-semibold">
+                    <i class="fas fa-calendar-alt me-2 text-success"></i>Schedule
+                </a>
+                <a href="{% url 'leave_management:leave_list' %}"
+                    class="btn btn-light btn-sm rounded-pill text-start fw-semibold">
+                    <i class="fas fa-plane-departure me-2 text-info"></i>My Leave
+                </a>
+                {% if user.is_staff %}
+                <a href="{% url 'user_management:index' %}"
+                    class="btn btn-light btn-sm rounded-pill text-start fw-semibold">
+                    <i class="fas fa-users-cog me-2 text-warning"></i>Manage Users
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Security Tips Card -->
+        <div class="rounded-5 p-4 text-white overflow-hidden position-relative"
+            style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
+            <div class="position-absolute top-0 end-0 opacity-10"
+                style="font-size: 6rem; transform: translate(20%, -20%);">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="position-relative">
+                <h6 class="fw-bold mb-2"><i class="fas fa-shield-alt me-2"></i>Security Tips</h6>
+                <ul class="small opacity-75 mb-0 ps-3">
+                    <li class="mb-1">Use a strong, unique password</li>
+                    <li class="mb-1">Never share your login credentials</li>
+                    <li class="mb-1">Log out when using shared devices</li>
+                    <li>Report suspicious activity immediately</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tracking-tight {
+        letter-spacing: -0.025em;
+    }
+
+    .form-control:focus {
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        border-color: #93c5fd;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% block title %}
+{{ employee.get_full_name|default:employee.username }} - OpsHub
+{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+                <div class="card-body p-4 text-center">
+                    {% with p=employee.profile %}
+                    <div class="position-relative d-inline-block mb-3">
+                        {% if p.avatar %}
+                        <img src="
+{{ p.avatar.url }}
+" class="rounded-circle shadow" style="width:150px;height:150px;object-fit:cover;border:5px solid white;">
+                        {% else %}
+                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center shadow"
+                            style="width:150px;height:150px;font-size:4rem;border:5px solid white;">
+                            {{ employee.username|make_list|first|upper }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <h3 class="fw-bold mb-1">
+                        {{ employee.get_full_name|default:employee.username }}
+                    </h3>
+                    <p class="text-primary fw-medium mb-3">
+                        {{ p.role|default:"No Role Assigned" }}
+                    </p>
+                    <div class="d-flex justify-content-center gap-2 mb-4">
+                        <span class="badge bg-light text-muted rounded-pill px-3">
+                            {{ p.department|default:"No Dept" }}
+                        </span>
+                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">
+                            {{ p.get_employment_status_display }}
+                        </span>
+                    </div>
+                    <div class="row g-2 text-start small mb-4">
+                        <div class="col-12 py-2 border-bottom d-flex justify-content-between">
+                            <span class="text-muted">Employee ID</span>
+                            <span class="fw-bold text-dark">
+                                {{ p.employee_id|default:"--" }}
+                            </span>
+                        </div>
+                        <div class="col-12 py-2 border-bottom d-flex justify-content-between">
+                            <span class="text-muted">Join Date</span>
+                            <span class="fw-bold text-dark">
+                                {{ p.join_date|date:"d M Y"|default:"--" }}
+                            </span>
+                        </div>
+                        <div class="col-12 py-2 border-bottom d-flex justify-content-between">
+                            <span class="text-muted">Phone</span>
+                            <span class="fw-bold text-dark">
+                                {{ p.phone_number|default:"--" }}
+                            </span>
+                        </div>
+                        <div class="col-12 py-2 d-flex justify-content-between">
+                            <span class="text-muted">Email</span>
+                            <span class="fw-bold text-dark">
+                                {{ employee.email|default:"--" }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endwith %}
+                    {% if user.is_staff %}
+                    <div class="d-grid gap-2">
+                        <a href="
+{% url 'hr_management:performance_create' employee.pk %}
+" class="btn btn-outline-primary rounded-pill"><i class="fas fa-plus me-2"></i>New Review</a>
+                        <a href="
+{% url 'admin:auth_user_change' employee.pk %}
+" class="btn btn-light rounded-pill"><i class="fas fa-edit me-2"></i>Edit Profile</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-header bg-transparent border-0 py-3">
+                    <h6 class="fw-bold mb-0">Emergency Contact</h6>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="bg-light p-3 rounded-3">
+                        {% with p=employee.profile %}
+                        <p class="mb-1 fw-bold text-dark">
+                            {{ p.emergency_contact_name|default:"Not Provided" }}
+                        </p>
+                        <p class="mb-0 text-muted small">
+                            <i class="fas fa-phone-alt me-2 text-primary"></i>
+                            {{ p.emergency_contact_phone|default:"--" }}
+                        </p>
+                        {% endwith %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <ul class="nav nav-pills mb-4 bg-white p-2 rounded-pill shadow-sm d-inline-flex" id="pills-tab"
+                role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active rounded-pill px-4" id="pills-perf-tab" data-bs-toggle="pill"
+                        data-bs-target="#p-perf" type="button" role="tab">Performance</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link rounded-pill px-4" id="pills-att-tab" data-bs-toggle="pill"
+                        data-bs-target="#p-att" type="button" role="tab">Attendance</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link rounded-pill px-4" id="pills-train-tab" data-bs-toggle="pill"
+                        data-bs-target="#p-train" type="button" role="tab">Training</button>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="p-perf" role="tabpanel">
+                    <div class="row g-4">
+                        {% for r in reviews %}
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                                <div class="card-body p-4">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <span class="badge bg-primary bg-opacity-10 text-primary mb-2">Review Date:
+                                                {{ r.review_date|date:"F Y" }}
+                                            </span>
+                                            <h5 class="fw-bold mb-0">Performance Appraisal</h5>
+                                            {% with rv=r.reviewer %}
+                                            <small class="text-muted">Reviewed by
+                                                {{ rv.get_full_name|default:rv.username }}
+                                            </small>
+                                            {% endwith %}
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="h3 fw-bold text-primary mb-0">
+                                                {{ r.rating }}
+                                                /5</div>
+                                            <div class="text-warning small">
+                                                {% for i in "12345"|make_list %}{% if forloop.counter <= r.rating %} <i
+                                                    class="fas fa-star"></i>
+                                                    {% else %}
+                                                    <i class="far fa-star"></i>
+                                                    {% endif %}{% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-4">
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="fw-bold small text-muted text-uppercase mb-2">Strengths</h6>
+                                            <p class="text-dark small">
+                                                {{ r.strengths|linebreaksbr|default:"None." }}
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="fw-bold small text-muted text-uppercase mb-2">Improvements</h6>
+                                            <p class="text-dark small">
+                                                {{ r.areas_for_improvement|linebreaksbr|default:"None." }}
+                                            </p>
+                                        </div>
+                                        <div class="col-12">
+                                            <h6 class="fw-bold small text-muted text-uppercase mb-2">Future Goals</h6>
+                                            <div class="bg-light p-3 rounded-3">
+                                                <p class="mb-0 text-dark small italic">"
+                                                    {{ r.goals|default:"No goals set." }}
+                                                    "</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12 text-center py-5">
+                            <p class="text-muted">No reviews recorded.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="p-att" role="tabpanel">
+                    <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 15px;">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="ps-4">Date</th>
+                                        <th>In</th>
+                                        <th>Out</th>
+                                        <th>Loc</th>
+                                        <th class="pe-4">Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for log in attendance %}
+                                    <tr>
+                                        <td class="ps-4 fw-bold">
+                                            {{ log.date|date:"d M Y" }}
+                                        </td>
+                                        <td class="text-success">
+                                            {{ log.clock_in|time:"H:i" }}
+                                        </td>
+                                        <td class="text-danger">
+                                            {{ log.clock_out|time:"H:i"|default:"--" }}
+                                        </td>
+                                        <td>
+                                            {{ log.location|default:"Office"|truncatechars:10 }}
+                                        </td>
+                                        <td class="pe-4 small text-muted">
+                                            {{ log.notes|truncatechars:30 }}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5 text-muted">No attendance found.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="p-train" role="tabpanel">
+                    <div class="row g-3">
+                        {% for t in training %}
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                                <div class="card-body p-3 d-flex">
+                                    <div
+                                        class="p-3 bg-warning bg-opacity-10 text-warning rounded-3 me-3 d-flex align-items-center">
+                                        <i class="fas fa-certificate fa-lg"></i></div>
+                                    <div>
+                                        <h6 class="fw-bold mb-1">
+                                            {{ t.course_name|truncatechars:20 }}
+                                        </h6>
+                                        <p class="text-muted small mb-0">
+                                            {{ t.provider|truncatechars:15 }}
+                                            |
+                                            {{ t.completion_date|date:"M Y" }}
+                                        </p>
+                                        {% if t.expiry_date %}
+                                        <small class="text-danger">Exp:
+                                            {{ t.expiry_date|date:"d/m/y" }}
+                                        </small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12 text-center py-5">
+                            <p class="text-muted">No training found.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

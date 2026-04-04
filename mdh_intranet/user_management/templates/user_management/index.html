@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}User Management - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="fw-bold">
+                <i class="fas fa-users-cog text-primary"></i> User Management
+            </h1>
+            <p class="text-muted">Manage system users and permissions</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'user_management:user_create' %}" class="btn btn-primary">
+                <i class="fas fa-user-plus"></i> Create User
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <p class="text-muted mb-1 small">Total Users</p>
+                    <h3 class="fw-bold mb-0">{{ total_users }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <p class="text-muted mb-1 small">Active Users</p>
+                    <h3 class="fw-bold mb-0 text-success">{{ active_users }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <p class="text-muted mb-1 small">Staff Users</p>
+                    <h3 class="fw-bold mb-0 text-info">{{ staff_users }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-10">
+                            <input type="text" name="search" class="form-control"
+                                placeholder="Search users by username, email, or name..."
+                                value="{{ search_query|default:'' }}">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Username</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user_item in users %}
+                        <tr>
+                            <td class="fw-bold">{{ user_item.username }}</td>
+                            <td>{{ user_item.get_full_name|default:"-" }}</td>
+                            <td>{{ user_item.email|default:"-" }}</td>
+                            <td>
+                                {% if user_item.is_superuser %}
+                                <span class="badge bg-danger">Administrator</span>
+                                {% elif user_item.is_staff %}
+                                <span class="badge bg-primary">Staff</span>
+                                {% else %}
+                                <span class="badge bg-secondary">User</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user_item.is_active %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-warning">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user_item.date_joined|date:"M d, Y" }}</td>
+                            <td>
+                                <a href="{% url 'user_management:user_detail' user_item.pk %}"
+                                    class="btn btn-sm btn-outline-primary">
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

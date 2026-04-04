@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: #334155;
+        }
+        .header-container {
+            border-bottom: 2px solid #0ea5e9;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+        .hospital-name {
+            color: #1e40af;
+            font-size: 18pt;
+            font-weight: bold;
+            margin: 0;
+        }
+        .doc-type {
+            color: #0ea5e9;
+            font-size: 12pt;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+            margin: 2px 0;
+        }
+        .patient-box {
+            background: #f8fafc;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            background: #f1f5f9;
+            padding: 5px 10px;
+            color: #475569;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 9pt;
+            margin-bottom: 10px;
+        }
+        table.test-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table.test-table th {
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+            padding: 8px;
+            font-size: 9pt;
+            color: #64748b;
+        }
+        table.test-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #f8fafc;
+        }
+        .urgency-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 9pt;
+        }
+        .urgency-stat { background: #fef2f2; color: #ef4444; border: 1px solid #fee2e2; }
+        .urgency-urgent { background: #fff7ed; color: #f59e0b; border: 1px solid #ffedd5; }
+        .urgency-normal { background: #f0f9ff; color: #0ea5e9; border: 1px solid #e0f2fe; }
+        .footer {
+            margin-top: 50px;
+            font-size: 8pt;
+            color: #94a3b8;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 10px;
+        }
+        .history-box {
+            border: 1px solid #f1f5f9;
+            padding: 8px;
+            font-size: 9pt;
+            color: #475569;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-container">
+        <table style="width: 100%;">
+            <tr>
+                <td style="width: 70%;">
+                    <div class="hospital-name">Mbuya Dorcas Hospital</div>
+                    <div class="doc-type">LABORATORY INVESTIGATION REQUEST</div>
+                </td>
+                <td style="width: 30%; text-align: right;">
+                    <div style="font-size: 9pt; color: #64748b;">Ref: #LR{{ lab_req.id|stringformat:"06d" }}</div>
+                    <div style="font-size: 9pt; color: #64748b;">Visit Date: {{ lab_req.created_at|date:"d/M/Y" }}</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="patient-box">
+        <table style="width: 100%;">
+            <tr>
+                <td style="width: 50%;"><strong>Patient:</strong> {{ lab_req.consultation.patient }}</td>
+                <td style="width: 25%;"><strong>DOB:</strong> {{ lab_req.consultation.patient.date_of_birth }}</td>
+                <td style="width: 25%;"><strong>Sex:</strong> {{ lab_req.consultation.patient.get_gender_display }}</td>
+            </tr>
+            <tr>
+                <td><strong>Medical Aid:</strong> {{ lab_req.consultation.patient.medical_aid_name|default:"Cash" }}</td>
+                <td><strong>Member #:</strong> {{ lab_req.consultation.patient.medical_aid_number|default:"—" }}</td>
+                <td><strong>Patient ID:</strong> P{{ lab_req.consultation.patient.id|stringformat:"05d" }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <span style="font-weight: bold; margin-right: 10px;">URGENCY:</span>
+        <span class="urgency-badge urgency-{{ lab_req.urgency }}">
+            {{ lab_req.get_urgency_display|upper }}
+        </span>
+    </div>
+
+    <div class="section-title">Tests Ordered</div>
+    <table class="test-table">
+        <thead>
+            <tr>
+                <th style="width: 60%;">Investigation Name</th>
+                <th style="width: 40%;">Specimen Required</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in lab_req.test_items.all %}
+            <tr>
+                <td style="font-weight: bold;">{{ item.test_name }}</td>
+                <td>{{ item.specimen_type|default:"Blood (Default)" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="section-title">Clinical Indication / Brief History</div>
+    <div class="history-box">
+        {{ lab_req.consultation.assessment|default:"Not disclosed" }}
+    </div>
+
+    <table style="width: 100%; margin-top: 40px;">
+        <tr>
+            <td style="width: 45%;">
+                <div style="border-top: 1px solid #1e293b; width: 100%; padding-top: 5px;">
+                    <div style="font-weight: bold;">Dr. {{ lab_req.gp.get_full_name|default:lab_req.gp.username }}</div>
+                    <div style="font-size: 8pt; color: #64748b;">Ordering Physician Signature & MMCZ No.</div>
+                </div>
+            </td>
+            <td style="width: 10%;"></td>
+            <td style="width: 45%;">
+                <div style="border-top: 1px solid #94a3b8; width: 100%; padding-top: 5px; color: #94a3b8;">
+                    <div style="font-weight: bold; opacity: 0;">DATE/TIME COLLECTED</div>
+                    <div style="font-size: 8pt;">Phleb/Nurse Collection Sign-off</div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="footer">
+        Mbuya Dorcas Hospital Laboratory — Pathogen identification & Biochemistry Investigations — 24hr Diagnostic Service
+    </div>
+</body>
+</html>

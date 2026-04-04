@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Imaging Order #{{ img_req.pk }} - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'clinical:dashboard' %}">Clinical</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'clinical:imaging_dashboard' %}">Radiology</a></li>
+            <li class="breadcrumb-item active">Order #{{ img_req.pk }}</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center g-4">
+        <div class="col-lg-8">
+            <div class="glass-card border-0 shadow p-0 overflow-hidden border-top border-4 border-primary">
+                <div class="p-4 bg-white d-flex align-items-center justify-content-between border-bottom">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="p-2 bg-primary bg-opacity-10 text-primary rounded-circle"><i class="fas fa-x-ray fa-lg"></i></div>
+                        <div>
+                            <h4 class="fw-bold mb-0">RADIOLOGY ORDER</h4>
+                            <p class="text-muted small mb-0">Reference: #IMG{{ img_req.id|stringformat:"06d" }} | Placed: {{ img_req.created_at|date:"d M Y @ H:i" }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-white">
+                    <div class="mb-4">
+                         <span class="small fw-bold text-muted text-uppercase me-2">Urgency:</span>
+                         {% if img_req.urgency == 'stat' %}
+                         <span class="badge bg-danger rounded-pill px-3 py-1 pulsate-red">STAT (IMMEDIATE)</span>
+                         {% elif img_req.urgency == 'urgent' %}
+                         <span class="badge bg-warning text-dark rounded-pill px-3 py-1">URGENT</span>
+                         {% else %}
+                         <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-1">NORMAL</span>
+                         {% endif %}
+                    </div>
+
+                    <h6 class="fw-bold text-uppercase text-muted border-bottom pb-2 mb-3 small">Investigations Requested</h6>
+                    <ul class="list-group list-group-flush mb-4 rounded-4 overflow-hidden border">
+                        {% for item in img_req.items.all %}
+                        <li class="list-group-item py-3 px-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-4"><span class="badge bg-primary rounded px-2">{{ item.get_modality_display }}</span></div>
+                                <div class="col-md-8">
+                                    <div class="fw-bold fs-6">{{ item.view_area }}</div>
+                                    {% if item.clinical_question %}
+                                    <div class="text-muted small mt-1 italic"><i class="fas fa-question-circle me-1"></i>Clinical Question: {{ item.clinical_question }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+
+                    {% if img_req.imaging_notes %}
+                    <h6 class="fw-bold text-uppercase text-muted border-bottom pb-2 mb-3 small">Clinical Context (GP Notes)</h6>
+                    <div class="p-3 bg-light rounded-4 opacity-75 small mb-3 border">
+                        <p class="mb-0 text-dark">{{ img_req.imaging_notes|linebreaks }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="glass-card border-0 shadow-lg p-4 h-100 position-sticky" style="top: 1rem;">
+                <h6 class="fw-bold text-uppercase text-muted small mb-4">Radiographer Actions</h6>
+                
+                <div class="p-3 bg-primary bg-opacity-5 text-primary rounded-4 mb-4 border">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="avatar-md bg-white text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold">{{ img_req.consultation.patient.first_name|first }}{{ img_req.consultation.patient.last_name|first }}</div>
+                        <div>
+                            <div class="fw-bold mb-0 text-dark">{{ img_req.consultation.patient }}</div>
+                            <small class="text-muted">UID: P{{ img_req.consultation.patient.id|stringformat:"05d" }}</small>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="post" action="{% url 'clinical:update_imaging_status' img_req.pk %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted">Update Process Status</label>
+                        <select name="status" class="form-select mb-3 status-selector" data-target="resultsBlock">
+                            <option value="requested" {% if img_req.status == 'requested' %}selected{% endif %}>Requested (Pending)</option>
+                            <option value="scheduled" {% if img_req.status == 'scheduled' %}selected{% endif %}>Scheduled For Capture</option>
+                            <option value="capturing" {% if img_req.status == 'capturing' %}selected{% endif %}>Currently Capturing</option>
+                            <option value="interpreting" {% if img_req.status == 'interpreting' %}selected{% endif %}>Reading / Interpretation</option>
+                            <option value="completed" {% if img_req.status == 'completed' %}selected{% endif %}>Completed (Upload Report)</option>
+                            <option value="cancelled" {% if img_req.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                        </select>
+                    </div>
+
+                    <div id="resultsBlock" class="mb-4 d-none">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">DICOM / PACS URL</label>
+                            <input type="url" name="results_url" class="form-control" value="{{ img_req.results_url }}" placeholder="External link...">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Report PDF / Image</label>
+                            <input type="file" name="report_file" class="form-control">
+                            {% if img_req.report_file %}
+                            <div class="mt-2">
+                                <a href="{{ img_req.report_file.url }}" target="_blank" class="small text-primary fw-bold">
+                                    <i class="fas fa-file-pdf me-1"></i> View Current Report
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow">
+                        SAVE UPDATES <i class="fas fa-check-circle ms-2"></i>
+                    </button>
+                    <a href="{% url 'clinical:imaging_dashboard' %}" class="btn btn-link w-100 mt-2 text-decoration-none small text-muted">Return to Worklist</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelector('.status-selector').addEventListener('change', function() {
+        const resultsBlock = document.getElementById('resultsBlock');
+        if(this.value === 'completed') {
+            resultsBlock.classList.remove('d-none');
+        } else {
+            resultsBlock.classList.add('d-none');
+        }
+    });
+
+    if(document.querySelector('.status-selector').value === 'completed') {
+        document.getElementById('resultsBlock').classList.remove('d-none');
+    }
+</script>
+{% endblock %}

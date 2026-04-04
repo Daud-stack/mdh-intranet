@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Start a Trip - OpsHub{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <div class="card-header bg-success py-4 text-center border-0 text-white"
+                    style="background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;">
+                    <h2 class="fw-bold mb-1"><i class="fas fa-play-circle me-3"></i>Dispatch Vehicle</h2>
+                    <p class="mb-0 text-white-50">Log your starting mileage and destination.</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5 bg-white">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark">Available Vehicle</label>
+                            {{ form.vehicle }}
+                        </div>
+                        <div class="mb-4 border-bottom pb-4">
+                            <label class="form-label fw-bold text-dark">Current Odometer (km)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i
+                                        class="fas fa-tachometer-alt text-muted"></i></span>
+                                {{ form.start_mileage }}
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark">Starting From</label>
+                                {{ form.origin }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark text-primary">Destination <i
+                                        class="fas fa-map-marker-alt ms-1"></i></label>
+                                {{ form.destination }}
+                            </div>
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label fw-bold text-dark">Trip Purpose</label>
+                            {{ form.purpose }}
+                        </div>
+
+                        <div class="d-flex gap-3 justify-content-end pt-3 text-end">
+                            <a href="{% url 'fleet_management:dashboard' %}"
+                                class="btn btn-light btn-lg rounded-pill px-4 text-muted fw-bold">Cancel</a>
+                            <button type="submit" class="btn btn-success btn-lg rounded-pill px-4 shadow-sm fw-bold"><i
+                                    class="fas fa-car-side me-2"></i>Start Journey</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control,
+    .form-select {
+        border: 2px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        background-color: #f8fafc;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #10b981;
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+        background-color: #ffffff;
+    }
+</style>
+{% endblock %}

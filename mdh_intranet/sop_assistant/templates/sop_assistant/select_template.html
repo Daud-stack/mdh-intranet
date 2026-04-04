@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}Select Template - SOP Assistant - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'sop_assistant:index' %}">SOP Assistant</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Select Template</li>
+        </ol>
+    </nav>
+
+    <!-- Step Indicator -->
+    <div class="wizard-steps mb-5">
+        <div class="wizard-step active">
+            <div class="wizard-step-number">1</div>
+            <div class="wizard-step-label">Choose Template</div>
+        </div>
+        <div class="wizard-step-line"></div>
+        <div class="wizard-step">
+            <div class="wizard-step-number">2</div>
+            <div class="wizard-step-label">Metadata</div>
+        </div>
+        <div class="wizard-step-line"></div>
+        <div class="wizard-step">
+            <div class="wizard-step-number">3</div>
+            <div class="wizard-step-label">Content</div>
+        </div>
+        <div class="wizard-step-line"></div>
+        <div class="wizard-step">
+            <div class="wizard-step-number">4</div>
+            <div class="wizard-step-label">Validate</div>
+        </div>
+        <div class="wizard-step-line"></div>
+        <div class="wizard-step">
+            <div class="wizard-step-number">5</div>
+            <div class="wizard-step-label">Publish</div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h2 class="fw-bold mb-1">Choose a Template</h2>
+            <p class="text-muted">Select the template that best matches the type of SOP you need to create. Each
+                template includes pre-defined sections and OpsHub formatting rules.</p>
+        </div>
+    </div>
+
+    <!-- Category Filter -->
+    <div class="glass-card border-0 p-3 mb-4">
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'sop_assistant:select_template' %}"
+                class="btn btn-sm rounded-pill px-3 {% if not selected_category %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+                All Templates
+            </a>
+            {% for cat_code, cat_label in categories %}
+            <a href="{% url 'sop_assistant:select_template' %}?category={{ cat_code }}"
+                class="btn btn-sm rounded-pill px-3 {% if selected_category == cat_code %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+                {{ cat_label }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Templates Grid -->
+    <div class="row g-4">
+        {% for tpl in templates %}
+        <div class="col-lg-4 col-md-6">
+            <form method="post" class="h-100">
+                {% csrf_token %}
+                <input type="hidden" name="template_id" value="{{ tpl.pk }}">
+                <button type="submit" class="template-card glass-card border-0 p-0 h-100 w-100 text-start">
+                    <div class="p-4">
+                        <div class="d-flex align-items-start justify-content-between mb-3">
+                            <div class="template-icon-wrap bg-primary bg-opacity-10 text-primary p-3 rounded-4">
+                                <i class="{{ tpl.icon }} fa-xl"></i>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                {% if tpl.is_clinical %}
+                                <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-2"
+                                    style="font-size: 0.65rem;">
+                                    <i class="fas fa-stethoscope me-1"></i> ICD‑11
+                                </span>
+                                {% endif %}
+                                <span class="badge bg-light text-muted rounded-pill px-2" style="font-size: 0.65rem;">
+                                    {{ tpl.get_category_display }}
+                                </span>
+                            </div>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-2">{{ tpl.name }}</h5>
+                        <p class="text-muted small mb-3" style="line-height: 1.5;">{{ tpl.description }}</p>
+
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="text-muted" style="font-size: 0.75rem;">
+                                    <i class="fas fa-puzzle-piece me-1"></i> {{ tpl.sections|length }} sections
+                                </span>
+                                <span class="text-muted" style="font-size: 0.75rem;">
+                                    <i class="fas fa-chart-line me-1"></i> {{ tpl.usage_count }} uses
+                                </span>
+                            </div>
+                            <span class="template-select-indicator">
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </button>
+            </form>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <div class="opacity-25 mb-3">
+                <i class="fas fa-file-alt fa-3x"></i>
+            </div>
+            <p class="text-muted">No templates available for this category.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    /* Wizard Steps */
+    .wizard-steps {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        padding: 1.5rem 2rem;
+        background: linear-gradient(135deg, #f8fafc, #eef2ff);
+        border-radius: 1rem;
+        border: 1px solid rgba(99, 102, 241, 0.08);
+    }
+
+    .wizard-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .wizard-step-number {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #e2e8f0;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .wizard-step.active .wizard-step-number {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        box-shadow: 0 4px 15px -3px rgba(99, 102, 241, 0.4);
+    }
+
+    .wizard-step.completed .wizard-step-number {
+        background: #10b981;
+        color: white;
+    }
+
+    .wizard-step-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .wizard-step.active .wizard-step-label {
+        color: #6366f1;
+    }
+
+    .wizard-step.completed .wizard-step-label {
+        color: #10b981;
+    }
+
+    .wizard-step-line {
+        width: 50px;
+        height: 2px;
+        background: #cbd5e1;
+        margin: 0 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Template Card */
+    .template-card {
+        cursor: pointer;
+        border: 2px solid transparent !important;
+        transition: all 0.3s ease;
+        background: var(--glass-bg);
+    }
+
+    .template-card:hover {
+        border-color: #6366f1 !important;
+        transform: translateY(-6px);
+        box-shadow: 0 20px 30px -10px rgba(99, 102, 241, 0.15);
+    }
+
+    .template-select-indicator {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #94a3b8;
+        transition: all 0.3s ease;
+    }
+
+    .template-card:hover .template-select-indicator {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        transform: translateX(4px);
+    }
+</style>
+{% endblock %}

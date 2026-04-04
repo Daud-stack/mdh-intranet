@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Viewer</title>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #f8f9fa;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .error-message {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #dc3545;
+            font-family: system-ui, -apple-system, sans-serif;
+            text-align: center;
+            padding: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    {% if error %}
+    <div class="error-message">
+        <div>
+            <h3>Unable to load document</h3>
+            <p>{{ error }}</p>
+        </div>
+    </div>
+    {% else %}
+    <iframe src="{{ viewer_url }}" frameborder="0" allowfullscreen>
+    </iframe>
+    {% endif %}
+</body>
+
+</html>

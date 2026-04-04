@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}Ticket #{{ ticket.pk }} - IT Helpdesk{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <h1 class="fw-bold mb-1">{{ ticket.title }}</h1>
+            <p class="text-muted mb-0">
+                <span class="badge bg-secondary font-monospace">{{ ticket.ticket_id }}</span>
+                &bull; Reported by {{ ticket.requester.get_full_name|default:ticket.requester }}
+            </p>
+        </div>
+        <div class="col-auto text-end">
+            {% if update_form %}
+            {% if not ticket.assignee %}
+            <form method="post" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" name="claim_ticket" class="btn btn-primary me-2">
+                    <i class="fas fa-user-check me-1"></i> Assign to Me
+                </button>
+            </form>
+            {% endif %}
+            <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editTicketModal">
+                <i class="fas fa-cog me-1"></i> Manage
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Conversation Area -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        {% with name=ticket.requester.get_full_name|default:ticket.requester.username %}
+                        <img src="https://ui-avatars.com/api/?name={{ name|urlencode }}&background=2563eb&color=fff"
+                            class="rounded-circle me-3" width="48" height="48">
+                        <div>
+                            <h5 class="fw-bold mb-0">{{ name }}</h5>
+                            <small class="text-muted">{{ ticket.created_at|date:"M d, Y g:ia" }}</small>
+                        </div>
+                        {% endwith %}
+                    </div>
+                    <div class="bg-light p-3 rounded-3 lead fs-6">
+                        {{ ticket.description|linebreaksbr }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comments Timeline -->
+            <h5 class="fw-bold mb-3 ms-2">Discussion ({{ comments.count }})</h5>
+
+            {% for comment in comments %}
+            {% if not comment.is_internal or is_agent %}
+            <div
+                class="card border-0 shadow-sm mb-3 {% if comment.is_internal %}border-start border-warning border-4{% endif %}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <div class="d-flex align-items-center">
+                            <span class="fw-bold me-2">
+                                {{ comment.author.get_full_name|default:comment.author.username }}
+                                {% if comment.author.is_staff %} <span class="badge bg-primary ms-1"
+                                    style="font-size:0.6rem">STAFF</span>{% endif %}
+                            </span>
+                            <small class="text-muted">{{ comment.created_at|timesince }} ago</small>
+                        </div>
+                        {% if comment.is_internal %}
+                        <span class="badge bg-warning text-dark"><i class="fas fa-lock me-1"></i> Internal Note</span>
+                        {% endif %}
+                    </div>
+                    <p class="mb-0 text-break">{{ comment.text|linebreaksbr }}</p>
+                </div>
+            </div>
+            {% endif %}
+            {% empty %}
+            <p class="text-muted ms-2 fst-italic">No replies yet.</p>
+            {% endfor %}
+
+            <!-- Add Comment Form -->
+            <div class="card border-0 shadow-sm mt-4 bg-light">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">Add a Reply</h6>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            {{ comment_form.text }}
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="form-check">
+                                {% if is_agent %}
+                                <input class="form-check-input" type="checkbox" name="is_internal" id="internalCheck">
+                                <label class="form-check-label text-muted small" for="internalCheck">
+                                    Internal Note (Agent/Staff only)
+                                </label>
+                                {% endif %}
+                            </div>
+                            <button type="submit" name="add_comment" class="btn btn-primary px-4">
+                                <i class="fas fa-reply me-1"></i> Post Reply
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Info -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white fw-bold border-bottom py-3">Details</div>
+                <ul class="list-group list-group-flush small">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span class="text-muted">Status</span>
+                        {% if ticket.status == 'open' %}
+                        <span class="badge bg-primary">Open</span>
+                        {% elif ticket.status == 'in_progress' %}
+                        <span class="badge bg-info">In Progress</span>
+                        {% elif ticket.status == 'resolved' %}
+                        <span class="badge bg-success">Resolved</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Closed</span>
+                        {% endif %}
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span class="text-muted">Priority</span>
+                        <span>{{ ticket.get_priority_display }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span class="text-muted">Category</span>
+                        <span>{{ ticket.get_category_display }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span class="text-muted">Assigned To</span>
+                        <span class="fw-bold text-dark">{{ ticket.assignee.get_full_name|default:"Unassigned" }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal (Staff Only) -->
+{% if update_form %}
+<div class="modal fade" id="editTicketModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Manage Ticket</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    {% for field in update_form %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" name="update_ticket" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

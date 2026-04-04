@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}HR Dashboard - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">HR Management Dashboard</h1>
+            <p class="text-muted">Overview of personnel, attendance, and performance.</p>
+        </div>
+        <div>
+            <a href="{% url 'hr_management:employee_list' %}" class="btn btn-primary rounded-pill px-4">
+                <i class="fas fa-users me-2"></i>Employee Directory
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100 bg-gradient-primary text-white"
+                style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%); border-radius: 15px;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="p-3 bg-white bg-opacity-25 rounded-circle">
+                            <i class="fas fa-user-tie fa-lg"></i>
+                        </div>
+                        <div class="text-end">
+                            <h2 class="h1 fw-bold mb-0">
+                                {{ staff_count }}
+                            </h2>
+                            <span class="text-white text-opacity-75 small">Total Staff</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100 bg-white" style="border-radius: 15px;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="p-3 bg-success bg-opacity-10 text-success rounded-circle">
+                            <i class="fas fa-clock fa-lg"></i>
+                        </div>
+                        <div class="text-end">
+                            <h2 class="h1 fw-bold mb-0 text-dark">
+                                {{ active_attendance }}
+                            </h2>
+                            <span class="text-muted small">Checked In Today</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100 bg-white" style="border-radius: 15px;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="p-3 bg-info bg-opacity-10 text-info rounded-circle">
+                            <i class="fas fa-chart-line fa-lg"></i>
+                        </div>
+                        <div class="text-end">
+                            <h2 class="h1 fw-bold mb-0 text-dark">4.2</h2>
+                            <span class="text-muted small">Avg Performance</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100 bg-white" style="border-radius: 15px;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="p-3 bg-danger bg-opacity-10 text-danger rounded-circle">
+                            <i class="fas fa-file-signature fa-lg"></i>
+                        </div>
+                        <div class="text-end">
+                            <h2 class="h1 fw-bold mb-0 text-dark">
+                                {{ hiring_request_count }}
+                            </h2>
+                            <span class="text-muted small">Recruitment Requests</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Quick Actions -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+                <div class="card-header bg-transparent border-0 py-3">
+                    <h5 class="fw-bold mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'hr_management:attendance_list' %}"
+                            class="list-group-item list-group-item-action border-0 mb-2 p-3 bg-light rounded-3 d-flex align-items-center">
+                            <div class="p-2 bg-primary bg-opacity-10 text-primary rounded-circle me-3">
+                                <i class="fas fa-fingerprint"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-bold">My Attendance</h6>
+                                <small class="text-muted">Clock in or out for today</small>
+                            </div>
+                        </a>
+                        <a href="{% url 'leave_management:leave_create' %}"
+                            class="list-group-item list-group-item-action border-0 mb-2 p-3 bg-light rounded-3 d-flex align-items-center">
+                            <div class="p-2 bg-success bg-opacity-10 text-success rounded-circle me-3">
+                                <i class="fas fa-plane-departure"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-bold">Request Leave</h6>
+                                <small class="text-muted">Submit a new leave request</small>
+                            </div>
+                        </a>
+                        <a href="{% url 'hr_management:performance_list' %}"
+                            class="list-group-item list-group-item-action border-0 mb-2 p-3 bg-light rounded-3 d-flex align-items-center">
+                            <div class="p-2 bg-info bg-opacity-10 text-info rounded-circle me-3">
+                                <i class="fas fa-poll-h"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-bold">My Reviews</h6>
+                                <small class="text-muted">View your performance appraisals</small>
+                            </div>
+                        </a>
+                        <a href="{% url 'hr_management:hiring_request_list' %}"
+                            class="list-group-item list-group-item-action border-0 mb-0 p-3 bg-light rounded-3 d-flex align-items-center">
+                            <div class="p-2 bg-warning bg-opacity-10 text-warning rounded-circle me-3">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-bold">Engagement Requests</h6>
+                                <small class="text-muted">Request to employ new staff</small>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Reviews -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-header bg-transparent border-0 py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">Recent Performance Reviews</h5>
+                    <a href="{% url 'hr_management:performance_list' %}"
+                        class="btn btn-sm btn-light rounded-pill px-3">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Employee</th>
+                                    <th>Review Date</th>
+                                    <th>Rating</th>
+                                    <th>Reviewer</th>
+                                    <th class="pe-4 text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in recent_reviews %}
+                                <tr>
+                                    <td class="ps-4">
+                                        {% with u=r.employee %}{% with p=u.profile %}
+                                        <div class="d-flex align-items-center">
+                                            <div
+                                                class="avatar-sm bg-primary bg-opacity-10 text-primary rounded-circle p-2 me-2">
+                                                {{ u.username|make_list|first|upper }}
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">
+                                                    {{ u.get_full_name|default:u.username }}
+                                                </h6>
+                                                <small class="text-muted">
+                                                    {{ p.role }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                        {% endwith %}{% endwith %}
+                                    </td>
+                                    <td>
+                                        {{ r.review_date|date:"M d, Y" }}
+                                    </td>
+                                    <td>
+                                        {% for i in "12345"|make_list %}{% if forloop.counter <= r.rating %} <i
+                                            class="fas fa-star text-warning small"></i>
+                                            {% else %}
+                                            <i class="far fa-star text-muted small"></i>
+                                            {% endif %}{% endfor %}
+                                    </td>
+                                    <td>
+                                        {% with rv=r.reviewer %}
+                                        {{ rv.get_full_name|default:rv.username }}
+                                        {% endwith %}
+                                    </td>
+                                    <td class="pe-4 text-end">
+                                        <a href="{% url 'hr_management:employee_detail' r.employee.pk %}"
+                                            class="btn btn-sm btn-outline-primary rounded-pill px-3">Details</a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">No recent reviews found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+    }
+
+    .avatar-sm {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

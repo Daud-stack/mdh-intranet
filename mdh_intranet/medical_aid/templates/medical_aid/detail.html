@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block title %}Preauthorization #{{ req.pk }} - OpsHub{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'medical_aid:list' %}">Medical Aid</a></li>
+                <li class="breadcrumb-item active">Request #{{ req.pk }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+{% if messages %}
+<div class="row mb-3">
+    <div class="col-12">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-4 border-0 shadow-sm"
+            role="alert">
+            <i
+                class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <!-- Header -->
+        <div class="glass-card overflow-hidden border-0 mb-4">
+            <div class="p-4 bg-white border-bottom d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-primary bg-opacity-10 p-2 rounded-3 text-primary">
+                        <i class="fas fa-file-medical"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0 fw-bold">{{ req.patient_name }}</h5>
+                        <small class="text-muted">{{ req.patient_id }} • Ref: PA-{{ req.pk|stringformat:"04d" }}</small>
+                    </div>
+                </div>
+                <span
+                    class="badge rounded-pill px-4 py-2 fs-6 {% if req.status == 'PENDING' %}bg-warning bg-opacity-10 text-warning{% elif req.status == 'APPROVED' %}bg-success bg-opacity-10 text-success{% else %}bg-danger bg-opacity-10 text-danger{% endif %}">{{ req.get_status_display }}</span>
+            </div>
+        </div>
+
+        <!-- Patient Details -->
+        <div class="glass-card overflow-hidden border-0 mb-4">
+            <div class="p-4 bg-white border-bottom">
+                <h6 class="mb-0 fw-bold"><i class="fas fa-user-injured me-2 text-primary"></i>Patient Information</h6>
+            </div>
+            <div class="p-4 bg-white">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="small text-muted text-uppercase fw-bold tracking-wider mb-1">Patient ID</div>
+                        <div class="fw-bold">{{ req.patient_id }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="small text-muted text-uppercase fw-bold tracking-wider mb-1">Full Name</div>
+                        <div class="fw-bold">{{ req.patient_name }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="small text-muted text-uppercase fw-bold tracking-wider mb-1">Date of Birth</div>
+                        <div class="fw-bold">{{ req.patient_dob|date:"d M Y"|default:"Not provided" }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="small text-muted text-uppercase fw-bold tracking-wider mb-1">Gender</div>
+                        <div class="fw-bold">{{ req.patient_gender|default:"Not provided" }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="small text-muted text-uppercase fw-bold tracking-wider mb-1">Contact</div>
+                        <div class="fw-bold">{{ req.patient_phone|default:"Not provided" }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="small text-muted text-uppercase fw-bold tracking-wider mb-1">Emergency</div>
+                        <div class="fw-bold">{% if req.is_emergency %}<span class="badge bg-danger">YES</span>{% else %}No{% endif %}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Insurance Details -->
+        <div class="glass-card overflow-hidden border-0 mb-4">
+            <div class="p-4 bg-white border-bottom">
+                <h6 class="mb-0 fw-bold"><i class="fas fa-id-card me-2 text-success"></i>Insurance / Scheme</h6>
+            </div>
+            <div class="p-4 bg-white">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="small text-muted text-uppercase fw-bold tracking-wider mb-1">Scheme</div>
+                        <div class="fw-bold">{{ req.get_scheme_display }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="small text-muted text-uppercase fw-bold tracking-wider mb-1">Plan / Tier</div>
+                        <div class="fw-bold">{{ req.scheme_plan|default:"—" }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="small text-muted text-uppercase fw-bold tracking-wider mb-1">Member Number</div>
+                        <div class="fw-bold">{{ req.member_number|default:"—" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="small text-muted text-uppercase fw-bold tracking-wider mb-1">Principal Member</div>
+                        <div class="fw-bold">{{ req.principal_name|default:"—" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="small text-muted text-uppercase fw-bold tracking-wider mb-1">Relationship</div>
+                        <div class="fw-bold">{{ req.relationship|default:"—" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clinical Information -->
+        <div class="glass-card overflow-hidden border-0 mb-4">
+            <div class="p-4 bg-white border-bottom">
+                <h6 class="mb-0 fw-bold"><i class="fas fa-stethoscope me-2 text-info"></i>Clinical Information</h6>
+            </div>
+            <div class="p-4 bg-white">
+                <div class="mb-4">
+                    <div class="small text-muted text-uppercase fw-bold tracking-wider mb-2">Diagnosis</div>
+                    <div class="p-3 rounded-3 bg-light">{{ req.diagnosis }}</div>
+                </div>
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="small text-muted text-uppercase fw-bold tracking-wider mb-1">ICD-11 Code</div>
+                        <div class="fw-bold">{{ req.icd_code|default:"—" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="small text-muted text-uppercase fw-bold tracking-wider mb-1">Procedure Code (CPT)
+                        </div>
+                        <div class="fw-bold">{{ req.procedure_code|default:"—" }}</div>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <div class="small text-muted text-uppercase fw-bold tracking-wider mb-2">Procedure / Treatment</div>
+                    <div class="p-3 rounded-3 bg-light fw-bold">{{ req.procedure }}</div>
+                </div>
+                {% if req.clinical_notes %}
+                <div>
+                    <div class="small text-muted text-uppercase fw-bold tracking-wider mb-2">Clinical Notes</div>
+                    <div class="p-3 rounded-3 bg-light fst-italic">{{ req.clinical_notes }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Provider & Financial -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="glass-card overflow-hidden border-0 h-100">
+                    <div class="p-4 bg-white border-bottom">
+                        <h6 class="mb-0 fw-bold"><i class="fas fa-hospital me-2 text-warning"></i>Provider</h6>
+                    </div>
+                    <div class="p-4 bg-white">
+                        <div class="mb-3">
+                            <div class="small text-muted text-uppercase fw-bold tracking-wider mb-1">Facility</div>
+                            <div class="fw-bold">{{ req.facility_name }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="small text-muted text-uppercase fw-bold tracking-wider mb-1">Referring Doctor
+                            </div>
+                            <div class="fw-bold">{{ req.referring_doctor|default:"—" }}</div>
+                        </div>
+                        <div>
+                            <div class="small text-muted text-uppercase fw-bold tracking-wider mb-1">Attending Doctor
+                            </div>
+                            <div class="fw-bold">{{ req.attending_doctor|default:"—" }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="glass-card overflow-hidden border-0 h-100">
+                    <div class="p-4 bg-white border-bottom">
+                        <h6 class="mb-0 fw-bold"><i class="fas fa-file-invoice-dollar me-2 text-danger"></i>Financial
+                        </h6>
+                    </div>
+                    <div class="p-4 bg-white">
+                        <div class="mb-3">
+                            <div class="small text-muted text-uppercase fw-bold tracking-wider mb-1">Estimated Cost
+                            </div>
+                            <div class="h4 fw-bold text-primary">{% if req.amount %}{{ req.currency }} {{ req.amount }}{% else %}Not specified{% endif %}</div>
+                        </div>
+                        {% if req.auth_number %}
+                        <div class="mb-3">
+                            <div class="small text-muted text-uppercase fw-bold tracking-wider mb-1">Auth Number</div>
+                            <div class="fw-bold text-success">{{ req.auth_number }}</div>
+                        </div>
+                        {% endif %}
+                        {% if req.supporting_document %}
+                        <div>
+                            <a href="{{ req.supporting_document.url }}" target="_blank"
+                                class="btn btn-outline-primary rounded-pill px-4 btn-sm">
+                                <i class="fas fa-paperclip me-2"></i>View Attachment
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+
+        <!-- Send Email to Medical Aid -->
+        <div class="glass-card border-0 mb-4 overflow-hidden">
+            <div class="p-4 bg-white border-bottom">
+                <h6 class="mb-0 fw-bold"><i class="fas fa-envelope me-2 text-primary"></i>Send to Medical Aid</h6>
+            </div>
+            <div class="p-4 bg-white">
+                {% if req.email_sent_at %}
+                <div class="alert alert-success rounded-3 border-0 mb-3">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <i class="fas fa-check-circle"></i>
+                        <strong>Previously Sent</strong>
+                    </div>
+                    <div class="small">
+                        To: {{ req.sent_to_email }}<br>
+                        On: {{ req.email_sent_at|date:"d M Y, H:i" }}<br>
+                        By: {{ req.email_sent_by.get_full_name|default:req.email_sent_by.username }}
+                    </div>
+                </div>
+                {% endif %}
+
+                <form method="post" action="{% url 'medical_aid:send_email' req.pk %}" id="emailForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase tracking-wider">From (Your Email) <span
+                                class="text-danger">*</span></label>
+                        {{ email_form.from_email }}
+                        <div class="form-text small">Your email address — replies will come here.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase tracking-wider">To (Medical Aid) <span
+                                class="text-danger">*</span></label>
+                        {{ email_form.to_email }}
+                        <div class="form-text small">Auto-filled based on scheme. You can change it.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase tracking-wider">CC (optional)</label>
+                        {{ email_form.cc_email }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase tracking-wider">Subject</label>
+                        {{ email_form.subject }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase tracking-wider">Additional Message</label>
+                        {{ email_form.message }}
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary rounded-pill py-2 fw-bold" id="sendEmailBtn">
+                            <i class="fas fa-paper-plane me-2"></i>Send Email with Excel
+                        </button>
+                        <small class="text-muted text-center">The preauth Excel form will be attached
+                            automatically</small>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Download Excel -->
+        <div class="glass-card border-0 mb-4 overflow-hidden">
+            <div class="p-4 bg-white text-center">
+                <a href="{% url 'medical_aid:export_excel' req.pk %}"
+                    class="btn btn-outline-success rounded-pill px-5 py-2 fw-bold w-100">
+                    <i class="fas fa-download me-2"></i>Download Excel Copy
+                </a>
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="glass-card border-0 overflow-hidden">
+            <div class="p-4 bg-white border-bottom">
+                <h6 class="mb-0 fw-bold"><i class="fas fa-clock me-2 text-muted"></i>Timeline</h6>
+            </div>
+            <div class="p-4 bg-white">
+                <div class="d-flex gap-3 mb-3">
+                    <div class="bg-primary p-1 rounded-circle mt-1" style="width: 10px; height: 10px; min-width: 10px;">
+                    </div>
+                    <div>
+                        <div class="small fw-bold">Request Submitted</div>
+                        <div class="small text-muted">{{ req.created_at|date:"d M Y, H:i" }}</div>
+                        {% if req.submitted_by %}<div class="small text-muted">By {{ req.submitted_by.get_full_name|default:req.submitted_by.username }}</div>{% endif %}
+                    </div>
+                </div>
+                {% if req.email_sent_at %}
+                <div class="d-flex gap-3 mb-3">
+                    <div class="bg-success p-1 rounded-circle mt-1" style="width: 10px; height: 10px; min-width: 10px;">
+                    </div>
+                    <div>
+                        <div class="small fw-bold">Email Sent</div>
+                        <div class="small text-muted">{{ req.email_sent_at|date:"d M Y, H:i" }}</div>
+                        <div class="small text-muted">To: {{ req.sent_to_email }}</div>
+                    </div>
+                </div>
+                {% endif %}
+                {% if req.updated_at != req.created_at %}
+                <div class="d-flex gap-3">
+                    <div class="bg-info p-1 rounded-circle mt-1" style="width: 10px; height: 10px; min-width: 10px;">
+                    </div>
+                    <div>
+                        <div class="small fw-bold">Last Updated</div>
+                        <div class="small text-muted">{{ req.updated_at|date:"d M Y, H:i" }}</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Back buttons -->
+        <div class="mt-4">
+            <a href="{% url 'medical_aid:list' %}" class="btn btn-outline-secondary rounded-pill w-100 py-2 mb-2">
+                <i class="fas fa-arrow-left me-2"></i>Back to All Requests
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Confirm before sending email
+    document.getElementById('emailForm').addEventListener('submit', function (e) {
+        const email = document.getElementById('id_to_email').value;
+        if (!confirm('Send preauthorization form to ' + email + '?')) {
+            e.preventDefault();
+        } else {
+            const btn = document.getElementById('sendEmailBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+        }
+    });
+</script>
+{% endblock %}

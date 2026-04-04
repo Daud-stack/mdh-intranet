@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}{{ incident.incident_number }} - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'incident_log:index' %}">Incident Log</a></li>
+                    <li class="breadcrumb-item active">{{ incident.incident_number }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="d-flex align-items-center gap-3 mb-2">
+                <span class="badge bg-dark font-monospace fs-6">{{ incident.incident_number }}</span>
+                {% if incident.severity == 'Critical' %}
+                <span class="badge bg-danger">Critical</span>
+                {% elif incident.severity == 'High' %}
+                <span class="badge bg-warning text-dark">High</span>
+                {% elif incident.severity == 'Medium' %}
+                <span class="badge bg-info text-dark">Medium</span>
+                {% else %}
+                <span class="badge bg-secondary">Low</span>
+                {% endif %}
+                {% if incident.status == 'Open' %}
+                <span class="badge bg-warning text-dark">Open</span>
+                {% elif incident.status == 'Under Investigation' %}
+                <span class="badge bg-info">Under Investigation</span>
+                {% elif incident.status == 'Resolved' %}
+                <span class="badge bg-success">Resolved</span>
+                {% else %}
+                <span class="badge bg-secondary">Closed</span>
+                {% endif %}
+                {% if incident.is_overdue %}
+                <span class="badge bg-danger"><i class="fas fa-clock"></i> Overdue</span>
+                {% endif %}
+            </div>
+            <h2 class="fw-bold mb-1">{{ incident.title }}</h2>
+            <p class="text-muted mb-0">
+                <i class="fas fa-map-marker-alt me-1"></i> {{ incident.location }}
+                &nbsp;•&nbsp;
+                <i class="fas fa-tag me-1"></i> {{ incident.get_category_display }}
+                &nbsp;•&nbsp;
+                <i class="fas fa-flag me-1"></i> {{ incident.get_priority_display }}
+            </p>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if user.is_staff or user == incident.reported_by or user == incident.assigned_to %}
+            <a href="{% url 'incident_log:update' incident.pk %}" class="btn btn-outline-primary me-2">
+                <i class="fas fa-edit"></i> Update
+            </a>
+            {% endif %}
+            {% if user.is_staff %}
+            <a href="{% url 'incident_log:delete' incident.pk %}" class="btn btn-outline-danger">
+                <i class="fas fa-trash"></i> Delete
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Description -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-align-left text-primary me-2"></i>Description</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0" style="white-space: pre-line;">{{ incident.description }}</p>
+                </div>
+            </div>
+
+            <!-- Immediate Action -->
+            {% if incident.immediate_action %}
+            <div class="card border-0 shadow-sm mb-4 border-start border-4 border-info">
+                <div class="card-body">
+                    <h6 class="fw-bold"><i class="fas fa-first-aid text-info me-2"></i>Immediate Action Taken</h6>
+                    <p class="mb-0" style="white-space: pre-line;">{{ incident.immediate_action }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- People Involved -->
+            {% if incident.persons_involved or incident.witnesses %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-users text-primary me-2"></i>People Involved</h5>
+                </div>
+                <div class="card-body">
+                    {% if incident.persons_involved %}
+                    <div class="mb-3">
+                        <h6 class="text-muted small text-uppercase fw-bold">Persons Directly Involved</h6>
+                        <p class="mb-0" style="white-space: pre-line;">{{ incident.persons_involved }}</p>
+                    </div>
+                    {% endif %}
+                    {% if incident.witnesses %}
+                    <div>
+                        <h6 class="text-muted small text-uppercase fw-bold">Witnesses</h6>
+                        <p class="mb-0" style="white-space: pre-line;">{{ incident.witnesses }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Resolution (if resolved) -->
+            {% if incident.resolution_notes or incident.corrective_actions %}
+            <div class="card border-0 shadow-sm mb-4 border-start border-4 border-success">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-check-circle text-success me-2"></i>Resolution</h5>
+                </div>
+                <div class="card-body">
+                    {% if incident.resolution_notes %}
+                    <div class="mb-3">
+                        <h6 class="text-muted small text-uppercase fw-bold">Resolution Notes</h6>
+                        <p class="mb-0" style="white-space: pre-line;">{{ incident.resolution_notes }}</p>
+                    </div>
+                    {% endif %}
+                    {% if incident.corrective_actions %}
+                    <div>
+                        <h6 class="text-muted small text-uppercase fw-bold">Corrective Actions</h6>
+                        <p class="mb-0" style="white-space: pre-line;">{{ incident.corrective_actions }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Metadata -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white fw-bold border-bottom py-3">Details</div>
+                <ul class="list-group list-group-flush small">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span class="text-muted">Status</span>
+                        {% if incident.status == 'Open' %}
+                        <span class="badge bg-warning text-dark">{{ incident.status }}</span>
+                        {% elif incident.status == 'Under Investigation' %}
+                        <span class="badge bg-info">{{ incident.status }}</span>
+                        {% elif incident.status == 'Resolved' %}
+                        <span class="badge bg-success">{{ incident.status }}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ incident.status }}</span>
+                        {% endif %}
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span class="text-muted">Category</span>
+                        <span>{{ incident.get_category_display }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span class="text-muted">Severity</span>
+                        {% if incident.severity == 'Critical' %}
+                        <span class="badge bg-danger">{{ incident.severity }}</span>
+                        {% elif incident.severity == 'High' %}
+                        <span class="badge bg-warning text-dark">{{ incident.severity }}</span>
+                        {% elif incident.severity == 'Medium' %}
+                        <span class="badge bg-info text-dark">{{ incident.severity }}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ incident.severity }}</span>
+                        {% endif %}
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span class="text-muted">Priority</span>
+                        <span>{{ incident.get_priority_display }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span class="text-muted">Location</span>
+                        <span>{{ incident.location }}</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Timeline -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white fw-bold border-bottom py-3">Timeline</div>
+                <ul class="list-group list-group-flush small">
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Occurred</span>
+                            <span>{{ incident.date_occurred|date:"M d, Y H:i" }}</span>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Reported</span>
+                            <span>{{ incident.date_reported|date:"M d, Y H:i" }}</span>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Reported By</span>
+                            <span class="fw-bold">{{ incident.reported_by.get_full_name|default:incident.reported_by.username }}</span>
+                        </div>
+                    </li>
+                    {% if incident.assigned_to %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Assigned To</span>
+                            <span class="fw-bold">{{ incident.assigned_to.get_full_name|default:incident.assigned_to.username }}</span>
+                        </div>
+                    </li>
+                    {% endif %}
+                    {% if incident.resolved_at %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Resolved</span>
+                            <span>{{ incident.resolved_at|date:"M d, Y H:i" }}</span>
+                        </div>
+                    </li>
+                    {% endif %}
+                    {% if incident.resolved_by %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Resolved By</span>
+                            <span class="fw-bold">{{ incident.resolved_by.get_full_name|default:incident.resolved_by.username }}</span>
+                        </div>
+                    </li>
+                    {% endif %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Last Updated</span>
+                            <span>{{ incident.updated_at|date:"M d, Y H:i" }}</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Quick Actions -->
+            {% if user.is_staff or user == incident.reported_by %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">Quick Actions</h6>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'incident_log:update' incident.pk %}" class="btn btn-outline-primary">
+                            <i class="fas fa-edit me-1"></i> Update Incident
+                        </a>
+                        <a href="{% url 'capa:create' %}?incident={{ incident.pk }}" class="btn btn-outline-info">
+                            <i class="fas fa-clipboard-check me-1"></i> Create CAPA
+                        </a>
+                        <a href="{% url 'incident_log:index' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Back to Log
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

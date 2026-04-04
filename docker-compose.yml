@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: hospital_db
+    restart: always
+    environment:
+      POSTGRES_DB: hospital_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  collabora:
+    image: collabora/code
+    container_name: collabora
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "9980:9980"
+    environment:
+      # Use a broad regex to allow local development hosts
+      - domain=host\.docker\.internal|localhost|10\.232\.190\.161
+      - username=admin
+      - password=StrongPassword123
+      - extra_params=--o:ssl.enable=false
+    cap_add:
+      - MKNOD
+    volumes:
+      # Mount the configuration file we prepared to fix the "Unauthorized WOPI host" error
+      - C:\collabora\coolwsd.xml:/etc/coolwsd/coolwsd.xml
+
+volumes:
+  postgres_data:

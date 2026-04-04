@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block title %}Stock & Requisitions - OpsHub{% endblock %}
+
+{% block content %}
+<div class="row mb-5 align-items-end">
+    <div class="col-md-8">
+        <h4 class="text-muted fw-medium mb-1">Inventory Management</h4>
+        <h1 class="display-6 fw-bold tracking-tight">Stock & Requisitions</h1>
+        <p class="lead text-muted">Manage facility inventory and streamline internal supply requests.</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <div class="d-flex justify-content-md-end gap-2">
+            <a href="{% url 'stock_management:create_requisition' %}"
+                class="btn btn-primary rounded- pill px-4 py-2 shadow-sm">
+                <i class="fas fa-plus me-2"></i>New Requisition
+            </a>
+            <a href="{% url 'stock_management:stock_list' %}"
+                class="btn btn-white border-0 shadow-sm rounded-pill px-4 py-2">
+                <i class="fas fa-search me-2"></i>Browse Stock
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Stats row -->
+<div class="row g-4 mb-5">
+    {% if user.is_staff %}
+    <div class="col-md-3">
+        <div class="glass-card p-4 h-100 border-0 stat-card" style="--accent: #3b82f6;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="stat-icon-wrapper p-3 rounded-4 bg-primary bg-opacity-10 text-primary">
+                    <i class="fas fa-boxes fa-lg"></i>
+                </div>
+            </div>
+            <div class="text-muted small fw-semibold text-uppercase tracking-wider">Total Items</div>
+            <div class="h2 fw-bold my-1">{{ total_items }}</div>
+            <div class="small text-muted mt-2">Active SKUs</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-card p-4 h-100 border-0 stat-card" style="--accent: #ef4444;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="stat-icon-wrapper p-3 rounded-4 bg-danger bg-opacity-10 text-danger">
+                    <i class="fas fa-exclamation-triangle fa-lg"></i>
+                </div>
+                {% if low_stock_count > 0 %}
+                <span class="badge bg-danger rounded-pill px-2 py-1">Critical</span>
+                {% endif %}
+            </div>
+            <div class="text-muted small fw-semibold text-uppercase tracking-wider">Low Stock</div>
+            <div class="h2 fw-bold my-1 {% if low_stock_count > 0 %}text-danger{% endif %}">{{ low_stock_count }}</div>
+            <div class="small text-muted mt-2">Requires attention</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-card p-4 h-100 border-0 stat-card" style="--accent: #f59e0b;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="stat-icon-wrapper p-3 rounded-4 bg-warning bg-opacity-10 text-warning">
+                    <i class="fas fa-clock fa-lg"></i>
+                </div>
+            </div>
+            <div class="text-muted small fw-semibold text-uppercase tracking-wider">Pending Approvals</div>
+            <div class="h2 fw-bold my-1">{{ pending_count }}</div>
+            <div class="small text-muted mt-2">Requisitions waiting</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-card p-4 h-100 border-0 stat-card d-flex flex-column justify-content-center text-center shadow-none hover-translate-y"
+            style="background: rgba(248, 250, 252, 0.5);">
+            <a href="{% url 'stock_management:my_requisitions' %}" class="text-decoration-none text-dark">
+                <div class="stat-icon-wrapper p-3 rounded-circle bg-white shadow-sm d-inline-flex mb-3">
+                    <i class="fas fa-file-alt text-info fa-lg"></i>
+                </div>
+                <h6 class="fw-bold mb-0">My Requisitions</h6>
+                <p class="small text-muted mb-0">Track your requests</p>
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-md-6">
+        <div class="glass-card p-5 h-100 border-0 text-white overflow-hidden position-relative"
+            style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);">
+            <div class="position-absolute top-0 end-0 opacity-10"
+                style="font-size: 10rem; transform: translate(20%, -20%);">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <div class="position-relative z-1">
+                <h6 class="text-uppercase tracking-wider fw-bold opacity-75 mb-3">Requisition Status</h6>
+                <div class="d-flex align-items-end gap-3 mb-4">
+                    <h1 class="display-3 fw-bold mb-0">{{ user_requisitions_count }}</h1>
+                    <p class="h4 opacity-75 mb-2">Active Requests</p>
+                </div>
+                <a href="{% url 'stock_management:my_requisitions' %}"
+                    class="btn btn-white btn-sm rounded-pill px-4 fw-bold">View History</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="glass-card p-4 h-100 border-0">
+            <h5 class="fw-bold mb-4">Quick Actions</h5>
+            <div class="d-grid gap-3">
+                <a href="{% url 'stock_management:create_requisition' %}"
+                    class="btn btn-primary btn-lg rounded-4 p-3 text-start d-flex justify-content-between align-items-center border-0 shadow-sm">
+                    <div>
+                        <div class="fw-bold">Create New Request</div>
+                        <div class="small opacity-75">Submit a requisition for medical supplies</div>
+                    </div>
+                    <i class="fas fa-plus-circle fa-lg"></i>
+                </a>
+                <a href="{% url 'stock_management:stock_list' %}"
+                    class="btn btn-white btn-lg rounded-4 p-3 text-start d-flex justify-content-between align-items-center border-0 shadow-sm">
+                    <div>
+                        <div class="fw-bold">Browse Stock Items</div>
+                        <div class="small text-muted">Check current availability of supplies</div>
+                    </div>
+                    <i class="fas fa-search-plus fa-lg text-primary"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Low Stock Section -->
+{% if low_stock_items %}
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="glass-card overflow-hidden border-0">
+            <div class="p-4 bg-white border-bottom d-flex align-items-center gap-3">
+                <div class="bg-danger bg-opacity-10 p-2 rounded-3 text-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <h5 class="mb-0 fw-bold">Critical Low Stock Alerts</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 custom-table">
+                    <thead class="text-muted small text-uppercase">
+                        <tr>
+                            <th class="ps-4">Item Name</th>
+                            <th>Category</th>
+                            <th>Available</th>
+                            <th>Min Level</th>
+                            <th class="text-end pe-4">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in low_stock_items %}
+                        <tr>
+                            <td class="ps-4 fw-bold text-dark">{{ item.name }}</td>
+                            <td><span class="badge bg-light text-dark rounded-pill px-3">{{ item.category.name }}</span>
+                            </td>
+                            <td><span class="text-danger fw-bold">{{ item.current_quantity }} {{ item.unit }}</span>
+                            </td>
+                            <td>{{ item.min_threshold }} {{ item.unit }}</td>
+                            <td class="text-end pe-4">
+                                <span class="badge-status status-rejected">{{ item.stock_status }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Main Content row -->
+{% if user.is_staff %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="glass-card h-100 overflow-hidden border-0">
+            <div class="p-4 bg-white border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">Recent Requisitions</h5>
+                <a href="{% url 'stock_management:pending_approvals' %}"
+                    class="btn btn-link text-primary text-decoration-none fw-bold p-0">View All</a>
+            </div>
+            <div class="p-0">
+                {% if pending_requisitions %}
+                <div class="list-group list-group-flush">
+                    {% for req in pending_requisitions %}
+                    <a href="{% url 'stock_management:requisition_detail' req.pk %}"
+                        class="list-group-item list-group-item-action p-4 border-0 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="d-flex gap-3">
+                                <div class="bg-warning bg-opacity-10 rounded-3 p-2 text-warning"
+                                    style="height: fit-content;">
+                                    <i class="fas fa-file-invoice"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1 fw-bold text-dark">{{ req.requisition_number }}</h6>
+                                    <div class="small text-muted mb-2">
+                                        <span class="badge bg-light text-dark me-2">{{ req.get_department_display }}</span>
+                                        <span class="me-2">{{ req.total_items }} items</span>
+                                        <span>by {{ req.requested_by.username }}</span>
+                                    </div>
+                                    <div class="small text-muted"><i class="far fa-clock me-1"></i>{{ req.created_at|date:"M d, Y" }}</div>
+                                </div>
+                            </div>
+                            <span
+                                class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 py-2">Pending</span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <div class="opacity-25 mb-3">
+                        <i class="fas fa-check-circle fa-3x"></i>
+                    </div>
+                    <p class="text-muted mb-0">No pending requisitions to approve.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="glass-card h-100 overflow-hidden border-0">
+            <div class="p-4 bg-white border-bottom">
+                <h5 class="mb-0 fw-bold">Recent Supplier Orders</h5>
+            </div>
+            <div class="p-4">
+                {% if recent_orders %}
+                <div class="d-flex flex-column gap-3">
+                    {% for order in recent_orders %}
+                    <div
+                        class="p-3 bg-light rounded-4 border-start border-4 border-{% if order.status == 'received' %}success{% elif order.status == 'ordered' %}primary{% else %}secondary{% endif %}">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-bold text-dark">{{ order.order_number }}</span>
+                            <span
+                                class="small fw-bold text-uppercase text-{% if order.status == 'received' %}success{% elif order.status == 'ordered' %}primary{% else %}muted{% endif %}">{{ order.get_status_display }}</span>
+                        </div>
+                        <div class="small text-muted">{{ order.supplier }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-4 mb-0">No recent orders found.</p>
+                {% endif %}
+                <div class="mt-4">
+                    <button class="btn btn-outline-primary w-100 rounded-pill fw-bold">Inventory Reports</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+    .tracking-tight {
+        letter-spacing: -0.025em;
+    }
+
+    .tracking-wider {
+        letter-spacing: 0.05em;
+    }
+
+    .btn-white {
+        background: white;
+        color: var(--text-main);
+        transition: all 0.2s;
+    }
+
+    .btn-white:hover {
+        background: #f1f5f9;
+        transform: translateY(-2px);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .custom-table thead th {
+        font-size: 0.75rem;
+        padding: 1.25rem 1rem;
+    }
+
+    .badge-status {
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .status-rejected {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .list-group-item:hover {
+        background-color: #f8fafc;
+    }
+
+    .transition-all {
+        transition: all 0.3s ease;
+    }
+
+    .hover-translate-y:hover {
+        transform: translateY(-3px);
+    }
+</style>
+{% endblock %}

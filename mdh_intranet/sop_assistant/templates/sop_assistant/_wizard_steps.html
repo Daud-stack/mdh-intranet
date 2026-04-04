@@ -1,0 +1,114 @@
+<!-- Wizard Step Indicator (reusable partial) -->
+<div class="wizard-steps mb-5">
+    <div class="wizard-step {% if current_step == 1 %}active{% elif current_step > 1 %}completed{% endif %}">
+        <div class="wizard-step-number">
+            {% if current_step > 1 %}<i class="fas fa-check small"></i>{% else %}1{% endif %}
+        </div>
+        <div class="wizard-step-label">Template</div>
+    </div>
+    <div class="wizard-step-line {% if current_step > 1 %}completed{% endif %}"></div>
+
+    <div class="wizard-step {% if current_step == 2 %}active{% elif current_step > 2 %}completed{% endif %}">
+        <div class="wizard-step-number">
+            {% if current_step > 2 %}<i class="fas fa-check small"></i>{% else %}2{% endif %}
+        </div>
+        <div class="wizard-step-label">Metadata</div>
+    </div>
+    <div class="wizard-step-line {% if current_step > 2 %}completed{% endif %}"></div>
+
+    <div class="wizard-step {% if current_step == 3 %}active{% elif current_step > 3 %}completed{% endif %}">
+        <div class="wizard-step-number">
+            {% if current_step > 3 %}<i class="fas fa-check small"></i>{% else %}3{% endif %}
+        </div>
+        <div class="wizard-step-label">Content</div>
+    </div>
+    <div class="wizard-step-line {% if current_step > 3 %}completed{% endif %}"></div>
+
+    {% if total_steps == 5 %}
+    <div class="wizard-step {% if current_step == 4 %}active{% elif current_step > 4 %}completed{% endif %}">
+        <div class="wizard-step-number">
+            {% if current_step > 4 %}<i class="fas fa-check small"></i>{% else %}4{% endif %}
+        </div>
+        <div class="wizard-step-label">ICD‑11</div>
+    </div>
+    <div class="wizard-step-line {% if current_step > 4 %}completed{% endif %}"></div>
+    {% endif %}
+
+    <div class="wizard-step {% if current_step == total_steps %}active{% endif %}">
+        <div class="wizard-step-number">{{ total_steps }}</div>
+        <div class="wizard-step-label">Validate</div>
+    </div>
+</div>
+
+<style>
+    .wizard-steps {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        padding: 1.5rem 2rem;
+        background: linear-gradient(135deg, #f8fafc, #eef2ff);
+        border-radius: 1rem;
+        border: 1px solid rgba(99, 102, 241, 0.08);
+    }
+
+    .wizard-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .wizard-step-number {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #e2e8f0;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .wizard-step.active .wizard-step-number {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        box-shadow: 0 4px 15px -3px rgba(99, 102, 241, 0.4);
+    }
+
+    .wizard-step.completed .wizard-step-number {
+        background: #10b981;
+        color: white;
+    }
+
+    .wizard-step-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .wizard-step.active .wizard-step-label {
+        color: #6366f1;
+    }
+
+    .wizard-step.completed .wizard-step-label {
+        color: #10b981;
+    }
+
+    .wizard-step-line {
+        width: 50px;
+        height: 2px;
+        background: #cbd5e1;
+        margin: 0 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .wizard-step-line.completed {
+        background: #10b981;
+    }
+</style>

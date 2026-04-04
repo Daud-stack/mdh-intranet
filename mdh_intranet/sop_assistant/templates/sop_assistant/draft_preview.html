@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Preview SOP - SOP Assistant - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'sop_assistant:index' %}">SOP Assistant</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Preview & Publish</li>
+        </ol>
+    </nav>
+
+    <!-- Success Banner -->
+    <div class="glass-card border-0 p-4 mb-4"
+        style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 1px solid #bbf7d0 !important;">
+        <div class="d-flex align-items-center gap-3">
+            <div class="p-3 rounded-4 bg-success bg-opacity-10 text-success">
+                <i class="fas fa-check-double fa-lg"></i>
+            </div>
+            <div class="flex-grow-1">
+                <h5 class="fw-bold text-success mb-0">SOP Compiled Successfully</h5>
+                <p class="text-muted mb-0 small">Your SOP is ready to be published to the SOP Manual. Review the
+                    formatted preview below.</p>
+            </div>
+            <div>
+                <span class="badge bg-success rounded-pill px-3 py-2">
+                    Score: {{ draft.validation_score }}/100
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Preview -->
+        <div class="col-lg-9">
+            <div class="glass-card border-0 overflow-hidden mb-4">
+                <div class="p-4 border-bottom d-flex align-items-center justify-content-between"
+                    style="background: linear-gradient(135deg, #f8fafc, #f1f5f9);">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-eye text-primary me-2"></i> Document Preview
+                    </h5>
+                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">OpsHub Format</span>
+                </div>
+                <div class="p-4">
+                    <div class="sop-preview-content">
+                        {{ draft.compiled_content|safe }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Publish Panel -->
+        <div class="col-lg-3">
+            <div class="glass-card border-0 p-4 mb-3" style="position: sticky; top: 1rem;">
+                <h6 class="fw-bold mb-3">
+                    <i class="fas fa-rocket text-primary me-2"></i> Publish
+                </h6>
+
+                <div class="mb-3">
+                    <ul class="list-unstyled small">
+                        <li class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">Title</span>
+                            <span class="fw-bold text-end" style="max-width: 60%;">{{ draft.title|truncatechars:30
+                                }}</span>
+                        </li>
+                        <li class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">Version</span>
+                            <span>{{ draft.version }}</span>
+                        </li>
+                        <li class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">Category</span>
+                            <span>{{ draft.target_category.name|default:"—" }}</span>
+                        </li>
+                        <li class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">Score</span>
+                            <span class="badge bg-success bg-opacity-10 text-success">{{ draft.validation_score
+                                }}%</span>
+                        </li>
+                        <li class="d-flex justify-content-between py-2">
+                            <span class="text-muted">Author</span>
+                            <span>{{ draft.author.get_full_name|default:draft.author.username }}</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="alert alert-info small py-2 px-3 rounded-3 mb-3" style="font-size: 0.78rem;">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Publishing will create a new entry in the SOP Manual
+                    {% if draft.target_category %}under "{{ draft.target_category.name }}"{% endif %}.
+                </div>
+
+                <form method="post" id="publish-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="publish">
+                    <button type="submit"
+                        class="btn btn-success rounded-pill w-100 fw-bold py-2 shadow-sm publish-btn mb-2"
+                        onclick="return confirm('Publish this SOP to the SOP Manual? This action will create a published SOP entry.');">
+                        <i class="fas fa-paper-plane me-2"></i> Publish Directly
+                    </button>
+                    <a href="{% url 'core:approval_create' %}?object_repr=Approval for SOP: {{ draft.title|urlencode }}&module=sop_assistant" 
+                       class="btn btn-warning rounded-pill w-100 fw-bold py-2 shadow-sm mb-3 text-dark">
+                        <i class="fas fa-file-signature me-2"></i> Request Review & Approval
+                    </a>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'sop_assistant:export_draft_pdf' draft.pk %}"
+                            class="btn btn-outline-danger w-50 btn-sm rounded-pill py-2 shadow-sm"
+                            data-bs-toggle="tooltip" title="Export as PDF">
+                            <i class="fas fa-file-pdf me-1"></i> PDF
+                        </a>
+                        <a href="{% url 'sop_assistant:export_draft_docx' draft.pk %}"
+                            class="btn btn-outline-primary w-50 btn-sm rounded-pill py-2 shadow-sm"
+                            data-bs-toggle="tooltip" title="Export as Microsoft Word">
+                            <i class="fas fa-file-word me-1"></i> DOCX
+                        </a>
+                    </div>
+                </form>
+
+                <hr class="my-3">
+
+                <div class="d-grid gap-2">
+                    <a href="{% url 'sop_assistant:draft_validate' draft.pk %}"
+                        class="btn btn-outline-secondary btn-sm rounded-pill">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Validation
+                    </a>
+                    <a href="{% url 'sop_assistant:draft_content' draft.pk %}"
+                        class="btn btn-outline-primary btn-sm rounded-pill">
+                        <i class="fas fa-pen me-1"></i> Edit Content
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .sop-preview-content {
+        font-family: 'Inter', -apple-system, sans-serif;
+        font-size: 1rem;
+        line-height: 1.8;
+        color: #2c3e50;
+    }
+
+    .sop-preview-content .sop-header-block {
+        border: 2px solid #0d6efd;
+        border-radius: 8px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #f8fbff, #e8f4ff);
+    }
+
+    .sop-preview-content .sop-header-block table {
+        margin: 0 !important;
+        border: none !important;
+    }
+
+    .sop-preview-content .sop-header-block th {
+        background: #0d6efd !important;
+        color: white !important;
+        font-weight: 700;
+        padding: 0.75rem 1rem !important;
+    }
+
+    .sop-preview-content .sop-header-block td {
+        background: #f8fbff;
+        padding: 0.75rem 1rem !important;
+        border: 1px solid #dee2e6 !important;
+    }
+
+    .sop-preview-content .sop-content-formatted h5.text-primary {
+        font-size: 1.05rem;
+        color: #0d6efd !important;
+        background: linear-gradient(90deg, #f0f7ff, transparent);
+        padding: 0.5rem 1rem;
+        border-left: 4px solid #0d6efd;
+        margin-top: 2rem !important;
+        margin-bottom: 1rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.03rem;
+    }
+
+    .sop-preview-content .sop-content-formatted p {
+        margin-bottom: 0.75rem;
+        text-align: justify;
+    }
+
+    /* Table Styling for Rich Text */
+    .sop-preview-content .sop-content-formatted table {
+        width: 100% !important;
+        margin: 1.5rem 0 !important;
+        border-collapse: collapse !important;
+        background: white !important;
+        border: 1px solid #dee2e6 !important;
+    }
+
+    .sop-preview-content .sop-content-formatted table th {
+        background-color: #f8f9fa !important;
+        color: #0d6efd !important;
+        text-transform: uppercase !important;
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+        padding: 0.6rem 0.8rem !important;
+        border: 1px solid #dee2e6 !important;
+    }
+
+    .sop-preview-content .sop-content-formatted table td {
+        padding: 0.6rem 0.8rem !important;
+        border: 1px solid #dee2e6 !important;
+        vertical-align: top !important;
+        font-size: 0.95rem !important;
+    }
+
+    .sop-preview-content .sop-content-formatted .ps-3 {
+        border-left: 2px solid #e9ecef;
+        margin-left: 1rem;
+    }
+
+    /* CKEditor list adjustments */
+    .sop-preview-content .sop-content-formatted ul,
+    .sop-preview-content .sop-content-formatted ol {
+        margin-bottom: 1rem;
+        padding-left: 2rem;
+    }
+
+    .publish-btn {
+        transition: all 0.3s ease;
+    }
+
+    .publish-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.3);
+    }
+</style>
+{% endblock %}

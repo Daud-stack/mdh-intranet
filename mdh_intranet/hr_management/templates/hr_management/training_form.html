@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Record Training - OpsHub{% endblock %}
+
+{% block content %}
+<div class="px-4 py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="glass-card p-5">
+                <div class="text-center mb-4">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                        style="width: 64px; height: 64px;">
+                        <i class="fas fa-certificate text-primary fa-2x"></i>
+                    </div>
+                    <h2 class="fw-bold">Record Completed Training</h2>
+                    <p class="text-muted">Enter course details for {{ employee.get_full_name|default:employee.username                         }}</p>
+                </div>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">Course Name</label>
+                            {{ form.course_name }}
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">Provider / Institution</label>
+                            {{ form.provider }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Completion Date</label>
+                            {{ form.completion_date }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Expiry Date</label>
+                            {{ form.expiry_date }}
+                            <small class="text-muted">Leave blank if the certification does not expire</small>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">Certificate Number</label>
+                            {{ form.certificate_number }}
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">Attachment (PDF or Image)</label>
+                            {{ form.attachment }}
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top">
+                        <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill">
+                            <i class="fas fa-check-circle me-1"></i>Save Training Record
+                        </button>
+                        <a href="{% url 'hr_management:employee_detail' employee.pk %}"
+                            class="btn btn-link btn-sm w-100 mt-2 text-muted">
+                            Cancel and Return
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

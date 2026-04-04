@@ -1,0 +1,507 @@
+{% extends "base.html" %}
+{% block title %}{{ capa.capa_number }} — OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- ── Back + Header ── -->
+    <div class="mb-3">
+        <a href="{% url 'capa:list' %}" class="text-decoration-none text-muted">
+            <i class="fas fa-arrow-left me-1"></i>Back to CAPA List
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- ═══ LEFT COLUMN — Main Content ═══ -->
+        <div class="col-lg-8">
+            <!-- Title Card -->
+            <div class="card border-0 mb-4"
+                style="border-radius:20px; overflow:hidden; background:rgba(255,255,255,0.88); backdrop-filter:blur(16px); box-shadow:0 8px 32px rgba(0,0,0,0.08);">
+                <div style="background:linear-gradient(135deg,#3b82f6 0%,#6366f1 100%); padding:24px 28px;">
+                    <div class="d-flex flex-wrap align-items-start justify-content-between">
+                        <div>
+                            <span class="badge bg-light text-primary mb-2"
+                                style="border-radius:8px; font-size:0.8rem; font-weight:700;">
+                                {{ capa.capa_number }}
+                            </span>
+                            <h2 class="text-white mb-1" style="font-weight:700; letter-spacing:-0.5px;">{{ capa.title }}
+                            </h2>
+                            <div style="color:rgba(255,255,255,0.75); font-size:0.9rem;">
+                                <span class="me-3"><i class="fas fa-user me-1"></i>{{ capa.initiated_by.get_full_name|default:capa.initiated_by.username  }}</span>
+                                <span><i class="fas fa-clock me-1"></i>{{ capa.created_at|date:"d M Y H:i" }}</span>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-{{ capa.status_color }}"
+                                style="font-size:0.95rem; padding:8px 16px; border-radius:10px;">
+                                <i class="{{ capa.status_icon }} me-1"></i>{{ capa.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div style="padding:0 28px; margin-top:-12px;">
+                    <div class="progress"
+                        style="height:10px; border-radius:10px; background:rgba(0,0,0,0.08); box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                        <div class="progress-bar bg-{{ capa.status_color }}" role="progressbar"
+                            style="width:{{ capa.progress_pct }}%; border-radius:10px; transition:width 0.6s ease;"
+                            aria-valuenow="{{ capa.progress_pct }}" aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                    <div class="text-end mt-1"><small class="text-muted">{{ capa.progress_pct }}% complete</small></div>
+                </div>
+
+                <div class="card-body p-4">
+                    <!-- Meta Badges -->
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="badge"
+                            style="background:rgba(99,102,241,0.12); color:#6366f1; border-radius:8px; padding:6px 12px;">
+                            <i class="fas fa-tag me-1"></i>{{ capa.get_capa_type_display }}
+                        </span>
+                        <span class="badge bg-{{ capa.priority_color }}" style="border-radius:8px; padding:6px 12px;">
+                            <i class="fas fa-flag me-1"></i>{{ capa.get_priority_display }}
+                        </span>
+                        <span class="badge"
+                            style="background:rgba(59,130,246,0.12); color:#3b82f6; border-radius:8px; padding:6px 12px;">
+                            <i class="fas fa-folder-open me-1"></i>{{ capa.get_source_display }}
+                        </span>
+                        {% if capa.is_overdue %}
+                        <span class="badge bg-danger" style="border-radius:8px; padding:6px 12px;">
+                            <i class="fas fa-exclamation-triangle me-1"></i>OVERDUE
+                        </span>
+                        {% endif %}
+                        <span class="badge"
+                            style="background:rgba(0,0,0,0.06); color:#475569; border-radius:8px; padding:6px 12px;">
+                            <i class="fas fa-calendar-day me-1"></i>{{ capa.days_open }} days open
+                        </span>
+                    </div>
+
+                    <!-- Linked Incident -->
+                    {% if capa.linked_incident %}
+                    <div class="alert alert-info d-flex align-items-center mb-3"
+                        style="border-radius:12px; border:none; background:rgba(59,130,246,0.08);">
+                        <i class="fas fa-link me-2 text-primary"></i>
+                        <div>
+                            <strong>Linked Incident:</strong>
+                            <a href="{% url 'incident_log:detail' capa.linked_incident.pk %}">
+                                {{ capa.linked_incident.incident_number }} — {{ capa.linked_incident.title }}
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Description -->
+                    <h5 class="fw-bold mb-2"><i class="fas fa-align-left me-2 text-primary"></i>Description</h5>
+                    <div class="p-3 mb-4" style="background:rgba(0,0,0,0.02); border-radius:12px; line-height:1.7;">
+                        {{ capa.description|linebreaksbr }}
+                    </div>
+
+                    <!-- Impact Assessment -->
+                    {% if capa.impact_assessment %}
+                    <h5 class="fw-bold mb-2"><i class="fas fa-exclamation-triangle me-2 text-warning"></i>Impact
+                        Assessment</h5>
+                    <div class="p-3 mb-4"
+                        style="background:rgba(245,158,11,0.06); border-radius:12px; line-height:1.7;">
+                        {{ capa.impact_assessment|linebreaksbr }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- ── Workflow Phases (Accordion) ── -->
+            <div class="accordion" id="capaPhases">
+
+                <!-- Phase: Investigation -->
+                <div class="card border-0 mb-3"
+                    style="border-radius:16px; overflow:hidden; background:rgba(255,255,255,0.85); backdrop-filter:blur(12px);">
+                    <div class="card-header border-0 p-0" style="background:none;">
+                        <button class="btn w-100 text-start p-3 d-flex align-items-center" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#phaseInvestigation" style="font-weight:600;">
+                            <span class="me-3"
+                                style="width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+                                {% if capa.root_cause_analysis %}background:#10b981; color:#fff;{% else %}background:rgba(0,0,0,0.06); color:#94a3b8;{% endif %}">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <span>Root Cause Analysis</span>
+                            {% if capa.root_cause_analysis %}
+                            <span class="badge bg-success ms-auto" style="border-radius:8px;">✓ Complete</span>
+                            {% else %}
+                            <span class="badge bg-light text-muted ms-auto" style="border-radius:8px;">Pending</span>
+                            {% endif %}
+                        </button>
+                    </div>
+                    <div id="phaseInvestigation"
+                        class="collapse {% if capa.status == 'investigation' %}show{% endif %}">
+                        <div class="card-body pt-0 px-4 pb-4">
+                            {% if capa.root_cause_analysis %}
+                            <div class="mb-3">
+                                {% if capa.root_cause_method %}
+                                <span class="badge bg-info mb-2" style="border-radius:8px;">Method: {{ capa.get_root_cause_method_display  }}</span>
+                                {% endif %}
+                                {% if capa.root_cause_summary %}
+                                <div class="p-3 mb-2"
+                                    style="background:rgba(239,68,68,0.06); border-radius:10px; border-left:4px solid #ef4444;">
+                                    <strong>Root Cause:</strong> {{ capa.root_cause_summary }}
+                                </div>
+                                {% endif %}
+                                <div class="p-3" style="background:rgba(0,0,0,0.02); border-radius:10px;">
+                                    {{ capa.root_cause_analysis|linebreaksbr }}
+                                </div>
+                                {% if capa.contributing_factors %}
+                                <div class="mt-2 p-3" style="background:rgba(0,0,0,0.02); border-radius:10px;">
+                                    <strong>Contributing Factors:</strong><br>{{ capa.contributing_factors|linebreaksbr }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+
+                            {% if capa.status != 'closed' and capa.status != 'cancelled' %}
+                            <form method="post" action="{% url 'capa:update_phase' pk=capa.pk phase='investigation' %}">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">RCA Method</label>
+                                    {{ investigation_form.root_cause_method }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Root Cause Analysis</label>
+                                    {{ investigation_form.root_cause_analysis }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Root Cause Summary</label>
+                                    {{ investigation_form.root_cause_summary }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Contributing Factors</label>
+                                    {{ investigation_form.contributing_factors }}
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm" style="border-radius:10px;">
+                                    <i class="fas fa-save me-1"></i>Save Investigation
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase: Action Plan -->
+                <div class="card border-0 mb-3"
+                    style="border-radius:16px; overflow:hidden; background:rgba(255,255,255,0.85); backdrop-filter:blur(12px);">
+                    <div class="card-header border-0 p-0" style="background:none;">
+                        <button class="btn w-100 text-start p-3 d-flex align-items-center" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#phaseAction" style="font-weight:600;">
+                            <span class="me-3"
+                                style="width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+                                {% if capa.corrective_action_plan %}background:#10b981; color:#fff;{% else %}background:rgba(0,0,0,0.06); color:#94a3b8;{% endif %}">
+                                <i class="fas fa-clipboard-list"></i>
+                            </span>
+                            <span>Action Plan</span>
+                            {% if capa.corrective_action_plan %}
+                            <span class="badge bg-success ms-auto" style="border-radius:8px;">✓ Complete</span>
+                            {% else %}
+                            <span class="badge bg-light text-muted ms-auto" style="border-radius:8px;">Pending</span>
+                            {% endif %}
+                        </button>
+                    </div>
+                    <div id="phaseAction" class="collapse {% if capa.status == 'action_planning' %}show{% endif %}">
+                        <div class="card-body pt-0 px-4 pb-4">
+                            {% if capa.corrective_action_plan or capa.preventive_action_plan or capa.immediate_containment %}
+                            <div class="mb-3">
+                                {% if capa.immediate_containment %}
+                                <div class="p-3 mb-2"
+                                    style="background:rgba(239,68,68,0.06); border-radius:10px; border-left:4px solid #f59e0b;">
+                                    <strong><i class="fas fa-shield-alt me-1"></i>Immediate Containment:</strong><br>
+                                    {{ capa.immediate_containment|linebreaksbr }}
+                                </div>
+                                {% endif %}
+                                {% if capa.corrective_action_plan %}
+                                <div class="p-3 mb-2"
+                                    style="background:rgba(59,130,246,0.06); border-radius:10px; border-left:4px solid #3b82f6;">
+                                    <strong><i class="fas fa-wrench me-1"></i>Corrective Actions:</strong><br>
+                                    {{ capa.corrective_action_plan|linebreaksbr }}
+                                </div>
+                                {% endif %}
+                                {% if capa.preventive_action_plan %}
+                                <div class="p-3"
+                                    style="background:rgba(16,185,129,0.06); border-radius:10px; border-left:4px solid #10b981;">
+                                    <strong><i class="fas fa-shield-alt me-1"></i>Preventive Actions:</strong><br>
+                                    {{ capa.preventive_action_plan|linebreaksbr }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+
+                            {% if capa.status != 'closed' and capa.status != 'cancelled' %}
+                            <form method="post" action="{% url 'capa:update_phase' pk=capa.pk phase='action_plan' %}">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Immediate Containment</label>
+                                    {{ action_plan_form.immediate_containment }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Corrective Action Plan</label>
+                                    {{ action_plan_form.corrective_action_plan }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Preventive Action Plan</label>
+                                    {{ action_plan_form.preventive_action_plan }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Related SOPs to Update</label>
+                                    {{ action_plan_form.related_sops }}
+                                    <small class="text-muted">Hold Ctrl to select multiple</small>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm" style="border-radius:10px;">
+                                    <i class="fas fa-save me-1"></i>Save Action Plan
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase: Verification -->
+                <div class="card border-0 mb-3"
+                    style="border-radius:16px; overflow:hidden; background:rgba(255,255,255,0.85); backdrop-filter:blur(12px);">
+                    <div class="card-header border-0 p-0" style="background:none;">
+                        <button class="btn w-100 text-start p-3 d-flex align-items-center" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#phaseVerification" style="font-weight:600;">
+                            <span class="me-3"
+                                style="width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+                                {% if capa.is_effective is not None %}background:#10b981; color:#fff;{% else %}background:rgba(0,0,0,0.06); color:#94a3b8;{% endif %}">
+                                <i class="fas fa-check-double"></i>
+                            </span>
+                            <span>Effectiveness Verification</span>
+                            {% if capa.is_effective is not None %}
+                            <span
+                                class="badge {% if capa.is_effective %}bg-success{% else %}bg-danger{% endif %} ms-auto"
+                                style="border-radius:8px;">
+                                {% if capa.is_effective %}✓ Effective{% else %}✗ Not Effective{% endif %}
+                            </span>
+                            {% else %}
+                            <span class="badge bg-light text-muted ms-auto" style="border-radius:8px;">Pending</span>
+                            {% endif %}
+                        </button>
+                    </div>
+                    <div id="phaseVerification" class="collapse {% if capa.status == 'verification' %}show{% endif %}">
+                        <div class="card-body pt-0 px-4 pb-4">
+                            {% if capa.verification_results %}
+                            <div class="mb-3">
+                                {% if capa.verification_criteria %}
+                                <div class="p-3 mb-2" style="background:rgba(0,0,0,0.02); border-radius:10px;">
+                                    <strong>Criteria:</strong><br>{{ capa.verification_criteria|linebreaksbr }}
+                                </div>
+                                {% endif %}
+                                <div class="p-3"
+                                    style="background:{% if capa.is_effective %}rgba(16,185,129,0.06){% else %}rgba(239,68,68,0.06){% endif %}; border-radius:10px; border-left:4px solid {% if capa.is_effective %}#10b981{% else %}#ef4444{% endif %};">
+                                    <strong>Results:</strong><br>{{ capa.verification_results|linebreaksbr }}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            {% if capa.status != 'closed' and capa.status != 'cancelled' %}
+                            <form method="post" action="{% url 'capa:update_phase' pk=capa.pk phase='verification' %}">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Verification Criteria</label>
+                                    {{ verification_form.verification_criteria }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Verification Results</label>
+                                    {{ verification_form.verification_results }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Were the actions effective?</label>
+                                    {{ verification_form.is_effective }}
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm" style="border-radius:10px;">
+                                    <i class="fas fa-save me-1"></i>Save Verification
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Timeline / Comments ── -->
+            <div class="card border-0"
+                style="border-radius:16px; background:rgba(255,255,255,0.85); backdrop-filter:blur(12px);">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3"><i class="fas fa-comments me-2 text-primary"></i>Timeline</h5>
+
+                    {% for c in comments %}
+                    <div class="d-flex mb-3">
+                        <div class="me-3"
+                            style="width:36px; height:36px; background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; flex-shrink:0;">
+                            {{ c.author.username|make_list|first|upper }}
+                        </div>
+                        <div style="flex:1;">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <strong style="font-size:0.9rem;">{{ c.author.get_full_name|default:c.author.username }}</strong>
+                                <small class="text-muted">{{ c.created_at|timesince }} ago</small>
+                            </div>
+                            <div style="font-size:0.9rem; line-height:1.6; color:#475569;">
+                                {{ c.content|linebreaksbr }}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center py-3 mb-0"><i class="fas fa-comment-slash me-1"></i>No comments yet
+                    </p>
+                    {% endfor %}
+
+                    {% if capa.status != 'closed' and capa.status != 'cancelled' %}
+                    <form method="post" action="{% url 'capa:add_comment' pk=capa.pk %}" class="mt-3 pt-3"
+                        style="border-top:1px solid rgba(0,0,0,0.06);">
+                        {% csrf_token %}
+                        {{ comment_form.content }}
+                        <button type="submit" class="btn btn-primary btn-sm mt-2" style="border-radius:10px;">
+                            <i class="fas fa-paper-plane me-1"></i>Post Comment
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ RIGHT COLUMN — Sidebar ═══ -->
+        <div class="col-lg-4">
+
+            <!-- Status Workflow -->
+            <div class="card border-0 mb-4"
+                style="border-radius:16px; background:rgba(255,255,255,0.85); backdrop-filter:blur(12px);">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-route me-2 text-primary"></i>Workflow Status</h6>
+
+                    <!-- Visual Pipeline -->
+                    {% with statuses="draft,investigation,action_planning,implementation,verification,closed" %}
+                    {% for s in statuses|make_list %}
+                    {% endfor %}
+                    {% endwith %}
+
+                    <div class="d-flex flex-column gap-2">
+                        {% for val, label in capa.STATUS_CHOICES %}
+                        {% if val != 'cancelled' %}
+                        <div class="d-flex align-items-center p-2 rounded-3
+                            {% if val == capa.status %}border border-primary{% endif %}"
+                            style="{% if val == capa.status %}background:rgba(59,130,246,0.08);{% endif %}">
+                            <span style="width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.7rem; margin-right:10px;
+                                {% if val == capa.status %}background:#3b82f6; color:#fff;
+                                {% elif forloop.counter0 < 5 and capa.progress_pct > 0 %}background:#10b981; color:#fff;
+                                {% else %}background:rgba(0,0,0,0.08); color:#94a3b8;
+                                {% endif %}">
+                                {% if val == capa.status %}
+                                <i class="fas fa-circle" style="font-size:8px;"></i>
+                                {% elif capa.progress_pct > 10 and forloop.counter0 < 5 %} <i class="fas fa-check"
+                                    style="font-size:9px;"></i>
+                                    {% else %}
+                                    {{ forloop.counter }}
+                                    {% endif %}
+                            </span>
+                            <span
+                                style="font-size:0.85rem; {% if val == capa.status %}font-weight:700; color:#0f172a;{% else %}color:#64748b;{% endif %}">
+                                {{ label }}
+                            </span>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    {% if capa.status not in 'closed,cancelled' %}
+                    <form method="post" action="{% url 'capa:advance' pk=capa.pk %}" class="mt-3">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary w-100" style="border-radius:10px; font-weight:600;"
+                            onclick="return confirm('Advance to next phase?')">
+                            <i class="fas fa-arrow-right me-1"></i>Advance to Next Phase
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Details -->
+            <div class="card border-0 mb-4"
+                style="border-radius:16px; background:rgba(255,255,255,0.85); backdrop-filter:blur(12px);">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-info-circle me-2 text-primary"></i>Details</h6>
+                    <table class="table table-borderless table-sm mb-0">
+                        <tr>
+                            <td class="text-muted" style="width:40%;">Initiated By</td>
+                            <td class="fw-semibold">{{ capa.initiated_by.get_full_name|default:capa.initiated_by.username  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Assigned To</td>
+                            <td class="fw-semibold">
+                                {% if capa.assigned_to %}{{ capa.assigned_to.get_full_name|default:capa.assigned_to.username }}{% else %}—{% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Created</td>
+                            <td>{{ capa.created_at|date:"d M Y" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Target Date</td>
+                            <td>
+                                {% if capa.target_completion_date %}
+                                <span class="{% if capa.is_overdue %}text-danger fw-bold{% endif %}">
+                                    {{ capa.target_completion_date|date:"d M Y" }}
+                                </span>
+                                {% else %}—{% endif %}
+                            </td>
+                        </tr>
+                        {% if capa.verified_by %}
+                        <tr>
+                            <td class="text-muted">Verified By</td>
+                            <td>{{ capa.verified_by.get_full_name|default:capa.verified_by.username }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if capa.closed_by %}
+                        <tr>
+                            <td class="text-muted">Closed By</td>
+                            <td>{{ capa.closed_by.get_full_name|default:capa.closed_by.username }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Closed At</td>
+                            <td>{{ capa.closed_at|date:"d M Y H:i" }}</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+
+            <!-- Attachment -->
+            {% if capa.attachment %}
+            <div class="card border-0 mb-4"
+                style="border-radius:16px; background:rgba(255,255,255,0.85); backdrop-filter:blur(12px);">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-paperclip me-2 text-primary"></i>Attachment</h6>
+                    <a href="{{ capa.attachment.url }}" target="_blank" class="btn btn-outline-primary btn-sm w-100"
+                        style="border-radius:10px;">
+                        <i class="fas fa-download me-1"></i>{{ capa.attachment.name|truncatechars:30 }}
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Related SOPs -->
+            {% if capa.related_sops.exists %}
+            <div class="card border-0"
+                style="border-radius:16px; background:rgba(255,255,255,0.85); backdrop-filter:blur(12px);">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-file-alt me-2 text-primary"></i>Related SOPs</h6>
+                    {% for sop in capa.related_sops.all %}
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-file-medical me-2 text-muted"></i>
+                        <a href="{% url 'sop_manual:sop_detail' sop.pk %}" class="text-decoration-none">
+                            {{ sop.title }}
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

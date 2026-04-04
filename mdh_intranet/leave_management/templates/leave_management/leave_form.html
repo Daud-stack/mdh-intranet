@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - OpsHub{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="glass-card overflow-hidden border-0 shadow-lg">
+            <div class="p-4 bg-primary text-white d-flex align-items-center gap-3">
+                <div class="bg-white bg-opacity-20 p-3 rounded-circle">
+                    <i class="fas fa-plane-departure fa-lg"></i>
+                </div>
+                <div>
+                    <h4 class="mb-0 fw-bold">{{ title }}</h4>
+                    <small class="opacity-75">Submit your request for supervisor review</small>
+                </div>
+            </div>
+
+            <div class="p-4 p-md-5 bg-white">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger rounded-4 mb-4">
+                        {% for error in form.non_field_errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-uppercase tracking-wider text-muted">Type of
+                            Leave</label>
+                        {{ form.leave_type }}
+                        {% if form.leave_type.errors %}
+                        <div class="text-danger small mt-1">{{ form.leave_type.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-uppercase tracking-wider text-muted">Start
+                                Date</label>
+                            {{ form.start_date }}
+                            {% if form.start_date.errors %}
+                            <div class="text-danger small mt-1">{{ form.start_date.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-uppercase tracking-wider text-muted">End
+                                Date</label>
+                            {{ form.end_date }}
+                            {% if form.end_date.errors %}
+                            <div class="text-danger small mt-1">{{ form.end_date.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-uppercase tracking-wider text-muted">Reason /
+                            Additional Notes</label>
+                        {{ form.reason }}
+                        {% if form.reason.errors %}
+                        <div class="text-danger small mt-1">{{ form.reason.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-5">
+                        <label class="form-label small fw-bold text-uppercase tracking-wider text-muted">Supporting
+                            Document (Optional)</label>
+                        {{ form.attachment }}
+                        <div class="form-text small">Upload medical certificates or other justifications if required.
+                        </div>
+                        {% if form.attachment.errors %}
+                        <div class="text-danger small mt-1">{{ form.attachment.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex gap-3 justify-content-end align-items-center">
+                        <a href="{% url 'leave_management:leave_list' %}"
+                            class="text-muted text-decoration-none fw-medium me-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow-sm">
+                            <i class="fas fa-paper-plane me-2"></i>Submit Application
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="mt-4 p-4 glass-card border-0 d-flex align-items-center gap-3">
+            <div class="text-warning">
+                <i class="fas fa-info-circle fa-2x"></i>
+            </div>
+            <div class="small text-muted">
+                Your request will be notified to your immediate supervisor. Please ensure you have discussed this with
+                your team before submitting.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

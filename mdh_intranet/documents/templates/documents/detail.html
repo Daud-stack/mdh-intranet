@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}{{ document.title }} - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="fw-bold">
+                <i class="fas {{ document.file_icon }}"></i> {{ document.title }}
+            </h1>
+            <p class="text-muted">{{ document.category.name }}</p>
+        </div>
+        <div class="col-md-4 text-end">
+
+            <a href="{% url 'documents:collabora_editor' document.id %}" class="btn btn-primary me-2">
+                <i class="fas fa-edit"></i> Edit in Browser
+            </a>
+            <a href="{% url 'documents:download' document.pk %}" class="btn btn-info me-2">
+                <i class="fas fa-download"></i> Download
+            </a>
+            {% if can_delete %}
+            <a href="{% url 'documents:delete' document.pk %}" class="btn btn-outline-danger">
+                <i class="fas fa-trash"></i> Delete
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0 fw-bold">Document Information</h5>
+                </div>
+                <div class="card-body">
+                    {% if document.description %}
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-muted small">DESCRIPTION</h6>
+                        <p>{{ document.description }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6 class="fw-bold text-muted small">CATEGORY</h6>
+                            <span class="badge bg-primary">{{ document.category.name }}</span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="fw-bold text-muted small">FILE TYPE</h6>
+                            <span class="text-uppercase">{{ document.file_type }}</span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6 class="fw-bold text-muted small">FILE SIZE</h6>
+                            {{ document.file_size_formatted }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="fw-bold text-muted small">DOWNLOADS</h6>
+                            {{ document.downloads }} time{{ document.downloads|pluralize }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0 fw-bold">Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted">Uploaded By</small>
+                        <p class="mb-0 fw-bold">{{ document.uploaded_by.username|default:"Unknown" }}</p>
+                    </div>
+                    <hr>
+                    <div class="mb-3">
+                        <small class="text-muted">Uploaded Date</small>
+                        <p class="mb-0">{{ document.uploaded_at|date:"F d, Y" }}</p>
+                    </div>
+                    <hr>
+                    <div>
+                        <small class="text-muted">Access Level</small>
+                        <p class="mb-0">
+                            {% if document.is_public %}
+                            <span class="badge bg-success">Public</span>
+                            {% else %}
+                            <span class="badge bg-warning">Staff Only</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <a href="{% url 'documents:index' %}" class="btn btn-outline-secondary w-100">
+                <i class="fas fa-arrow-left"></i> Back to Documents
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

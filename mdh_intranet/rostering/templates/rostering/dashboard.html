@@ -1,0 +1,117 @@
+<!-- prettier-ignore-start -->
+{% extends "base.html" %}
+{% block title %}Shift Management - OpsHub{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <div>
+            <h1 class="h3 mb-0 fw-bold text-primary"><i class="fas fa-calendar-alt me-2"></i>Shift Management</h1>
+            <p class="text-muted mb-0">Manage hospital staff schedules, rostering, and shift swaps.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'rostering:my_shifts' %}" class="btn btn-outline-primary rounded-pill">
+                <i class="fas fa-user-clock me-2"></i>My Shifts
+            </a>
+            <a href="{% url 'rostering:swap_requests' %}" class="btn btn-outline-info rounded-pill">
+                <i class="fas fa-exchange-alt me-2"></i>Swaps
+                {% if pending_swaps %}
+                <span class="badge bg-danger ms-1">{{ pending_swaps.count }}</span>
+                {% endif %}
+            </a>
+            <a href="{% url 'rostering:roster_setup' %}" class="btn btn-primary rounded-pill">
+                <i class="fas fa-plus me-2"></i>New Roster
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Today's Schedule -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">Today's Active Shifts</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Shift</th>
+                                    <th>Department</th>
+                                    <th>Time</th>
+                                    <th>Staff Filled</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for shift in todays_shifts %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle me-3"
+                                                style="width: 12px; height: 12px; background-color: {{ shift.template.color }};">
+                                            </div>
+                                            <span class="fw-bold text-dark">{{ shift.template.name }}</span>
+                                        </div>
+                                    </td>
+                                    <td>{{ shift.roster.department }}</td>
+                                    <td>{{ shift.template.start_time|time:"H:i" }} - {{ shift.template.end_time|time:"H:i" }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                                                {% widthratio shift.assigned_count shift.required_staff 100 as percent %}
+                                                <div class="progress-bar {% if percent >= '100' %}bg-success{% elif percent >= '50' %}bg-warning{% else %}bg-danger{% endif %}"
+                                                    style="width: {% if percent >= '100' %}100{% else %}{{ percent }}{% endif %}%;">
+                                                </div>
+                                            </div>
+                                            <span class="small fw-bold">{{ shift.assigned_count }}/{{ shift.required_staff }}</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-5 text-muted">No shifts scheduled for today.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Rosters -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="fw-bold mb-0">Active Rosters</h5>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="list-group list-group-flush">
+                        {% for r in active_rosters %}
+                        <div class="list-group-item px-0 border-0 mb-2 p-3 bg-light rounded-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold text-dark">{{ r.department }}</span>
+                                {% if r.is_published %}
+                                <span class="badge bg-success rounded-pill">Published</span>
+                                {% else %}
+                                <span class="badge bg-secondary rounded-pill">Draft</span>
+                                {% endif %}
+                            </div>
+                            <div class="small text-muted mb-2">
+                                <i class="fas fa-calendar-week me-1"></i> {{ r.start_date|date:"j M" }} - {{ r.end_date|date:"j M Y" }}
+                            </div>
+                            <a href="{% url 'rostering:manage_roster' r.pk %}"
+                                class="btn btn-sm btn-outline-primary w-100 rounded-pill">Manage Staffing</a>
+                        </div>
+                        {% empty %}
+                        <div class="text-center text-muted py-4">No active ward schedules found.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+<!-- prettier-ignore-end -->

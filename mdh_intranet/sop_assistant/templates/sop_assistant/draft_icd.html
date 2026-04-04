@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}ICD-11 Codes - SOP Assistant - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'sop_assistant:index' %}">SOP Assistant</a></li>
+            <li class="breadcrumb-item active" aria-current="page">ICD-11 Codes</li>
+        </ol>
+    </nav>
+
+    {% include "sop_assistant/_wizard_steps.html" with current_step=4 total_steps=5 %}
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="glass-card border-0 overflow-hidden mb-4">
+                <div class="p-4 border-bottom" style="background: linear-gradient(135deg, #f0fdfa, #ecfdf5);">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="p-3 rounded-4" style="background: rgba(20, 184, 166, 0.1); color: #14b8a6;">
+                            <i class="fas fa-stethoscope fa-lg"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold mb-0">Clinical Classification</h4>
+                            <p class="text-muted mb-0 small">Cross-reference this procedure with global ICD-11 diagnosis
+                                or procedure codes.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4">
+                    <!-- Smart Suggestions Area -->
+                    <div id="smartSuggestions" class="mb-4">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <h6 class="fw-bold text-muted mb-0"
+                                style="font-size: 0.8rem; letter-spacing: 0.5px; text-transform: uppercase;">
+                                <i class="fas fa-magic text-info me-1"></i> Intelligent Recommendations
+                            </h6>
+                            <div id="suggestionLoader" class="spinner-border spinner-border-sm text-info" role="status"
+                                style="display:none;"></div>
+                        </div>
+                        <div id="suggestionList" class="d-flex flex-wrap gap-2 min-vh-5">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+
+                    <hr class="my-4 opacity-10">
+
+                    <!-- Search Bar -->
+                    <form method="get" class="mb-4">
+                        <div class="input-group input-group-lg shadow-sm">
+                            <span class="input-group-text bg-white border-end-0">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                            <input type="text" name="search" value="{{ search_query }}"
+                                class="form-control border-start-0 ps-1"
+                                placeholder="Manual index search... (e.g., malaria, hypertension, appendectomy)"
+                                id="icd-search-field">
+                            <button type="submit" class="btn btn-primary px-4 fw-bold">Search Index</button>
+                        </div>
+                    </form>
+
+                    <!-- Search Results -->
+                    {% if search_results is not None %}
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-muted mb-3 small text-uppercase">
+                            <i class="fas fa-list me-1"></i> Result Feed
+                            <span class="badge bg-light text-muted ms-2">{{ search_results|length }} found</span>
+                        </h6>
+
+                        {% if search_results %}
+                        <div class="icd-results-list">
+                            {% for code in search_results %}
+                            <div
+                                class="icd-result-item d-flex align-items-center justify-content-between p-3 rounded-3 mb-2 shadow-sm bg-white border border-light">
+                                <div class="pe-3">
+                                    <span class="badge bg-primary text-white mb-1 fw-bold">{{ code.code }}</span>
+                                    <div class="fw-semibold text-dark">{{ code.description }}</div>
+                                    <div class="text-muted small mt-1">
+                                        <i class="fas fa-bookmark me-1 opacity-50"></i> {{ code.chapter }}
+                                    </div>
+                                </div>
+                                <form method="post" class="d-inline flex-shrink-0">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="add_code">
+                                    <input type="hidden" name="code_id" value="{{ code.pk }}">
+                                    <button type="submit"
+                                        class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold">
+                                        <i class="fas fa-plus me-1"></i> Add Code
+                                    </button>
+                                </form>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center text-muted py-5 bg-light rounded-4 border border-dashed">
+                            <i class="fas fa-search fa-3x mb-3 opacity-25"></i>
+                            <p class="mb-0 fw-bold">No results found for "{{ search_query }}"</p>
+                            <p class="small">Try a broader term (e.g. "viral" instead of a specific virus).</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Attached Codes Sidebar -->
+        <div class="col-lg-4">
+            <div class="glass-card border-0 p-4 mb-3 shadow-sm" style="position: sticky; top: 1rem;">
+                <h6 class="fw-bold mb-3 d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-tags text-primary me-2"></i>Attached Codes</span>
+                    <span class="badge bg-primary rounded-pill">{{ attached_codes|length }}</span>
+                </h6>
+
+                {% if attached_codes %}
+                <div class="attached-codes-list mb-4">
+                    {% for code_entry in attached_codes %}
+                    <div class="attached-code-item d-flex align-items-start justify-content-between p-3 rounded-3 mb-2"
+                        style="background: #f0fdf4; border: 1px solid #bbf7d0;">
+                        <div class="pe-2">
+                            <span class="badge bg-success text-white fw-bold px-2 mb-1">{{ code_entry.code }}</span>
+                            <p class="mb-0 small fw-medium text-dark">{{ code_entry.description }}</p>
+                        </div>
+                        <form method="post" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="remove_code">
+                            <input type="hidden" name="code_str" value="{{ code_entry.code }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle border-0"
+                                style="width: 28px; height: 28px; padding: 0;" title="Remove">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-muted bg-light rounded-3 border border-dashed mb-4">
+                    <i class="fas fa-stethoscope fa-2x mb-2 opacity-25"></i>
+                    <p class="mb-0 small">No codes mapped yet.<br>Use search to link clinical data.</p>
+                </div>
+                {% endif %}
+
+                <hr class="my-4">
+
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="continue">
+                    <button type="submit" class="btn sop-cta-btn rounded-pill w-100 py-3 fw-bold shadow">
+                        Continue to Validation <i class="fas fa-arrow-right ms-2"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .sop-cta-btn {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .sop-cta-btn:hover {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px -5px rgba(99, 102, 241, 0.4);
+    }
+
+    .suggestion-chip {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        color: #0369a1;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .suggestion-chip:hover {
+        background: #e0f2fe;
+        border-color: #7dd3fc;
+        transform: scale(1.02);
+    }
+
+    .icd-result-item {
+        transition: all 0.2s ease-in-out;
+    }
+
+    .icd-result-item:hover {
+        border-color: #6366f1 !important;
+        transform: translateX(4px);
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        loadSuggestions();
+    });
+
+    function loadSuggestions() {
+        const loader = document.getElementById('suggestionLoader');
+        const list = document.getElementById('suggestionList');
+        const draftId = "{{ draft.pk }}";
+
+        loader.style.display = 'block';
+
+        fetch(`/sop-assistant/api/icd-suggest/${draftId}/`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.suggestions && data.suggestions.length > 0) {
+                    list.innerHTML = data.suggestions.map(s => `
+                        <div class="suggestion-chip shadow-sm" onclick="applySuggestion('${s.description}')">
+                            <i class="fas fa-plus-circle me-1 opacity-50"></i>
+                            <span class="fw-bold me-1">${s.code}:</span> ${s.description}
+                        </div>
+                    `).join('');
+                } else {
+                    list.innerHTML = '<p class="text-muted small italic ms-1">No AI recommendations currently available for this title.</p>';
+                }
+            })
+            .catch(err => {
+                console.error('Failed to load suggestions:', err);
+                list.innerHTML = '<p class="text-danger small ms-1">Intelligence engine unreachable.</p>';
+            })
+            .finally(() => {
+                loader.style.display = 'none';
+            });
+    }
+
+    function applySuggestion(desc) {
+        const field = document.getElementById('icd-search-field');
+        field.value = desc;
+        field.form.submit();
+    }
+</script>
+{% endblock %}

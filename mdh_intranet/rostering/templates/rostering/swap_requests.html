@@ -1,0 +1,111 @@
+<!-- prettier-ignore-start -->
+{% extends "base.html" %}
+{% block title %}Swap Hub - OpsHub{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <div>
+            <h1 class="h3 mb-0 fw-bold text-info"><i class="fas fa-exchange-alt me-2"></i>Shift Swap Requests</h1>
+            <p class="text-muted mb-0">Cover for a colleague or request someone to cover your shift.</p>
+        </div>
+        <a href="{% url 'rostering:dashboard' %}" class="btn btn-outline-secondary rounded-pill">
+            <i class="fas fa-arrow-left me-2"></i>Back to Overview
+        </a>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-lg-12">
+            <h5 class="fw-bold mb-3">Requests for your coverage</h5>
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="list-group list-group-flush">
+                    {% for req in received_requests %}
+                    <div class="list-group-item p-4 border-0 mb-2 border-start border-4 border-warning">
+                        <div class="row align-items-center">
+                            <div class="col-md-7">
+                                <h6 class="fw-bold fs-5 text-dark mb-1">{{ req.requester.get_full_name|default:req.requester.username }} needs their shift
+                                    covered!</h6>
+                                <p class="text-muted mb-2"><i class="fas fa-calendar-day me-2"></i>{{ req.assignment.shift.date|date:"l, d M Y" }} | <strong>{{ req.assignment.shift.template.name }}</strong> ({{ req.assignment.shift.template.start_time|time:"H:i" }} - {{ req.assignment.shift.template.end_time|time:"H:i" }})</p>
+                                <div class="bg-light p-3 rounded-3 mt-2">
+                                    <span class="small text-muted fw-bold text-uppercase d-block mb-1">Colleague's
+                                        Reason:</span>
+                                    <span class="fst-italic text-dark px-2">"{{ req.reason }}"</span>
+                                </div>
+                            </div>
+                            <div class="col-md-5 text-end mt-3 mt-md-0">
+                                <form method="post" action="{% url 'rostering:swap_requests' %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="APPROVE">
+                                    <input type="hidden" name="request_id" value="{{ req.id }}">
+                                    <button type="submit"
+                                        class="btn btn-success btn-lg rounded-pill px-4 me-2 shadow-sm"><i
+                                            class="fas fa-check-circle me-2"></i>Approve Swap</button>
+                                </form>
+                                <form method="post" action="{% url 'rostering:swap_requests' %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="REJECT">
+                                    <input type="hidden" name="request_id" value="{{ req.id }}">
+                                    <button type="submit" class="btn btn-outline-danger btn-lg rounded-pill px-4"><i
+                                            class="fas fa-times me-2"></i>Decline</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-check-double fa-3x mb-3 text-success opacity-50"></i>
+                        <h5>No pending requests for you.</h5>
+                        <p class="mb-0">Your colleagues have not asked you to cover any shifts recently.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Outbound Swap Requests -->
+    <div class="row g-4">
+        <div class="col-lg-12">
+            <h5 class="fw-bold mb-3 mt-4 border-top pt-4 text-muted">My Sent Coverage Requests</h5>
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Original Shift</th>
+                                <th>Requested Colleague</th>
+                                <th>Reason Sent</th>
+                                <th>Status / Date Sent</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for my_req in my_requests %}
+                            <tr>
+                                <td class="ps-4">
+                                    <span class="fw-bold text-dark">{{ my_req.assignment.shift.date|date:"l, d M Y" }}</span>
+                                    <small class="text-muted d-block">{{ my_req.assignment.shift.template.name }}</small>
+                                </td>
+                                <td>{{ my_req.requested_colleague.get_full_name|default:my_req.requested_colleague.username }}</td>
+                                <td class="fst-italic text-muted">"{{ my_req.reason|truncatechars:50 }}"</td>
+                                <td>
+                                    <span
+                                        class="badge rounded-pill px-3 py-2 {% if my_req.status == 'APPROVED' %}bg-success{% elif my_req.status == 'REJECTED' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                                        {{ my_req.get_status_display }}
+                                    </span>
+                                    <small class="text-muted ms-2 d-none d-lg-inline">{{ my_req.created_at|date:"d M H:i" }}</small>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">You have not requested any shift
+                                    swaps.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+<!-- prettier-ignore-end -->

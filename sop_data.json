@@ -1,0 +1,20 @@
+{
+    "category": "Standard Operating Procedures",
+    "sop_title": "Emergency Evacuation Protocol",
+    "sop_code": "SOP-SAF-101",
+    "version": "2.1",
+    "department": "Safety & Security",
+    "effective_date": "2024-03-01",
+    "created_by": "Safety Officer",
+    "approved_by": "Director of Operations",
+    "version_date": "2024-02-01",
+    "purpose": "To ensure orderly and safe evacuation of all personnel during emergencies.",
+    "scope": "All employees, contractors, and visitors on MDH premises.",
+    "definitions": "Assembly Point: The designated safe area outside the building.\nWarden: Staff member responsible for clearing a specific zone.",
+    "materials": "1. Emergency Alarms\n2. High-visibility vests\n3. Flashlights\n4. Personnel lists",
+    "procedure": "1. UPON HEARING THE ALARM:\n   - Stop all work immediately.\n   - Secure confidential materials if safe to do so.\n   - Do not use elevators.\n\n2. EVACUATION:\n   - Follow the green exit signs.\n   - Walk briskly, do not run.\n   - Assist visitors and those with disabilities.\n\n3. ASSEMBLY:\n   - Gather at the designated Assembly Point (Car Park B).\n   - Report to your Fire Warden for roll call.\n   - Do not re-enter the building until the 'All Clear' is given by the Fire Chief.",
+    "high_alert": "N/A",
+    "safety": "Keep monitoring exits clear at all times. Do not return for personal items.",
+    "documentation": "Evacuation Drill Report (Form SAF-02).",
+    "references": "National Fire Safety Code 2023."
+}

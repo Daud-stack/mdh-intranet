@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.title }} - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="fw-bold mb-2">{{ project.title }}</h1>
+            <div class="d-flex align-items-center gap-3">
+                {% if project.status == 'Active' %}
+                <span class="badge bg-success">Active</span>
+                {% elif project.status == 'On Hold' %}
+                <span class="badge bg-warning">On Hold</span>
+                {% elif project.status == 'Completed' %}
+                <span class="badge bg-secondary">Completed</span>
+                {% else %}
+                <span class="badge bg-info">Planning</span>
+                {% endif %}
+                <span class="text-muted"><i class="far fa-calendar-alt"></i> Started: {{ project.start_date|date:"F d,Y" }}</span>
+                {% if project.end_date %}
+                <span class="text-muted"><i class="far fa-flag"></i> Due: {{ project.end_date|date:"F d, Y" }}</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if user == project.manager or user.is_superuser %}
+            <a href="{% url 'projects:update' project.pk %}" class="btn btn-outline-primary">
+                <i class="fas fa-edit"></i> Edit Project
+            </a>
+            {% endif %}
+            <a href="{% url 'projects:index' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold">Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-muted small">DESCRIPTION</h6>
+                        <p>{{ project.description|linebreaks }}</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-muted small mb-2">PROGRESS</h6>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="progress flex-grow-1" style="height: 10px;">
+                                <div class="progress-bar {% if project.status == 'Completed' %}bg-success{% elif project.status == 'On Hold' %}bg-warning{% else %}bg-primary{% endif %}"
+                                    style="width: {{ project.progress }}%"></div>
+                            </div>
+                            <span class="fw-bold">{{ project.progress }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Team Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold">Team</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <small class="text-muted d-block mb-2">PROJECT MANAGER</small>
+                        <div class="d-flex align-items-center">
+                            <img src="https://ui-avatars.com/api/?name={{ project.manager.username|urlencode }}&background=random&size=40"
+                                class="rounded-circle me-3" width="40">
+                            <div>
+                                <h6 class="mb-0 fw-bold">{{ project.manager.get_full_name|default:project.manager.username }}</h6>
+                                <small class="text-muted">{{ project.manager.email }}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <small class="text-muted d-block mb-2">MEMBERS ({{ project.members.count }})</small>
+                        <div class="d-flex flex-column gap-3">
+                            {% for member in project.members.all %}
+                            <div class="d-flex align-items-center">
+                                <img src="https://ui-avatars.com/api/?name={{ member.username|urlencode }}&background=random&size=32"
+                                    class="rounded-circle me-3" width="32">
+                                <div>
+                                    <span class="d-block">{{ member.get_full_name|default:member.username }}</span>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted fst-italic small">No additional members assigned.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Meta Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <small class="text-muted">Created</small>
+                        <small>{{ project.created_at|date:"M d, Y" }}</small>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">Last Updated</small>
+                        <small>{{ project.updated_at|date:"M d, Y" }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

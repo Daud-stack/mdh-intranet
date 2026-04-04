@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Log Fuel Refill - Fleet{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <div class="card-header bg-primary py-4 text-center border-0 text-white"
+                    style="background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%) !important;">
+                    <h2 class="fw-bold mb-1"><i class="fas fa-gas-pump me-3"></i>Refuel Record</h2>
+                    <p class="mb-0 text-white-50">Log fuel expenses and odometer readings.</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5 bg-white">
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark">Select Vehicle</label>
+                            {{ form.vehicle }}
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark">Date Filled</label>
+                                {{ form.date }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark">Odometer Reading</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-0"><i
+                                            class="fas fa-tachometer-alt ms-1"></i></span>
+                                    {{ form.odometer }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4 bg-light p-3 rounded-4 border">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark">Fuel Volume (Liters)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-0"><i
+                                            class="fas fa-fill-drip text-primary ms-1"></i></span>
+                                    {{ form.liters }}
+                                </div>
+                            </div>
+                            <div class="col-md-6 border-start border-2 border-primary border-opacity-25 ps-md-4">
+                                <label class="form-label fw-bold text-dark">Total Cost</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-0 fw-bold text-success">$</span>
+                                    {{ form.cost }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label fw-bold text-dark">Upload Receipt (Optional)</label>
+                            {{ form.receipt }}
+                            <small class="text-muted d-block mt-1">Take a picture of the fuel receipt for
+                                accounting.</small>
+                        </div>
+
+                        <div class="d-flex gap-3 justify-content-end pt-3 text-end">
+                            <a href="{% url 'fleet_management:dashboard' %}"
+                                class="btn btn-light btn-lg rounded-pill px-4 text-muted fw-bold">Cancel</a>
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm fw-bold"><i
+                                    class="fas fa-save me-2"></i>Save Fuel Log</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control,
+    .form-select {
+        border: 2px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        background-color: #f8fafc;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        background-color: #ffffff;
+    }
+</style>
+{% endblock %}

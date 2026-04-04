@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Audit Detail - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard:home' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:audit_log' %}">Audit Trail</a></li>
+            <li class="breadcrumb-item active">Entry #{{ entry.pk }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="glass-card border-0 p-3 mb-4">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="p-3 rounded-4 bg-{{ entry.action_color }} bg-opacity-10">
+                        <i class="{{ entry.action_icon }} text-{{ entry.action_color }} fa-lg"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0">{{ entry.get_action_display }}: {{ entry.object_repr }}</h4>
+                        <p class="text-muted mb-0">{{ entry.timestamp|date:"F d, Y H:i:s" }}</p>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <small class="text-muted d-block">User</small>
+                        <strong>{{ entry.user.username|default:"System" }}</strong>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted d-block">Module</small>
+                        <code>{{ entry.module }}</code>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted d-block">IP Address</small>
+                        <code>{{ entry.ip_address|default:"N/A" }}</code>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted d-block">Object ID</small>
+                        <code>{{ entry.object_id|default:"N/A" }}</code>
+                    </div>
+                </div>
+
+                {% if entry.description %}
+                <div class="p-3 rounded-3 bg-light mb-4">
+                    <small class="text-muted d-block mb-1">Description</small>
+                    <p class="mb-0">{{ entry.description }}</p>
+                </div>
+                {% endif %}
+
+                {% if entry.changes %}
+                <h5 class="fw-bold mb-3">
+                    <i class="fas fa-exchange-alt text-info me-2"></i>Field Changes
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-0">
+                        <thead style="background: #f8fafc;">
+                            <tr>
+                                <th>Field</th>
+                                <th>Old Value</th>
+                                <th>New Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for field, vals in entry.changes.items %}
+                            <tr>
+                                <td class="fw-semibold">{{ field }}</td>
+                                <td>
+                                    <code class="text-danger">{{ vals.old|truncatechars:100 }}</code>
+                                </td>
+                                <td>
+                                    <code class="text-success">{{ vals.new|truncatechars:100 }}</code>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="glass-card border-0 p-4">
+                <h6 class="fw-bold mb-3">Entry Metadata</h6>
+                <div class="mb-3">
+                    <small class="text-muted d-block">Entry ID</small>
+                    <code>{{ entry.pk }}</code>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted d-block">Content Type</small>
+                    <code>{{ entry.content_type|default:"N/A" }}</code>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted d-block">Timestamp</small>
+                    <strong>{{ entry.timestamp|date:"Y-m-d H:i:s.u" }}</strong>
+                </div>
+                <a href="{% url 'core:audit_log' %}" class="btn btn-outline-primary rounded-pill w-100 mt-3">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Audit Trail
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

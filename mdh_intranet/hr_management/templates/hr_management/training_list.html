@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Training Records - OpsHub{% endblock %}
+
+{% block content %}
+<div class="px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-6 fw-bold text-dark mb-1">
+                <i class="fas fa-graduation-cap text-primary me-2"></i>Training Records
+            </h1>
+            <p class="text-muted">Staff certification and compliance tracking</p>
+        </div>
+        {% if user.is_staff %}
+        <a href="{% url 'hr_management:employee_list' %}" class="btn btn-primary rounded-pill px-4">
+            <i class="fas fa-plus me-1"></i>Record Training
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Training Records Table -->
+    <div class="glass-card p-4">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Course</th>
+                        <th>Employee</th>
+                        <th>Provider</th>
+                        <th>Date</th>
+                        <th>Expiry</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in records %}
+                    {% with e=r.employee %}
+                    <tr>
+                        <td class="fw-bold">{{ r.course_name }}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <span>{{ e.get_full_name|default:e.username }}</span>
+                            </div>
+                        </td>
+                        <td>{{ r.provider }}</td>
+                        <td>{{ r.completion_date }}</td>
+                        <td>{{ r.expiry_date|default:"N/A" }}</td>
+                        <td>
+                            {% if r.expiry_date %}
+                            {% if r.expiry_date < today %} <span class="badge bg-danger">Expired</span>
+                                {% else %}
+                                <span class="badge bg-success">Valid</span>
+                                {% endif %}
+                                {% else %}
+                                <span class="badge bg-secondary">Permanent</span>
+                                {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{% url 'hr_management:employee_detail' e.pk %}" class="btn btn-sm btn-light"
+                                    title="View Profile">
+                                    <i class="fas fa-user"></i>
+                                </a>
+                                {% if r.attachment %}
+                                <a href="{{ r.attachment.url }}" class="btn btn-sm btn-light" target="_blank"
+                                    title="Download Cert">
+                                    <i class="fas fa-file-download"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endwith %}
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            No training records found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

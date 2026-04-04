@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}New Preauthorization Request - OpsHub{% endblock %}
+
+{% block content %}
+<div class="row mb-5 align-items-end">
+    <div class="col-md-8">
+        <h4 class="text-muted fw-medium mb-1">Medical Aid</h4>
+        <h1 class="display-6 fw-bold tracking-tight">New Preauthorization Request</h1>
+        <p class="lead text-muted">Complete the form below. Once submitted, download the Excel form to send to the
+            medical aid.</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{% url 'medical_aid:list' %}" class="btn btn-outline-secondary rounded-pill px-4 py-2">
+            <i class="fas fa-arrow-left me-2"></i>All Requests
+        </a>
+    </div>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- Section 1: Patient Information -->
+    <div class="glass-card border-0 mb-4 overflow-hidden">
+        <div class="p-4 bg-white border-bottom d-flex align-items-center gap-3">
+            <div class="bg-primary bg-opacity-10 p-2 rounded-3 text-primary">
+                <i class="fas fa-user-injured"></i>
+            </div>
+            <div>
+                <h5 class="mb-0 fw-bold">Patient Information</h5>
+                <small class="text-muted">Details of the patient requiring preauthorization</small>
+            </div>
+        </div>
+        <div class="p-4 bg-white">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-uppercase tracking-wider">Patient / Member ID <span
+                            class="text-danger">*</span></label>
+                    {{ form.patient_id }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-uppercase tracking-wider">Full Name <span
+                            class="text-danger">*</span></label>
+                    {{ form.patient_name }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-uppercase tracking-wider">Contact Number</label>
+                    {{ form.patient_phone }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-uppercase tracking-wider">Date of Birth</label>
+                    {{ form.patient_dob }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-uppercase tracking-wider">Gender</label>
+                    {{ form.patient_gender }}
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-check form-switch mb-2">
+                        {{ form.is_emergency }}
+                        <label class="form-check-label fw-bold text-danger ms-2">Emergency Request</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: Insurance / Scheme -->
+    <div class="glass-card border-0 mb-4 overflow-hidden">
+        <div class="p-4 bg-white border-bottom d-flex align-items-center gap-3">
+            <div class="bg-success bg-opacity-10 p-2 rounded-3 text-success">
+                <i class="fas fa-id-card"></i>
+            </div>
+            <div>
+                <h5 class="mb-0 fw-bold">Medical Aid / Insurance Details</h5>
+                <small class="text-muted">Scheme and membership information</small>
+            </div>
+        </div>
+        <div class="p-4 bg-white">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-uppercase tracking-wider">Scheme <span
+                            class="text-danger">*</span></label>
+                    {{ form.scheme }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-uppercase tracking-wider">Plan / Tier</label>
+                    {{ form.scheme_plan }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-uppercase tracking-wider">Member Number</label>
+                    {{ form.member_number }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-uppercase tracking-wider">Principal Member Name</label>
+                    {{ form.principal_name }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-uppercase tracking-wider">Relationship to
+                        Principal</label>
+                    {{ form.relationship }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: Clinical Information -->
+    <div class="glass-card border-0 mb-4 overflow-hidden">
+        <div class="p-4 bg-white border-bottom d-flex align-items-center gap-3">
+            <div class="bg-info bg-opacity-10 p-2 rounded-3 text-info">
+                <i class="fas fa-stethoscope"></i>
+            </div>
+            <div>
+                <h5 class="mb-0 fw-bold">Clinical Information</h5>
+                <small class="text-muted">Diagnosis, procedure, and clinical justification</small>
+            </div>
+        </div>
+        <div class="p-4 bg-white">
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label fw-bold small text-uppercase tracking-wider">Diagnosis / Clinical
+                        Indication <span class="text-danger">*</span></label>
+                    {{ form.diagnosis }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-uppercase tracking-wider">ICD-11 Code</label>
+                    {{ form.icd_code }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-uppercase tracking-wider">Procedure Code (CPT)</label>
+                    {{ form.procedure_code }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-bold small text-uppercase tracking-wider">Procedure / Treatment
+                        Requested <span class="text-danger">*</span></label>
+                    {{ form.procedure }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-bold small text-uppercase tracking-wider">Clinical Notes /
+                        Justification</label>
+                    {{ form.clinical_notes }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 4: Provider & Financial -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="glass-card border-0 overflow-hidden h-100">
+                <div class="p-4 bg-white border-bottom d-flex align-items-center gap-3">
+                    <div class="bg-warning bg-opacity-10 p-2 rounded-3 text-warning">
+                        <i class="fas fa-hospital"></i>
+                    </div>
+                    <h5 class="mb-0 fw-bold">Provider Details</h5>
+                </div>
+                <div class="p-4 bg-white">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase tracking-wider">Facility Name</label>
+                        {{ form.facility_name }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase tracking-wider">Referring Doctor</label>
+                        {{ form.referring_doctor }}
+                    </div>
+                    <div>
+                        <label class="form-label fw-bold small text-uppercase tracking-wider">Attending / Treating
+                            Doctor</label>
+                        {{ form.attending_doctor }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="glass-card border-0 overflow-hidden h-100">
+                <div class="p-4 bg-white border-bottom d-flex align-items-center gap-3">
+                    <div class="bg-danger bg-opacity-10 p-2 rounded-3 text-danger">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </div>
+                    <h5 class="mb-0 fw-bold">Financial & Documents</h5>
+                </div>
+                <div class="p-4 bg-white">
+                    <div class="row g-3 mb-3">
+                        <div class="col-7">
+                            <label class="form-label fw-bold small text-uppercase tracking-wider">Estimated Cost</label>
+                            {{ form.amount }}
+                        </div>
+                        <div class="col-5">
+                            <label class="form-label fw-bold small text-uppercase tracking-wider">Currency</label>
+                            {{ form.currency }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label fw-bold small text-uppercase tracking-wider">Supporting
+                            Document</label>
+                        {{ form.supporting_document }}
+                        <div class="form-text small">Upload referral letter, medical report, or quotation</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="d-flex justify-content-end gap-3 mb-5">
+        <a href="{% url 'medical_aid:list' %}" class="btn btn-outline-secondary rounded-pill px-4 py-2">Cancel</a>
+        <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 shadow-sm fw-bold">
+            <i class="fas fa-paper-plane me-2"></i>Submit Request
+        </button>
+    </div>
+</form>
+{% endblock %}

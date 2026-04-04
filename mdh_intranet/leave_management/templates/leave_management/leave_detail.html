@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Leave Request Details - OpsHub{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'leave_management:leave_list' %}">Leave Management</a></li>
+                <li class="breadcrumb-item active">{{ leave.leave_type.name }} Application</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <!-- Main Details -->
+        <div class="glass-card overflow-hidden border-0 mb-4">
+            <div class="p-4 bg-white border-bottom d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-primary bg-opacity-10 p-2 rounded-3 text-primary">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h5 class="mb-0 fw-bold">Request #{{ leave.pk }}</h5>
+                </div>
+                <span class="badge rounded-pill px-4 py-2 fs-6
+                    {% if leave.status == 'PENDING' %}bg-warning bg-opacity-10 text-warning
+                    {% elif leave.status == 'APPROVED' %}bg-success bg-opacity-10 text-success
+                    {% elif leave.status == 'REJECTED' %}bg-danger bg-opacity-10 text-danger
+                    {% else %}bg-secondary bg-opacity-10 text-secondary{% endif %}">
+                    {{ leave.get_status_display }}
+                </span>
+            </div>
+
+            <div class="p-4 p-md-5 bg-white">
+                <div class="row g-4 mb-5">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="small text-muted text-uppercase fw-bold tracking-wider mb-1">Staff Member</div>
+                        <div class="fw-bold">{{ leave.user.get_full_name|default:leave.user.username }}</div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="small text-muted text-uppercase fw-bold tracking-wider mb-1">Leave Type</div>
+                        <div class="fw-bold">{{ leave.leave_type.name }}</div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="small text-muted text-uppercase fw-bold tracking-wider mb-1">Duration</div>
+                        <div class="fw-bold text-primary">{{ leave.duration }} Days</div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="small text-muted text-uppercase fw-bold tracking-wider mb-1">Submitted On</div>
+                        <div class="fw-bold">{{ leave.created_at|date:"M d, Y" }}</div>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-5">
+                    <div class="col-md-6">
+                        <div class="p-4 rounded-4 bg-light border border-white h-100">
+                            <div class="small text-muted text-uppercase fw-bold tracking-wider mb-3">Leave Period</div>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="text-center">
+                                    <div class="small fw-bold text-muted">{{ leave.start_date|date:"D" }}</div>
+                                    <div class="h4 mb-0 fw-bold">{{ leave.start_date|date:"d" }}</div>
+                                    <div class="small fw-bold text-primary">{{ leave.start_date|date:"M" }}</div>
+                                </div>
+                                <div class="text-muted"><i class="fas fa-arrow-right"></i></div>
+                                <div class="text-center">
+                                    <div class="small fw-bold text-muted">{{ leave.end_date|date:"D" }}</div>
+                                    <div class="h4 mb-0 fw-bold">{{ leave.end_date|date:"d" }}</div>
+                                    <div class="small fw-bold text-primary">{{ leave.end_date|date:"M" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        {% if leave.attachment %}
+                        <div
+                            class="p-4 rounded-4 bg-light border border-white h-100 d-flex flex-column justify-content-center align-items-center">
+                            <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary mb-3">
+                                <i class="fas fa-paperclip fa-lg"></i>
+                            </div>
+                            <a href="{{ leave.attachment.url }}" target="_blank"
+                                class="btn btn-outline-primary rounded-pill px-4">
+                                View Attachment
+                            </a>
+                        </div>
+                        {% else %}
+                        <div
+                            class="p-4 rounded-4 bg-light border border-white h-100 d-flex flex-column justify-content-center align-items-center opacity-50">
+                            <i class="fas fa-file-slash fa-2x text-muted mb-2"></i>
+                            <div class="small text-muted fw-bold">No Attachments</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-0">
+                    <div class="small text-muted text-uppercase fw-bold tracking-wider mb-2">Reason provided</div>
+                    <div class="p-4 rounded-4 bg-light border border-white fst-italic">
+                        "{{ leave.reason }}"
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if leave.reviewed_by %}
+        <!-- Review History -->
+        <div class="glass-card overflow-hidden border-0">
+            <div class="p-4 bg-white border-bottom">
+                <h6 class="mb-0 fw-bold"><i class="fas fa-history me-2 text-muted"></i>Review Information</h6>
+            </div>
+            <div class="p-4 bg-white">
+                <div class="d-flex gap-4">
+                    <div class="text-center">
+                        <div class="bg-primary bg-opacity-10 rounded-circle text-primary mx-auto mb-2 d-flex align-items-center justify-content-center"
+                            style="width: 50px; height: 50px;">
+                            {{ leave.reviewed_by.username|make_list|first|upper }}
+                        </div>
+                        <small class="text-muted fw-bold">Reviewed By</small>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold mb-1">{{ leave.reviewed_by.get_full_name|default:leave.reviewed_by.username }}</div>
+                        <div class="small text-muted mb-3">{{ leave.reviewed_at|date:"M d, Y @ H:i" }}</div>
+                        {% if leave.review_notes %}
+                        <div class="p-3 rounded-3 bg-light small">
+                            {{ leave.review_notes }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        {% if approval_form %}
+        <!-- Approval Form (Staff Only) -->
+        <div class="glass-card border-0 shadow-sm sticky-top" style="top: 2rem;">
+            <div class="p-4 bg-white border-bottom">
+                <h5 class="mb-0 fw-bold">Leave Decision</h5>
+                <small class="text-muted">Review and update application status</small>
+            </div>
+            <div class="p-4 bg-white">
+                <form method="post" action="{% url 'leave_management:leave_approve' leave.pk %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-uppercase tracking-wider">Final Status</label>
+                        {{ approval_form.status }}
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-uppercase tracking-wider">Decision Notes</label>
+                        {{ approval_form.review_notes }}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold">
+                        Confirm Decision
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <!-- Status Guide -->
+        <div class="glass-card p-4 border-0">
+            <h6 class="fw-bold mb-3">Status Guide</h6>
+            <div class="d-flex gap-3 mb-3">
+                <div class="bg-warning p-2 rounded-circle mt-1" style="width: 10px; height: 10px;"></div>
+                <div class="small"><strong>Pending</strong>: Your request is awaiting review by your supervisor.</div>
+            </div>
+            <div class="d-flex gap-3 mb-3">
+                <div class="bg-success p-2 rounded-circle mt-1" style="width: 10px; height: 10px;"></div>
+                <div class="small"><strong>Approved</strong>: Your leave is confirmed. Enjoy your time off!</div>
+            </div>
+            <div class="d-flex gap-3">
+                <div class="bg-danger p-2 rounded-circle mt-1" style="width: 10px; height: 10px;"></div>
+                <div class="small"><strong>Rejected</strong>: Your request was not approved. Please see review notes.
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

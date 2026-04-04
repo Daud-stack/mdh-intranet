@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Draft Metadata - SOP Assistant - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'sop_assistant:index' %}">SOP Assistant</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Metadata</li>
+        </ol>
+    </nav>
+
+    {% include "sop_assistant/_wizard_steps.html" with current_step=2 total_steps=total_steps %}
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="glass-card border-0 overflow-hidden">
+                <div class="p-4 border-bottom" style="background: linear-gradient(135deg, #f8fafc, #eef2ff);">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="p-3 rounded-4 bg-primary bg-opacity-10 text-primary">
+                            <i class="fas fa-info-circle fa-lg"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold mb-0">SOP Details</h4>
+                            <p class="text-muted mb-0 small">Using template: <strong>{{ draft.template.name }}</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <label for="id_title" class="form-label fw-bold">
+                                SOP Title <span class="text-danger">*</span>
+                            </label>
+                            {{ form.title }}
+                            <div class="form-text">
+                                <i class="fas fa-lightbulb text-warning me-1"></i>
+                                Tip: Include an SOP reference number, e.g.
+                                <code>SOP-CLN-001: Hand Hygiene Protocol</code>
+                            </div>
+                            {% if form.title.errors %}
+                            <div class="text-danger small mt-1">{{ form.title.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <label for="id_target_category" class="form-label fw-bold">
+                                    Target SOP Category <span class="text-danger">*</span>
+                                </label>
+                                {{ form.target_category }}
+                                <div class="form-text">
+                                    This SOP will be published to this category in the SOP Manual.
+                                </div>
+                                {% if form.target_category.errors %}
+                                <div class="text-danger small mt-1">{{ form.target_category.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label for="id_version" class="form-label fw-bold">Version</label>
+                                {{ form.version }}
+                                <div class="form-text">Format: 1.0</div>
+                                {% if form.version.errors %}
+                                <div class="text-danger small mt-1">{{ form.version.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- ── Intelligence Harvesting (Incidents/CAPAs) ── -->
+                        <div class="card border-0 mb-4 overflow-hidden"
+                            style="background: rgba(99, 102, 241, 0.03); border: 1px solid rgba(99, 102, 241, 0.1) !important;">
+                            <div class="px-3 py-2 border-bottom fw-bold"
+                                style="background: rgba(99, 102, 241, 0.08); font-size: 0.85rem; color: #4f46e5;">
+                                <i class="fas fa-magic me-2"></i> Harvest Intelligence
+                            </div>
+                            <div class="p-3">
+                                <p class="small text-muted mb-3">
+                                    Select recent incidents or CAPA findings to feed into the AI suggestion engine.
+                                    This will help the assistant auto-draft "Safety Precautions" and "Lessons Learned".
+                                </p>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <h6 class="small fw-bold mb-2 text-uppercase text-danger"
+                                            style="letter-spacing: 0.5px; font-size: 0.7rem;">Related Incidents</h6>
+                                        <div class="overflow-auto border rounded-3 p-2 bg-white"
+                                            style="max-height: 150px;">
+                                            {% if form.referenced_incidents.field.queryset %}
+                                            {% for choice in form.referenced_incidents %}
+                                            <div class="form-check small mb-1">
+                                                {{ choice.tag }}
+                                                <label class="form-check-label d-inline-block text-truncate"
+                                                    style="max-width: 90%;" for="{{ choice.id_for_label }}">
+                                                    {{ choice.choice_label }}
+                                                </label>
+                                            </div>
+                                            {% endfor %}
+                                            {% else %}
+                                            <p class="text-muted italic small mb-0">None available.</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <h6 class="small fw-bold mb-2 text-uppercase text-success"
+                                            style="letter-spacing: 0.5px; font-size: 0.7rem;">CAPA Findings</h6>
+                                        <div class="overflow-auto border rounded-3 p-2 bg-white"
+                                            style="max-height: 150px;">
+                                            {% if form.referenced_capas.field.queryset %}
+                                            {% for choice in form.referenced_capas %}
+                                            <div class="form-check small mb-1">
+                                                {{ choice.tag }}
+                                                <label class="form-check-label d-inline-block text-truncate"
+                                                    style="max-width: 90%;" for="{{ choice.id_for_label }}">
+                                                    {{ choice.choice_label }}
+                                                </label>
+                                            </div>
+                                            {% endfor %}
+                                            {% else %}
+                                            <p class="text-muted italic small mb-0">None available.</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Template Info Panel -->
+                        <div class="rounded-3 p-3 mb-4" style="background: #f8fafc; border: 1px dashed #cbd5e1;">
+                            <h6 class="fw-bold text-muted mb-2">
+                                <i class="fas fa-puzzle-piece me-1"></i> Template Sections
+                            </h6>
+                            <p class="small text-muted mb-2">This draft will include the following sections based on the
+                                chosen template:</p>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for section in draft.sections.all %}
+                                <span
+                                    class="badge rounded-pill px-3 py-2 {% if section.is_required %}bg-primary bg-opacity-10 text-primary{% else %}bg-light text-muted{% endif %}">
+                                    {% if section.is_required %}<i class="fas fa-asterisk me-1"
+                                        style="font-size: 0.5rem;"></i>{% endif %}
+                                    {{ section.section_label }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 justify-content-between">
+                            <a href="{% url 'sop_assistant:index' %}"
+                                class="btn btn-outline-secondary rounded-pill px-4">
+                                <i class="fas fa-arrow-left me-1"></i> Back
+                            </a>
+                            <button type="submit" class="btn rounded-pill px-5 fw-bold sop-cta-btn">
+                                Continue to Content <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .sop-cta-btn {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .sop-cta-btn:hover {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px -5px rgba(99, 102, 241, 0.4);
+    }
+</style>
+{% endblock %}

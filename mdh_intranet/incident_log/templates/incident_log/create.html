@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Report Incident - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'incident_log:index' %}">Incident Log</a></li>
+                    <li class="breadcrumb-item active">Report Incident</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-danger text-white py-3">
+                    <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Report New Incident</h4>
+                    <small class="opacity-75">Complete all required fields to submit an incident report</small>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                            <p class="mb-0">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Section: What Happened -->
+                        <h6 class="fw-bold text-muted text-uppercase mb-3">
+                            <i class="fas fa-info-circle text-primary me-1"></i> What Happened
+                        </h6>
+
+                        <div class="mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label fw-bold">
+                                Incident Title <span class="text-danger">*</span>
+                            </label>
+                            {{ form.title }}
+                            {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors.0 }}
+                            </div>{% endif %}
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label for="{{ form.category.id_for_label }}" class="form-label fw-bold">
+                                    Category <span class="text-danger">*</span>
+                                </label>
+                                {{ form.category }}
+                                {% if form.category.errors %}<div class="text-danger small mt-1">{{ form.category.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.severity.id_for_label }}" class="form-label fw-bold">
+                                    Severity <span class="text-danger">*</span>
+                                </label>
+                                {{ form.severity }}
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.priority.id_for_label }}" class="form-label fw-bold">
+                                    Priority <span class="text-danger">*</span>
+                                </label>
+                                {{ form.priority }}
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.location.id_for_label }}" class="form-label fw-bold">
+                                    Location <span class="text-danger">*</span>
+                                </label>
+                                {{ form.location }}
+                                {% if form.location.errors %}<div class="text-danger small mt-1">{{ form.location.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.date_occurred.id_for_label }}" class="form-label fw-bold">
+                                    Date & Time of Incident <span class="text-danger">*</span>
+                                </label>
+                                {{ form.date_occurred }}
+                                {% if form.date_occurred.errors %}<div class="text-danger small mt-1">{{ form.date_occurred.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">
+                                Description <span class="text-danger">*</span>
+                            </label>
+                            {{ form.description }}
+                            <div class="form-text">Provide as much detail as possible: what happened, contributing
+                                factors, and the impact.</div>
+                            {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Section: People Involved -->
+                        <h6 class="fw-bold text-muted text-uppercase mb-3">
+                            <i class="fas fa-users text-primary me-1"></i> People Involved
+                        </h6>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="{{ form.persons_involved.id_for_label }}" class="form-label fw-bold">Persons
+                                    Involved</label>
+                                {{ form.persons_involved }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.witnesses.id_for_label }}"
+                                    class="form-label fw-bold">Witnesses</label>
+                                {{ form.witnesses }}
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Section: Immediate Action -->
+                        <h6 class="fw-bold text-muted text-uppercase mb-3">
+                            <i class="fas fa-first-aid text-primary me-1"></i> Immediate Response
+                        </h6>
+
+                        <div class="mb-4">
+                            <label for="{{ form.immediate_action.id_for_label }}" class="form-label fw-bold">Immediate
+                                Action Taken</label>
+                            {{ form.immediate_action }}
+                            <div class="form-text">Describe any immediate steps taken in response to the incident.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Supporting Evidence / Photos</label>
+                            {{ form.attachment }}
+                            <div class="form-text small">Upload photos, documents, or screenshots related to this
+                                incident.</div>
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="d-flex gap-2 justify-content-end pt-3 border-top">
+                            <a href="{% url 'incident_log:index' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                            <button type="submit" class="btn btn-danger px-4">
+                                <i class="fas fa-paper-plane me-1"></i> Submit Report
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

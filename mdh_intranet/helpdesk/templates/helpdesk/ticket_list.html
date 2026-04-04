@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}IT Helpdesk - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="fw-bold text-primary">
+                <i class="fas fa-headset me-2"></i> IT Helpdesk
+            </h1>
+            <p class="text-muted">Submit and track your technical support requests.</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'helpdesk:create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> New Ticket
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-0 text-primary">{{ open_count }}</h5>
+                    <small class="text-muted text-uppercase">Open Tickets</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-0 text-success">{{ resolved_count }}</h5>
+                    <small class="text-muted text-uppercase">Resolved/Closed</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between">
+            <h5 class="mb-0 fw-bold">My Tickets</h5>
+
+            <form method="get" class="d-flex align-items-center gap-2">
+                <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Statuses</option>
+                    <option value="open">Open</option>
+                    <option value="resolved">Resolved</option>
+                </select>
+            </form>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Subject</th>
+                            {% if is_agent %}<th>Requester</th>{% endif %}
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ticket in tickets %}
+                        <tr>
+                            <td><span class="badge bg-secondary font-monospace">{{ ticket.ticket_id }}</span></td>
+                            <td>
+                                <a href="{% url 'helpdesk:detail' ticket.pk %}"
+                                    class="fw-bold text-decoration-none text-dark">
+                                    {{ ticket.title }}
+                                </a>
+                                <small class="d-block text-muted">{{ ticket.get_category_display }}</small>
+                            </td>
+                            {% if is_agent %}
+                            <td>{{ ticket.requester.get_full_name|default:ticket.requester }}</td>
+                            {% endif %}
+                            <td>
+                                {% if ticket.priority == '4_critical' %}
+                                <span class="badge bg-danger">Critical</span>
+                                {% elif ticket.priority == '3_high' %}
+                                <span class="badge bg-warning text-dark">High</span>
+                                {% elif ticket.priority == '2_medium' %}
+                                <span class="badge bg-info text-dark">Medium</span>
+                                {% else %}
+                                <span class="badge bg-light text-muted border">Low</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if ticket.status == 'open' %}
+                                <span class="badge bg-primary">Open</span>
+                                {% elif ticket.status == 'in_progress' %}
+                                <span class="badge bg-info">In Progress</span>
+                                {% elif ticket.status == 'resolved' %}
+                                <span class="badge bg-success">Resolved</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Closed</span>
+                                {% endif %}
+                            </td>
+                            <td><small class="text-muted">{{ ticket.created_at|date:"M d g:ia" }}</small></td>
+                            <td>
+                                <a href="{% url 'helpdesk:detail' ticket.pk %}" class="btn btn-sm btn-outline-primary">
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="fas fa-search fa-3x mb-3 opacity-25"></i>
+                                <p>No tickets found.</p>
+                                <a href="{% url 'helpdesk:create' %}" class="btn btn-sm btn-outline-primary">Create
+                                    One</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

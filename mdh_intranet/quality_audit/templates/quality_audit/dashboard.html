@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Quality & Infection Control - OpsHub{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <h1 class="h3 mb-0 fw-bold border-start border-5 border-info ps-3 text-dark">Quality & Infection Control</h1>
+            <p class="text-muted ms-3 mb-0 mt-1">Conduct proactive audits to maintain hospital accreditation standards.</p>
+        </div>
+        <a href="{% url 'quality_audit:template_create' %}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+            <i class="fas fa-plus me-2"></i>New Template
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm py-3 px-3 text-center rounded-4">
+                <i class="fas fa-clipboard-check fa-2x mb-2 text-primary"></i>
+                <h3 class="fw-bold text-dark mb-1">{{ total_audits }}</h3>
+                <div class="text-muted text-uppercase small fw-bold">Total Audits Conducted</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div
+                class="card border-0 shadow-sm py-4 px-4 text-center rounded-4 border-bottom border-5 {% if overall_score >= 85 %}border-success{% elif overall_score >= 60 %}border-warning{% else %}border-danger{% endif %}">
+                <i
+                    class="fas fa-chart-line fa-2x mb-2 {% if overall_score >= 85 %}text-success{% elif overall_score >= 60 %}text-warning{% else %}text-danger{% endif %}"></i>
+                <h3
+                    class="fw-bold mb-1 {% if overall_score >= 85 %}text-success{% elif overall_score >= 60 %}text-warning{% else %}text-danger{% endif %}">
+                    {{ overall_score }}%</h3>
+                <div class="text-muted text-uppercase small fw-bold">Global Compliance Average</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- New Audits -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-play text-primary me-2"></i>Start New Audit</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush rounded-bottom-4">
+                        {% for template in templates %}
+                        <div class="list-group-item px-4 py-3 border-0 border-bottom">
+                            <h6 class="fw-bold text-dark mb-1">{{ template.title }}</h6>
+                            <p class="text-muted small mb-2">{{ template.description }}</p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="badge bg-light text-dark fw-normal"><i
+                                        class="fas fa-map-marker-alt me-1"></i>{{                                     template.department_target|default:"General" }}</span>
+                                <a href="{% url 'quality_audit:perform_audit' template.id %}"
+                                    class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm">Start Audit</a>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="p-5 text-center text-muted">
+                            <div class="mb-3">
+                                <i class="fas fa-clipboard-list fa-3x opacity-25"></i>
+                            </div>
+                            <h5 class="fw-bold">No Audit Templates</h5>
+                            <p class="small">Get started by creating your first inspection template.</p>
+                            <a href="{% url 'quality_audit:template_create' %}" class="btn btn-sm btn-outline-primary rounded-pill px-4 mt-2">
+                                <i class="fas fa-plus me-1"></i>Create Template
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Submissions -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-history text-secondary me-2"></i>Recent
+                        Submissions</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Date</th>
+                                    <th>Audit Type</th>
+                                    <th>Location</th>
+                                    <th>Score</th>
+                                    <th class="pe-4 text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sub in recent_audits %}
+                                <tr>
+                                    <td class="ps-4 text-muted small">{{ sub.conducted_at|date:"d M H:i" }}</td>
+                                    <td class="fw-bold text-dark">{{ sub.template.title }}</td>
+                                    <td>{{ sub.department_audited }}</td>
+                                    <td>
+                                        {% widthratio sub.score sub.template.questions.count 100 as s_pct %}
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge rounded-pill
+                                                {% if s_pct >= '85' %}bg-success
+                                                {% elif s_pct >= '60' %}bg-warning text-dark
+                                                {% else %}bg-danger{% endif %}">
+                                                {{ s_pct }}%
+                                            </span>
+                                            <span class="small text-muted">({{ sub.score }}/{{                                                 sub.template.questions.count }})</span>
+                                        </div>
+                                    </td>
+                                    <td class="pe-4 text-end">
+                                        <a href="{% url 'quality_audit:audit_detail' sub.id %}"
+                                            class="btn btn-sm btn-light rounded-pill px-3">View</a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="py-5 text-center text-muted">No audits have been performed
+                                        yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

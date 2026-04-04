@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        @page {
+            size: A5 landscape;
+            margin: 1cm;
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.3;
+            color: #1e293b;
+        }
+        .header {
+            border-bottom: 2px solid #f59e0b;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+        .hospital-name {
+            color: #1e40af;
+            font-size: 16pt;
+            font-weight: bold;
+        }
+        .rx-title {
+            color: #f59e0b;
+            font-size: 14pt;
+            font-weight: bold;
+            float: right;
+        }
+        .patient-box {
+            background: #f8fafc;
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        table.med-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table.med-table th {
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+            padding: 5px;
+            font-size: 9pt;
+            color: #64748b;
+        }
+        table.med-table td {
+            padding: 8px 5px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .instructions {
+            font-size: 8pt;
+            color: #475569;
+            font-style: italic;
+            margin-top: 2px;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 8pt;
+        }
+        .stamp-box {
+            border: 1px dashed #cbd5e1;
+            width: 120px;
+            height: 60px;
+            float: right;
+            text-align: center;
+            line-height: 60px;
+            color: #e2e8f0;
+            font-size: 7pt;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <span class="rx-title">PRESCRIPTION</span>
+        <div class="hospital-name">Mbuya Dorcas Hospital</div>
+        <div style="font-size: 8pt; color: #64748b;">Phone: +263 242 123456 | Email: info@materdei.co.zw</div>
+    </div>
+
+    <div class="patient-box">
+        <table style="width: 100%;">
+            <tr>
+                <td><strong>Patient:</strong> {{ prescription.consultation.patient }}</td>
+                <td><strong>Age:</strong> {{ prescription.consultation.patient.age }}</td>
+                <td><strong>Gender:</strong> {{ prescription.consultation.patient.get_gender_display }}</td>
+            </tr>
+            <tr>
+                <td><strong>Med Aid:</strong> {{ prescription.consultation.patient.medical_aid_name|default:"Cash" }}</td>
+                <td><strong>No:</strong> {{ prescription.consultation.patient.medical_aid_number|default:"—" }}</td>
+                <td><strong>Date:</strong> {{ prescription.created_at|date:"d/M/Y" }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="med-table">
+        <thead>
+            <tr>
+                <th style="width: 45%;">Medication & Strength</th>
+                <th style="width: 15%;">Dosage</th>
+                <th style="width: 15%;">Freq</th>
+                <th style="width: 15%;">Dur</th>
+                <th style="width: 10%;">Qty</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in prescription.items.all %}
+            <tr>
+                <td>
+                    <div style="font-weight: bold;">{{ item.medication_name }}</div>
+                    {% if item.instructions %}<div class="instructions">{{ item.instructions }}</div>{% endif %}
+                </td>
+                <td>{{ item.dosage }}</td>
+                <td>{{ item.frequency }}</td>
+                <td>{{ item.duration }}</td>
+                <td>{{ item.total_quantity }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <table style="width: 100%;">
+            <tr>
+                <td style="width: 60%;">
+                    <div style="margin-bottom: 40px;">Prescribed By: <strong>Dr. {{ prescription.prescribed_by.get_full_name|default:prescription.prescribed_by.username }}</strong></div>
+                    <div style="border-top: 1px solid #1e293b; width: 200px; padding-top: 2px;">Physician's Signature & MMCZ No.</div>
+                </td>
+                <td style="width: 40%;">
+                    <div class="stamp-box">HOSPITAL STAMP</div>
+                    <div style="text-align: center; font-size: 7pt; margin-top: 70px; color: #94a3b8;">Ref: #RX{{ prescription.id|stringformat:"06d" }}</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

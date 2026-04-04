@@ -1,0 +1,176 @@
+<!-- prettier-ignore-start -->
+{% extends "base.html" %}
+{% block title %}{{ asset.name }} - Asset Health{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <!-- Asset Profile -->
+            <div class="card border-0 shadow-sm mb-4 text-center" style="border-radius: 15px;">
+                <div class="card-body p-4">
+                    <div class="avatar-xl mx-auto bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center mb-3"
+                        style="width: 100px; height: 100px; font-size: 3rem;">
+                        <i class="fas fa-microscope"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1">
+                        {{ asset.name }}
+                    </h4>
+                    <p class="text-muted small mb-2">
+                        {{ asset.asset_id }}
+                    </p>
+                    <div class="mb-4">
+                        <span class="badge bg-success px-4 rounded-pill">
+                            {{ asset.get_status_display }}
+                        </span>
+                        <a href="{% url 'maintenance:asset_update' asset.pk %}"
+                            class="btn btn-sm btn-link text-primary ms-2 p-0"><i class="fas fa-edit"></i> Edit</a>
+                    </div>
+
+                    <div class="row text-start g-3 small">
+                        <div class="col-6 text-muted">Serial No.</div>
+                        <div class="col-6 fw-bold">
+                            {{ asset.serial_number|default:"--" }}
+                        </div>
+                        <div class="col-6 text-muted">Category</div>
+                        <div class="col-6 fw-bold">
+                            {{ asset.category }}
+                        </div>
+                        <div class="col-6 text-muted">Location</div>
+                        <div class="col-6 fw-bold">
+                            {{ asset.location }}
+                        </div>
+                        <div class="col-6 text-muted">Last Svc</div>
+                        <div class="col-6 fw-bold">
+                            {{ asset.last_maintenance|date:"d M Y"|default:"从来没有" }}
+                        </div>
+                        <div class="col-6 text-muted">Next PPM</div>
+                        <div class="col-6 fw-bold text-danger">
+                            {{ asset.next_ppm_date|date:"d M Y"|default:"Not Set" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Health Reading Log -->
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-header bg-transparent border-0 py-3 d-flex justify-content-between">
+                    <h6 class="fw-bold mb-0">Record Health Metric</h6>
+                </div>
+                <div class="card-body pt-0">
+                    <form method="post" class="small">
+                        {% csrf_token %}
+                        <input type="hidden" name="reading" value="1">
+                        <div class="mb-2">
+                            <label class="form-label">Metric Type</label>
+                            {{ r_form.reading_type }}
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-8">
+                                <label class="form-label">Value</label>
+                                {{ r_form.value }}
+                            </div>
+                            <div class="col-4">
+                                <label class="form-label">Unit</label>
+                                {{ r_form.unit }}
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm w-100 rounded-pill">Save Reading</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <!-- Tabs -->
+            <ul class="nav nav-pills mb-4 bg-white p-2 rounded-pill shadow-sm d-inline-flex" id="pills-tab"
+                role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active rounded-pill px-4" id="p-wo-tab" data-bs-toggle="pill"
+                        data-bs-target="#p-wo" type="button">Work Orders</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link rounded-pill px-4" id="p-metrics-tab" data-bs-toggle="pill"
+                        data-bs-target="#p-metrics" type="button">Health Metrics</button>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="p-wo">
+                    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="ps-4">Work Order</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th class="pe-4">Spent</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for wo in work_orders %}
+                                    <tr>
+                                        <td class="ps-4">
+                                            <div class="fw-bold text-dark">
+                                                {{ wo.title }}
+                                            </div>
+                                            <small class="text-muted">
+                                                {{ wo.get_order_type_display }}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            {{ wo.created_at|date:"d M Y" }}
+                                        </td>
+                                        <td>
+                                            <span class="badge rounded-pill bg-light text-primary border">
+                                                {{ wo.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td class="pe-4">
+                                            $
+                                            {{ wo.parts_cost }}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-5 text-muted">No maintenance history yet.
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="p-metrics">
+                    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-4">Reading History (Predictive Trends)</h6>
+                            <div class="list-group list-group-flush">
+                                {% for r in readings %}
+                                <div
+                                    class="list-group-item border-0 px-0 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-bold">
+                                            {{ r.reading_type }}
+                                        </div>
+                                        <small class="text-muted">
+                                            {{ r.timestamp|date:"d M Y, H:i" }}
+                                        </small>
+                                    </div>
+                                    <div class="h5 mb-0 text-primary fw-bold">
+                                        {{ r.value }} {{ r.unit }}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+<!-- prettier-ignore-end -->

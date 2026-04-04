@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Create Audit Template - OpsHub{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="glass-card p-4">
+                <h3 class="fw-bold mb-4">New Audit Template</h3>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Template Title</label>
+                        <input type="text" name="title" class="form-control rounded-3" placeholder="e.g. Weekly Hand Hygiene Audit" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Department Focus</label>
+                        <input type="text" name="department_target" class="form-control rounded-3" placeholder="e.g. Nursing, Maintenance, Pharmacy">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Description</label>
+                        <textarea name="description" class="form-control rounded-3" rows="3"></textarea>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'quality_audit:dashboard' %}" class="btn btn-light rounded-pill px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4">Create & Add Questions</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

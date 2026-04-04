@@ -1,0 +1,140 @@
+<!-- prettier-ignore-start -->
+{% extends "base.html" %}
+{% block title %}Manage Roster - OpsHub{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <div>
+            <h1 class="h3 mb-0 fw-bold text-primary"><i class="fas fa-users-cog me-2"></i>Manage Roster: {{                 roster.department }}</h1>
+            <p class="text-muted mb-0">{{ roster.start_date|date:"j M Y" }} - {{ roster.end_date|date:"j M Y" }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'rostering:dashboard' %}" class="btn btn-outline-secondary rounded-pill"><i
+                    class="fas fa-arrow-left me-2"></i>Back</a>
+            {% if not roster.is_published %}
+            <form method="post" action="{% url 'rostering:manage_roster' roster.pk %}" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="publish">
+                <button type="submit" class="btn btn-success rounded-pill"><i class="fas fa-globe me-2"></i>Publish
+                    Roster</button>
+            </form>
+            {% else %}
+            <button class="btn btn-success rounded-pill" disabled><i
+                    class="fas fa-check-circle me-2"></i>Published</button>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Add New Shift -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-header bg-primary text-white py-3 border-0">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-plus-circle me-2"></i>Add Shift</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'rostering:manage_roster' roster.pk %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="add_shift">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase mb-1">Shift Type</label>
+                            <select name="template_id" class="form-select" required>
+                                <option value="" disabled selected>Select a shift template...</option>
+                                {% for template in templates %}
+                                <option value="{{ template.id }}">{{ template.name }} ({{ template.start_time|time:"H:i"                                     }} - {{ template.end_time|time:"H:i" }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase mb-1">Date</label>
+                            <input type="date" name="shift_date" class="form-control" required
+                                min="{{ roster.start_date|date:'Y-m-d' }}" max="{{ roster.end_date|date:'Y-m-d' }}">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-muted text-uppercase mb-1">Staff
+                                Required</label>
+                            <input type="number" name="required_staff" class="form-control" value="1" min="1" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold">Add to
+                            Schedule</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Existing Shifts -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="fw-bold mb-0">Scheduled Shifts</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Date</th>
+                                <th>Shift Block</th>
+                                <th>Required Staff</th>
+                                <th>Assigned Staff</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for shift in shifts %}
+                            <tr>
+                                <td class="ps-4 fw-bold">{{ shift.date|date:"l, j M" }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle me-2"
+                                            style="width: 10px; height: 10px; background-color: {{ shift.template.color }};">
+                                        </div>
+                                        <span>{{ shift.template.name }}</span>
+                                    </div>
+                                    <small class="text-muted">{{ shift.template.start_time|time:"H:i" }} - {{                                         shift.template.end_time|time:"H:i" }}</small>
+                                </td>
+                                <td>{{ shift.required_staff }}</td>
+                                <td>
+                                    <div class="mb-2">
+                                        {% if shift.assignments.exists %}
+                                        {% for assignment in shift.assignments.all %}
+                                        <span class="badge bg-light text-dark border rounded-pill">{{                                             assignment.employee.get_full_name|default:assignment.employee.username                                             }}</span>
+                                        {% endfor %}
+                                        {% else %}
+                                        <span class="text-muted small fst-italic">No staff assigned</span>
+                                        {% endif %}
+                                    </div>
+                                    <form method="post" action="{% url 'rostering:manage_roster' roster.pk %}"
+                                        class="d-flex align-items-center gap-2">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="assign_staff">
+                                        <input type="hidden" name="shift_id" value="{{ shift.id }}">
+                                        <select name="employee_id" class="form-select form-select-sm" required
+                                            style="width: auto;">
+                                            <option value="" disabled selected>Select Staff...</option>
+                                            {% for employee in employees %}
+                                            <option value="{{ employee.id }}">{{                                                 employee.get_full_name|default:employee.username }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button type="submit"
+                                            class="btn btn-sm btn-outline-primary rounded-pill">Assign</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">No shifts have been scheduled for
+                                    this roster yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+<!-- prettier-ignore-end -->

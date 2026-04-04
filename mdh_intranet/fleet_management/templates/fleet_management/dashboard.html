@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Fleet & Ambulance Management - OpsHub{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <h1 class="h3 mb-0 fw-bold text-success"><i class="fas fa-ambulance me-2"></i>Fleet Management</h1>
+            <p class="text-muted mb-0">Track ambulances, patient transfer vehicles, and trip logs in real-time.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'fleet_management:vehicle_list' %}" class="btn btn-outline-success rounded-pill"><i
+                    class="fas fa-list me-2"></i>Vehicle Directory</a>
+            <a href="{% url 'fleet_management:log_fuel' %}" class="btn btn-outline-primary rounded-pill"><i
+                    class="fas fa-gas-pump me-2"></i>Log Fuel</a>
+            <a href="{% url 'fleet_management:start_trip' %}" class="btn btn-success rounded-pill shadow-sm"><i
+                    class="fas fa-play me-2"></i>Dispatch Vehicle</a>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center py-4" style="border-radius: 15px;">
+                <h2 class="fw-bold text-success">{{ available_count }}</h2>
+                <div class="text-muted text-uppercase small fw-bold"><i class="fas fa-check-circle me-1"></i>Available
+                    Now</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center py-4 border-start border-primary border-5"
+                style="border-radius: 15px;">
+                <h2 class="fw-bold text-primary">{{ active_trips.count }}</h2>
+                <div class="text-muted text-uppercase small fw-bold"><i class="fas fa-road me-1"></i>In Transit</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center py-4 border-start border-danger border-5"
+                style="border-radius: 15px;">
+                <h2 class="fw-bold text-danger">{{ maintenance_count }}</h2>
+                <div class="text-muted text-uppercase small fw-bold"><i class="fas fa-tools me-1"></i>In Service / Down
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center py-4 border-start border-warning border-5"
+                style="border-radius: 15px;">
+                <h2 class="fw-bold text-warning">{{ renewals.count }}</h2>
+                <div class="text-muted text-uppercase small fw-bold"><i class="fas fa-file-contract me-1"></i>Upcoming
+                    Renewals</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Live Dispatches -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">Active Dispatches (Live)</h5>
+                    <span class="badge bg-primary rounded-pill px-3">{{ active_trips.count }} Online</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Vehicle</th>
+                                    <th>Driver</th>
+                                    <th>Route</th>
+                                    <th>Started</th>
+                                    <th class="pe-4 text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trip in active_trips %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-bold text-dark">{{ trip.vehicle.license_plate }}</div>
+                                        <small class="text-muted">{{ trip.vehicle.get_vehicle_type_display }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2"
+                                                style="width:30px; height:30px;">
+                                                <i class="fas fa-user small"></i>
+                                            </div>
+                                            {{ trip.driver.username }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold">{{ trip.origin }}</span>
+                                        <i class="fas fa-long-arrow-alt-right mx-2 text-muted"></i>
+                                        <span class="fw-bold text-primary">{{ trip.destination }}</span>
+                                    </td>
+                                    <td>{{ trip.start_time|time:"H:i" }}</td>
+                                    <td class="pe-4 text-end">
+                                        {% if trip.driver == request.user %}
+                                        <a href="{% url 'fleet_management:end_trip' trip.id %}"
+                                            class="btn btn-sm btn-danger rounded-pill px-3"><i
+                                                class="fas fa-stop-circle me-1"></i>End Trip</a>
+                                        {% else %}
+                                        <button class="btn btn-sm btn-light rounded-pill px-3" disabled>In
+                                            Progress</button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="py-5 text-center text-muted">
+                                        <div class="mb-3"><i class="fas fa-parking fa-3x text-light"></i></div>
+                                        <p class="mb-0">All vehicles are parked locally.</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerts & Reminders -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold text-warning mb-0"><i class="fas fa-exclamation-circle me-2"></i>Service Alerts
+                    </h5>
+                </div>
+                <div class="card-body pt-0">
+                    <ul class="list-group list-group-flush">
+                        {% for rx in renewals %}
+                        <li class="list-group-item px-0 border-0 mb-2 border-start border-4 border-warning ps-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold text-dark">{{ rx.license_plate }}</span>
+                                <a href="{% url 'fleet_management:vehicle_detail' rx.pk %}"
+                                    class="btn btn-sm btn-link p-0">View</a>
+                            </div>
+                            <small class="text-danger d-block">Service/Reg due: {{ rx.next_service_date|date:"j M Y"                                 }}</small>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item px-0 border-0 text-center py-4 text-muted">No upcoming renewals in 30
+                            days.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

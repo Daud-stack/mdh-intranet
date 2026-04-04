@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Update {{ incident.incident_number }} - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'incident_log:index' %}">Incident Log</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'incident_log:detail' incident.pk %}">{{ incident.incident_number }}</a></li>
+                    <li class="breadcrumb-item active">Update</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Incident Summary -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="badge bg-dark font-monospace fs-6">{{ incident.incident_number }}</span>
+                        <div>
+                            <h5 class="fw-bold mb-0">{{ incident.title }}</h5>
+                            <small class="text-muted">{{ incident.get_category_display }} • {{ incident.location }} •
+                                Reported {{ incident.date_reported|date:"M d, Y" }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Update Form -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h4 class="mb-0 fw-bold"><i class="fas fa-edit text-primary me-2"></i>Update Incident</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                            <p class="mb-0">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Classification -->
+                        <h6 class="fw-bold text-muted text-uppercase mb-3">
+                            <i class="fas fa-sliders-h text-primary me-1"></i> Classification
+                        </h6>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label for="{{ form.status.id_for_label }}" class="form-label fw-bold">
+                                    Status <span class="text-danger">*</span>
+                                </label>
+                                {{ form.status }}
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.severity.id_for_label }}" class="form-label fw-bold">
+                                    Severity <span class="text-danger">*</span>
+                                </label>
+                                {{ form.severity }}
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.priority.id_for_label }}" class="form-label fw-bold">
+                                    Priority <span class="text-danger">*</span>
+                                </label>
+                                {{ form.priority }}
+                            </div>
+                        </div>
+
+                        <!-- Assignment -->
+                        <div class="mb-4">
+                            <label for="{{ form.assigned_to.id_for_label }}" class="form-label fw-bold">
+                                Assign To
+                            </label>
+                            {{ form.assigned_to }}
+                            <div class="form-text">Assign a staff member to investigate this incident.</div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Resolution -->
+                        <h6 class="fw-bold text-muted text-uppercase mb-3">
+                            <i class="fas fa-check-circle text-success me-1"></i> Resolution
+                        </h6>
+
+                        <div class="mb-3">
+                            <label for="{{ form.resolution_notes.id_for_label }}" class="form-label fw-bold">Resolution
+                                Notes</label>
+                            {{ form.resolution_notes }}
+                            <div class="form-text">Describe how the incident was resolved or is being handled.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ form.corrective_actions.id_for_label }}"
+                                class="form-label fw-bold">Corrective Actions</label>
+                            {{ form.corrective_actions }}
+                            <div class="form-text">What steps have been taken to prevent this from happening again?
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Additional Evidence / Documentation</label>
+                            {{ form.attachment }}
+                            <div class="form-text small">Add more files or updated evidence to the incident record.
+                            </div>
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="d-flex gap-2 justify-content-end pt-3 border-top">
+                            <a href="{% url 'incident_log:detail' incident.pk %}"
+                                class="btn btn-outline-secondary px-4">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="fas fa-save me-1"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

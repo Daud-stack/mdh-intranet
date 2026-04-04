@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Documents - OpsHub{% endblock %}
+
+{% block content %}
+<div class="row mb-5 align-items-center">
+    <div class="col-md-7">
+        <h4 class="text-muted fw-medium mb-1">Knowledge Base</h4>
+        <h1 class="display-6 fw-bold tracking-tight">Document Management</h1>
+        <p class="lead text-muted">Access, manage, and collaborate on essential organizational resources.</p>
+    </div>
+    <div class="col-md-5 text-md-end mt-3 mt-md-0">
+        {% if user.is_staff %}
+        <div class="d-inline-flex gap-2">
+            <a href="{% url 'documents:create_sop' %}"
+                class="btn btn-outline-primary border-0 bg-primary bg-opacity-10 text-primary rounded-pill px-4 py-2 fw-bold">
+                <i class="fas fa-magic me-2"></i>Generate SOP
+            </a>
+            <a href="{% url 'documents:upload' %}" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm fw-bold">
+                <i class="fas fa-upload me-2"></i>Upload New
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if messages %}
+<div class="mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} border-0 shadow-sm glass-card mb-2 d-flex align-items-center justify-content-between p-3"
+        role="alert">
+        <div class="d-flex align-items-center gap-3">
+            <i class="fas fa-info-circle text-primary"></i>
+            <span>{{ message }}</span>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Search & Stats Container -->
+<div class="glass-card p-4 mb-5 border-0">
+    <div class="row align-items-center g-4">
+        <div class="col-lg-6">
+            <form method="get" class="search-form position-relative">
+                <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                <input type="text" name="search" class="form-control rounded-pill border-light bg-light py-2 ps-5"
+                    placeholder="Search by title, tags or content..." value="{{ search_query|default:'' }}">
+                <button type="submit" class="d-none">Search</button>
+            </form>
+        </div>
+        <div class="col-lg-6">
+            <div class="d-flex justify-content-lg-around gap-4 text-center">
+                <div>
+                    <div class="text-muted small fw-bold text-uppercase tracking-wider">Total Files</div>
+                    <div class="h4 fw-bold mb-0">{{ total_documents }}</div>
+                </div>
+                <div class="vr opacity-10"></div>
+                <div>
+                    <div class="text-muted small fw-bold text-uppercase tracking-wider">Categories</div>
+                    <div class="h4 fw-bold mb-0 text-primary">{{ categories.count }}</div>
+                </div>
+                <div class="vr opacity-10"></div>
+                <div>
+                    <div class="text-muted small fw-bold text-uppercase tracking-wider">Results</div>
+                    <div class="h4 fw-bold mb-0 text-success">{{ documents.count }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Category Grids -->
+<div class="row g-4 mb-5">
+    {% for category in categories %}
+    <div class="col-md-3">
+        <a href="?category={{ category.id }}" class="text-decoration-none">
+            <div class="glass-card p-4 text-center h-100 hover-translate-y border-0">
+                <div class="stat-icon-wrapper p-3 rounded-4 bg-primary bg-opacity-10 text-primary d-inline-flex mb-3">
+                    <i class="fas {{ category.icon }} fa-2x"></i>
+                </div>
+                <h6 class="fw-bold text-dark mb-1">{{ category.name }}</h6>
+                {% with c=category.document_count %}
+                <p class="text-muted small mb-0">{{ c }} document{{ c|pluralize }}</p>
+                {% endwith %}
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Documents List -->
+<div class="glass-card overflow-hidden border-0">
+    <div class="p-4 bg-white border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold">
+            {% if selected_category %}Resources for "{{ selected_category_name }}"{% else %}Recent Documents{% endif %}
+            {% if search_query %}
+            <span class="text-muted opacity-50 fw-normal ms-2">Matching "{{ search_query }}"</span>
+            {% endif %}
+        </h5>
+    </div>
+    <div class="p-0">
+        {% if documents %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle custom-table mb-0">
+                <thead class="text-muted small text-uppercase">
+                    <tr>
+                        <th class="ps-4">Document Details</th>
+                        <th>Category</th>
+                        <th>Ownership</th>
+                        <th>MetaData</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for doc in documents %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-light p-2 rounded-3 text-primary">
+                                    <i class="fas {{ doc.file_icon }} fa-lg"></i>
+                                </div>
+                                <div>
+                                    <a href="{% url 'documents:detail' doc.pk %}"
+                                        class="fw-bold text-dark text-decoration-none">
+                                        {{ doc.title }}
+                                    </a>
+                                    {% if not doc.is_public %}
+                                    <span class="badge bg-warning bg-opacity-10 text-warning ms-1"
+                                        style="font-size: 0.6rem;">RESTRICTED</span>
+                                    {% endif %}
+                                    <div class="text-muted small">Updated {{ doc.uploaded_at|timesince }} ago</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge bg-light text-dark rounded-pill px-3">{{ doc.category.name }}</span></td>
+                        <td class="small">{{ doc.uploaded_by.username|default:"System" }}</td>
+                        <td>
+                            <div class="small text-muted">{{ doc.file_size_formatted }}</div>
+                            <div class="small text-muted">{{ doc.downloads }} downloads</div>
+                        </td>
+                        <td class="text-end pe-4">
+                            <div class="btn-group shadow-sm rounded-pill overflow-hidden">
+                                <a href="{% url 'documents:detail' doc.pk %}" class="btn btn-white btn-sm px-3"
+                                    title="Info">
+                                    <i class="fas fa-info-circle"></i>
+                                </a>
+                                <a href="{% url 'documents:collabora_editor' doc.pk %}"
+                                    class="btn btn-white btn-sm px-3" title="Editor">
+                                    <i class="fas fa-pen text-warning"></i>
+                                </a>
+                                <a href="{% url 'documents:download' doc.pk %}" class="btn btn-white btn-sm px-3"
+                                    title="Download">
+                                    <i class="fas fa-download text-success"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <div class="opacity-25 mb-3">
+                <i class="fas fa-folder-open fa-3x"></i>
+            </div>
+            <p class="text-muted mb-0">No documents found in this view.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .tracking-tight {
+        letter-spacing: -0.025em;
+    }
+
+    .tracking-wider {
+        letter-spacing: 0.05em;
+    }
+
+    .btn-white {
+        background: white;
+        border: 1px solid #f1f5f9;
+        color: var(--text-main);
+    }
+
+    .btn-white:hover {
+        background: #f8fafc;
+    }
+
+    .custom-table thead th {
+        font-size: 0.75rem;
+        padding: 1.25rem 1rem;
+        background: #fdfdfd;
+    }
+
+    .hover-translate-y {
+        transition: transform 0.3s ease;
+    }
+
+    .hover-translate-y:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}SOP Acknowledgement Report - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard:home' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'analytics:dashboard' %}">Analytics</a></li>
+            <li class="breadcrumb-item active">SOP Acknowledgement Report</li>
+        </ol>
+    </nav>
+
+    <!-- Hero -->
+    <div class="glass-card border-0 overflow-hidden mb-4">
+        <div class="p-4" style="background: linear-gradient(135deg, #059669, #10b981);">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="p-3 rounded-4" style="background: rgba(255,255,255,0.2);">
+                            <i class="fas fa-eye fa-lg text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="fw-bold text-white mb-0">SOP Acknowledgement Report</h3>
+                            <p class="text-white-50 mb-0">Track which staff have read and confirmed understanding of
+                                each SOP.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="fs-3 fw-bold text-white">{{ total_staff }}</div>
+                    <small class="text-white-50">Active Staff</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SOP Compliance Table -->
+    <div class="glass-card border-0 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead style="background: #f8fafc;">
+                    <tr>
+                        <th class="ps-4">SOP</th>
+                        <th>Category</th>
+                        <th>Version</th>
+                        <th>Acknowledgements</th>
+                        <th>Compliance Rate</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sop in sops %}
+                    <tr>
+                        <td class="ps-4">
+                            <a href="{% url 'sop_manual:detail' sop.pk %}" class="fw-semibold text-decoration-none">
+                                {{ sop.title }}
+                            </a>
+                        </td>
+                        <td><span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">{{ sop.category
+                                }}</span></td>
+                        <td>v{{ sop.version }}</td>
+                        <td>
+                            <span class="fw-bold">{{ sop.ack_count }}</span>
+                            <span class="text-muted">/ {{ total_staff }}</span>
+                        </td>
+                        <td>
+                            {% widthratio sop.ack_count total_staff 100 as pct %}
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress flex-grow-1" style="height: 6px; width: 100px;">
+                                    <div class="progress-bar {% if pct >= 80 %}bg-success{% elif pct >= 50 %}bg-warning{% else %}bg-danger{% endif %}"
+                                        style="width: {% widthratio sop.ack_count total_staff 100 %}%;"></div>
+                                </div>
+                                <small class="fw-bold">{% widthratio sop.ack_count total_staff 100 %}%</small>
+                            </div>
+                        </td>
+                        <td>
+                            {% if sop.ack_count == total_staff %}
+                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill">
+                                <i class="fas fa-check-circle me-1"></i>Complete
+                            </span>
+                            {% elif sop.ack_count > 0 %}
+                            <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill">
+                                <i class="fas fa-clock me-1"></i>In Progress
+                            </span>
+                            {% else %}
+                            <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill">
+                                <i class="fas fa-times-circle me-1"></i>Not Started
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-5">
+                            <i class="fas fa-book fa-2x mb-3 d-block opacity-25"></i>
+                            No SOPs found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

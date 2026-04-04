@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: #334155;
+        }
+        .header-container {
+            border-bottom: 2px solid #3b82f6;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+        .hospital-name {
+            color: #1e40af;
+            font-size: 18pt;
+            font-weight: bold;
+            margin: 0;
+        }
+        .doc-type {
+            color: #64748b;
+            font-size: 10pt;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 2px 0;
+        }
+        .meta-grid {
+            width: 100%;
+            margin-bottom: 20px;
+            border-collapse: collapse;
+        }
+        .meta-grid td {
+            padding: 5px 0;
+            vertical-align: top;
+        }
+        .label {
+            font-weight: bold;
+            color: #1e293b;
+            width: 100px;
+        }
+        .section-title {
+            background: #f8fafc;
+            border-left: 4px solid #3b82f6;
+            padding: 6px 12px;
+            color: #1e40af;
+            font-weight: bold;
+            font-size: 11pt;
+            margin: 20px 0 10px 0;
+        }
+        .clinical-box {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            background: #fff;
+        }
+        .soap-label {
+            font-weight: bold;
+            color: #3b82f6;
+            margin-bottom: 4px;
+            font-size: 9pt;
+            text-transform: uppercase;
+        }
+        .footer {
+            position: fixed;
+            bottom: 0px;
+            left: 0px;
+            right: 0px;
+            height: 50px;
+            text-align: center;
+            font-size: 8pt;
+            color: #94a3b8;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 10px;
+        }
+        .signature-block {
+            margin-top: 40px;
+            width: 100%;
+        }
+        .sig-line {
+            border-top: 1px solid #334155;
+            width: 200px;
+            margin-top: 40px;
+            text-align: center;
+            font-size: 9pt;
+        }
+        table.med-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        table.med-table th {
+            background: #f1f5f9;
+            color: #475569;
+            font-weight: bold;
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #cbd5e1;
+            font-size: 9pt;
+        }
+        table.med-table td {
+            padding: 8px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 10pt;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-container">
+        <table style="width: 100%;">
+            <tr>
+                <td style="width: 70%;">
+                    <div class="hospital-name">Mbuya Dorcas Hospital</div>
+                    <div class="doc-type">GP Consultation Notes</div>
+                </td>
+                <td style="width: 30%; text-align: right;">
+                    <div style="font-size: 9pt; color: #64748b;">Visit Date: {{ consultation.date|date:"D, d M Y" }}</div>
+                    <div style="font-size: 9pt; color: #64748b;">Ref: #ENC-{{ consultation.id|stringformat:"06d" }}</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section-title">Patient Information</div>
+    <table class="meta-grid">
+        <tr>
+            <td class="label">Name:</td>
+            <td>{{ consultation.patient }}</td>
+            <td class="label">Gender:</td>
+            <td>{{ consultation.patient.get_gender_display }}</td>
+        </tr>
+        <tr>
+            <td class="label">DOB:</td>
+            <td>{{ consultation.patient.date_of_birth }} ({{ consultation.patient.age }} yrs)</td>
+            <td class="label">Medical Aid:</td>
+            <td>{{ consultation.patient.medical_aid_name|default:"Cash" }}</td>
+        </tr>
+        <tr>
+            <td class="label">Member #:</td>
+            <td>{{ consultation.patient.medical_aid_number|default:"—" }}</td>
+            <td class="label">ID/UID:</td>
+            <td>P{{ consultation.patient.id|stringformat:"05d" }}</td>
+        </tr>
+    </table>
+
+    <div class="section-title">Clinical SOAP Recording</div>
+    
+    <div class="clinical-box">
+        <div class="soap-label">Subjective (Chief Complaints & History)</div>
+        <div>{{ consultation.subjective|linebreaks }}</div>
+    </div>
+
+    <div class="clinical-box">
+        <div class="soap-label">Objective (Physical Findings & Vitals)</div>
+        <div>{{ consultation.objective|linebreaks }}</div>
+    </div>
+
+    <div class="clinical-box">
+        <div class="soap-label">Assessment & Diagnosis (ICD-11: {{ consultation.icd11_diagnosis|default:"N/A" }})</div>
+        <div style="font-weight: bold;">{{ consultation.assessment|linebreaks }}</div>
+    </div>
+
+    <div class="clinical-box">
+        <div class="soap-label">Plan & Recommendations</div>
+        <div>{{ consultation.plan|linebreaks }}</div>
+    </div>
+
+    {% if consultation.prescriptions.exists %}
+    <div class="section-title">Linked Prescriptions</div>
+    {% for rx in consultation.prescriptions.all %}
+    <table class="med-table">
+        <thead>
+            <tr>
+                <th>Medication</th>
+                <th>Dosage</th>
+                <th>Freq</th>
+                <th>Duration</th>
+                <th>Qty</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in rx.items.all %}
+            <tr>
+                <td style="font-weight: bold;">{{ item.medication_name }}</td>
+                <td>{{ item.dosage }}</td>
+                <td>{{ item.frequency }}</td>
+                <td>{{ item.duration }}</td>
+                <td>{{ item.total_quantity }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endfor %}
+    {% endif %}
+
+    <div class="signature-block">
+        <table style="width: 100%;">
+            <tr>
+                <td>
+                    <div class="sig-line">GP/Consultant Signature</div>
+                    <div style="font-size: 9pt; margin-top: 5px;">Dr. {{ consultation.gp.get_full_name|default:consultation.gp.username }}</div>
+                    <div style="font-size: 8pt; color: #64748b;">Electronically Generated Signature</div>
+                </td>
+                <td style="text-align: right; vertical-align: bottom;">
+                    <div style="font-size: 8pt; color: #94a3b8;">Printed: {{ generated_at|date:"d/m/Y H:i" }}</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="footer">
+        Mbuya Dorcas Hospital — Dedicated to Holistic Healing — Confidential Medical Record
+    </div>
+</body>
+</html>

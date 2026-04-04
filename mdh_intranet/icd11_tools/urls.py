@@ -1,0 +1,9 @@
+from django.urls import path
+from . import views
+
+app_name = 'icd11_tools'
+
+urlpatterns = [
+    path('', views.index, name='index'),
+    path('code/<int:pk>/', views.code_detail, name='detail'),
+]

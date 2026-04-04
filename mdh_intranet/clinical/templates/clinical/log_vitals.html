@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Log Vitals: {{ patient }} - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'clinical:dashboard' %}">Clinical Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'clinical:patient_detail' patient.pk %}">{{ patient }}</a></li>
+            <li class="breadcrumb-item active">Record Vitals</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="glass-card border-0 shadow p-4">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="p-3 bg-primary bg-opacity-10 text-primary rounded-circle">
+                        <i class="fas fa-heartbeat fa-2x"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0">Record Vital Signs</h4>
+                        <p class="text-muted small mb-0">Enter the latest measurements for <strong>{{ patient }}</strong></p>
+                    </div>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Temperature (°C)</label>
+                            {{ form.temperature }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Heart Rate (bpm)</label>
+                            {{ form.heart_rate }}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Systolic BP (mmHg)</label>
+                            {{ form.blood_pressure_sys }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Diastolic BP (mmHg)</label>
+                            {{ form.blood_pressure_dia }}
+                        </div>
+
+                        <div class="col-md-12">
+                            <hr class="my-2 opacity-10">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Resp Rate</label>
+                            {{ form.respiratory_rate }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">SpO2 (%)</label>
+                            {{ form.oxygen_saturation }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Weight (kg)</label>
+                            {{ form.weight_kg }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Height (cm)</label>
+                            {{ form.height_cm }}
+                        </div>
+
+                        <div class="col-md-12">
+                            <hr class="my-2 opacity-10">
+                            <h6 class="fw-bold text-muted small mb-3">SATS Assessment (Triage)</h6>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Level of Consciousness</label>
+                            {{ form.level_of_consciousness }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Mobility</label>
+                            {{ form.mobility }}
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-check form-switch bg-danger bg-opacity-10 p-2 px-4 rounded-3">
+                                {{ form.is_trauma }}
+                                <label class="form-check-label fw-bold text-danger small ms-2" for="id_is_trauma">TRAUMA PATIENT?</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 d-grid">
+                        <button type="submit" class="btn btn-primary rounded-pill py-2 fw-bold">Save Vitals & Continue</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    input, select {
+        width: 100%;
+        padding: 0.5rem 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        background: #f8fafc;
+        transition: all 0.2s;
+    }
+    input:focus, select:focus {
+        outline: none;
+        border-color: #3b82f6;
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,137 @@
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib import messages
+from django.db.models import Q
+from .models import SOP, SOPCategory, SOPAcknowledgment
+from .forms import SOPForm
+
+@login_required
+def index(request):
+    """SOP Manual Dashboard"""
+    categories = SOPCategory.objects.all()
+    sops = SOP.objects.filter(status='Published')
+    
+    total_sops = sops.count()
+    recent_updates = sops.order_by('-updated_at')[:5]
+    
+    # Calculate user's read progress?
+    # Maybe later.
+    
+    context = {
+        'total_sops': total_sops,
+        'recent_updates': recent_updates.count(), # count for now
+        'categories': categories,
+        'latest_sops': recent_updates,
+    }
+    return render(request, 'sop_manual/index.html', context)
+
+@login_required
+def sop_list(request, category_id=None):
+    """List SOPs, optionally filtered by category"""
+    sops = SOP.objects.filter(status='Published')
+    category = None
+    
+    if category_id:
+        category = get_object_or_404(SOPCategory, id=category_id)
+        sops = sops.filter(category=category)
+        
+    query = request.GET.get('search')
+    if query:
+        sops = sops.filter(Q(title__icontains=query) | Q(content__icontains=query))
+
+    context = {
+        'sops': sops,
+        'category': category,
+        'search_query': query
+    }
+    return render(request, 'sop_manual/sop_list.html', context)
+
+@login_required
+def sop_detail(request, pk):
+    """View SOP detail and handle acknowledgment"""
+    sop = get_object_or_404(SOP, pk=pk)
+    
+    # Check if acknowledged
+    is_acknowledged = SOPAcknowledgment.objects.filter(sop=sop, user=request.user).exists()
+    
+    if request.method == 'POST' and 'acknowledge' in request.POST:
+        SOPAcknowledgment.objects.get_or_create(sop=sop, user=request.user)
+        messages.success(request, f"You have acknowledged reading '{sop.title}'.")
+        return redirect('sop_manual:detail', pk=pk)
+        
+    context = {
+        'sop': sop,
+        'is_acknowledged': is_acknowledged,
+    }
+    return render(request, 'sop_manual/sop_detail.html', context)
+
+@user_passes_test(lambda u: u.is_staff)
+def sop_create(request):
+    """Create a new SOP"""
+    if request.method == 'POST':
+        form = SOPForm(request.POST, request.FILES)
+        if form.is_valid():
+            sop = form.save(commit=False)
+            sop.created_by = request.user
+            sop.save()
+            messages.success(request, "SOP created successfully.")
+            return redirect('sop_manual:detail', pk=sop.pk)
+    else:
+        form = SOPForm()
+        
+    return render(request, 'sop_manual/sop_form.html', {'form': form, 'title': 'Create SOP'})
+
+@user_passes_test(lambda u: u.is_staff)
+def sop_edit(request, pk):
+    """Edit an existing SOP"""
+    sop = get_object_or_404(SOP, pk=pk)
+    if request.method == 'POST':
+        form = SOPForm(request.POST, request.FILES, instance=sop)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "SOP updated successfully.")
+            return redirect('sop_manual:detail', pk=sop.pk)
+    else:
+        form = SOPForm(instance=sop)
+        
+    return render(request, 'sop_manual/sop_form.html', {'form': form, 'title': f'Edit SOP: {sop.title}'})
+
+
+@login_required
+def sop_office_viewer(request, pk):
+    """View SOP file attachment using Microsoft Office Web Viewer"""
+    sop = get_object_or_404(SOP, pk=pk)
+    
+    # Check if SOP has a file attachment
+    if not sop.file_attachment:
+        messages.error(request, 'This SOP does not have a file attachment.')
+        return redirect('sop_manual:detail', pk=pk)
+    
+    # Get file extension
+    import os
+    file_ext = os.path.splitext(sop.file_attachment.name)[1].lower()
+    
+    # Check if file type is supported by Office Web Viewer
+    supported_extensions = ['.docx', '.xlsx', '.pptx', '.doc', '.xls', '.ppt']
+    
+    error = None
+    viewer_url = None
+    
+    if file_ext not in supported_extensions:
+        error = f"Microsoft Office Web Viewer does not support {file_ext} files. Supported formats: Word (.docx), Excel (.xlsx), PowerPoint (.pptx)"
+    else:
+        # Build the absolute URL to the document
+        from urllib.parse import quote
+        document_url = request.build_absolute_uri(sop.file_attachment.url)
+        encoded_url = quote(document_url, safe='')
+        
+        # Microsoft Office Web Viewer endpoint
+        viewer_url = f"https://view.officeapps.live.com/op/embed.aspx?src={encoded_url}"
+    
+    context = {
+        'sop': sop,
+        'viewer_url': viewer_url,
+        'error': error,
+        'file_ext': file_ext,
+    }
+    return render(request, 'sop_manual/sop_office_viewer.html', context)

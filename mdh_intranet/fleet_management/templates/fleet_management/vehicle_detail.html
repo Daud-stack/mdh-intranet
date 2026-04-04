@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}{{ vehicle.license_plate }} - Fleet Log{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row g-4">
+        <!-- Vehicle Profile -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4 text-center" style="border-radius: 15px;">
+                <div class="card-body p-4">
+                    <div class="avatar-xl mx-auto bg-dark bg-opacity-10 text-dark border rounded-circle d-flex align-items-center justify-content-center mb-3"
+                        style="width: 100px; height: 100px; font-size: 2.5rem;">
+                        <i class="fas fa-truck-moving"></i>
+                    </div>
+                    <span class="badge bg-dark bg-opacity-10 text-dark border px-4 py-2 rounded-pill fw-bold fs-5 mb-2"
+                        style="letter-spacing: 2px;">
+                        {{ vehicle.license_plate }}
+                    </span>
+                    <h5 class="fw-bold mt-2 text-muted">{{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}</h5>
+                    <div class="small fw-bold text-uppercase text-primary mb-3">{{ vehicle.get_vehicle_type_display }}
+                    </div>
+
+                    <span class="badge rounded-pill px-4 py-2 fs-6 mb-4
+                        {% if vehicle.status == 'AVAILABLE' %}bg-success
+                        {% elif vehicle.status == 'IN_TRANSIT' %}bg-primary
+                        {% elif vehicle.status == 'MAINTENANCE' %}bg-warning text-dark
+                        {% else %}bg-danger{% endif %}">
+                        {{ vehicle.get_status_display }}
+                    </span>
+
+                    <hr class="text-muted">
+
+                    <div class="row text-start g-3 small mb-2">
+                        <div class="col-6 text-muted">Current Odo</div>
+                        <div class="col-6 fw-bold fs-6">{{ vehicle.current_mileage }} km</div>
+
+                        <div class="col-6 text-muted">Service Due</div>
+                        <div class="col-6 fw-bold text-danger">{{ vehicle.next_service_date|date:"d M Y" }}</div>
+
+                        <div class="col-6 text-muted">Reg. Expiry</div>
+                        <div class="col-6 fw-bold">{{ vehicle.registration_expiry|date:"d M Y" }}</div>
+
+                        <div class="col-6 text-muted">Insurance</div>
+                        <div class="col-6 fw-bold">{{ vehicle.insurance_expiry|date:"d M Y" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <a href="{% url 'fleet_management:start_trip' %}"
+                class="btn btn-success w-100 btn-lg rounded-pill shadow-sm mb-3">
+                <i class="fas fa-play-circle me-2"></i>Dispatch Vehicle
+            </a>
+            <a href="{% url 'fleet_management:log_fuel' %}" class="btn btn-primary w-100 btn-lg rounded-pill shadow-sm">
+                <i class="fas fa-gas-pump me-2"></i>Log Fuel Receipt
+            </a>
+        </div>
+
+        <!-- History Tabs -->
+        <div class="col-lg-8">
+            <ul class="nav nav-pills mb-4 bg-white p-2 rounded-pill shadow-sm d-inline-flex" id="pills-tab"
+                role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active rounded-pill px-4" id="p-trips-tab" data-bs-toggle="pill"
+                        data-bs-target="#p-trips" type="button">Trip History</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link rounded-pill px-4" id="p-fuel-tab" data-bs-toggle="pill"
+                        data-bs-target="#p-fuel" type="button">Fuel Logs</button>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <!-- Trips Tab -->
+                <div class="tab-pane fade show active" id="p-trips">
+                    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="ps-4">Date</th>
+                                        <th>Route</th>
+                                        <th>Driver</th>
+                                        <th class="pe-4 text-end">Distance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for trip in trips %}
+                                    <tr>
+                                        <td class="ps-4">
+                                            <div class="fw-bold text-dark">{{ trip.start_time|date:"d M Y" }}</div>
+                                            <small class="text-muted">{{ trip.start_time|time:"H:i" }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted small d-block">From: {{ trip.origin }}</span>
+                                            <span class="fw-bold d-block text-primary"><i
+                                                    class="fas fa-level-up-alt fa-rotate-90 me-1"></i>To: {{                                                 trip.destination }}</span>
+                                        </td>
+                                        <td>{{ trip.driver.username|default:"Unknown" }}</td>
+                                        <td class="pe-4 text-end">
+                                            {% if trip.end_mileage %}
+                                            <span class="fw-bold text-dark">{{                                                 trip.end_mileage|add:"-"|add:trip.start_mileage }} km</span>
+                                            {% else %}
+                                            <span class="badge bg-primary rounded-pill">In Progress</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-5 text-muted">No trips recorded yet.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fuel Logs Tab -->
+                <div class="tab-pane fade" id="p-fuel">
+                    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="ps-4">Date</th>
+                                        <th>Volume</th>
+                                        <th>Cost</th>
+                                        <th>Odometer</th>
+                                        <th class="pe-4 text-end">Logged By</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for fuel in fuel_logs %}
+                                    <tr>
+                                        <td class="ps-4 fw-bold text-dark">{{ fuel.date|date:"d M Y" }}</td>
+                                        <td><span class="fw-bold text-primary">{{ fuel.liters }} L</span></td>
+                                        <td class="text-danger fw-bold">$ {{ fuel.cost }}</td>
+                                        <td class="text-muted">{{ fuel.odometer }} km</td>
+                                        <td class="pe-4 text-end text-muted small">{{ fuel.logged_by.username }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5 text-muted">No fuel receipts logged.
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

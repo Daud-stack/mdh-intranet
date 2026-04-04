@@ -1,0 +1,62 @@
+<!-- prettier-ignore-start -->
+{% extends "base.html" %}
+{% block title %}Issue Work Order - OpsHub{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="card-header bg-primary py-4 text-center border-0 text-white"
+                    style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%) !important;">
+                    <h2 class="fw-bold mb-1"><i class="fas fa-tools me-3"></i>New Work Order</h2>
+                    <p class="mb-0 text-white-50">Log a repair, PPM, or upgrade request.</p>
+                </div>
+                <div class="card-body p-5">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Assignment Title</label>
+                            {{ form.title }}
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Target Asset</label>
+                                {{ form.asset }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Order Type</label>
+                                {{ form.order_type }}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Priority</label>
+                                {{ form.priority }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Due Date</label>
+                                {{ form.due_date }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Instructions / Damage Description</label>
+                            {{ form.description }}
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Assigned Technician</label>
+                            {{ form.assigned_to }}
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5">Submit Work
+                                Order</button>
+                            <a href="{% url 'maintenance:dashboard' %}"
+                                class="btn btn-light btn-lg rounded-pill">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+<!-- prettier-ignore-end -->

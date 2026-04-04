@@ -1,0 +1,152 @@
+<!-- prettier-ignore-start -->
+{% extends "base.html" %}
+{% block title %}Add Asset - OpsHub{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <!-- Made the form wider by changing col bounds -->
+        <div class="col-xl-10 col-lg-11">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <div class="card-header bg-primary py-4 text-center border-0 text-white"
+                    style="background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%) !important;">
+                    <h2 class="fw-bold mb-1">
+                        <i class="fas fa-boxes me-3"></i>{% if is_update %}Edit Asset Profile{% else %}Register New
+                        Asset{% endif %}
+                    </h2>
+                    <p class="mb-0 text-white-50">
+                        {% if is_update %}Update tracking details and metrics for <strong>{{ asset.name }}</strong>{% else %}Log new medical equipment or facility infrastructure into the main registry.{% endif %}
+                    </p>
+                </div>
+
+                <div class="card-body p-4 p-md-5 bg-white">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Section 1: Identification -->
+                        <div class="d-flex align-items-center mb-4 pb-2 border-bottom">
+                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2 me-3 d-flex justify-content-center align-items-center"
+                                style="width: 40px; height: 40px;">
+                                <i class="fas fa-barcode"></i>
+                            </div>
+                            <h5 class="fw-bold mb-0 text-primary">Identity & Tracking</h5>
+                        </div>
+
+                        <div class="row g-4 mb-5">
+                            <div class="col-md-5">
+                                <label class="form-label fw-bold text-dark">Asset Name</label>
+                                {{ form.name }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold text-dark">Manufacturer Serial #</label>
+                                {{ form.serial_number }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold text-dark">Asset Tag ID</label>
+                                {{ form.asset_id }}
+                                <small class="text-muted" style="font-size: 0.7rem;">Hospital's internal tag</small>
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Classification -->
+                        <div class="d-flex align-items-center mb-4 pb-2 border-bottom">
+                            <div class="bg-info bg-opacity-10 text-info rounded-circle p-2 me-3 d-flex justify-content-center align-items-center"
+                                style="width: 40px; height: 40px;">
+                                <i class="fas fa-tags"></i>
+                            </div>
+                            <h5 class="fw-bold mb-0 text-info">Classification & Status</h5>
+                        </div>
+
+                        <div class="row g-4 mb-5">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold text-dark">System Category</label>
+                                {{ form.category }}
+                                <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">e.g. HVAC, Lab
+                                    Equip</small>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold text-dark">Current Location</label>
+                                {{ form.location }}
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold text-dark">Status</label>
+                                {{ form.status }}
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold text-dark">Criticality</label>
+                                {{ form.criticality }}
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Lifecycle Settings -->
+                        <div class="d-flex align-items-center mb-4 pb-2 border-bottom">
+                            <div class="bg-success bg-opacity-10 text-success rounded-circle p-2 me-3 d-flex justify-content-center align-items-center"
+                                style="width: 40px; height: 40px;">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <h5 class="fw-bold mb-0 text-success">Lifecycle & Service Scheduling</h5>
+                        </div>
+
+                        <div class="row g-4 mb-5 bg-light p-3 rounded-4 border">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold text-dark small"><i
+                                        class="fas fa-shopping-cart text-muted me-2"></i>Purchase Date</label>
+                                {{ form.purchase_date }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold text-dark small"><i
+                                        class="fas fa-shield-alt text-muted me-2"></i>Warranty Expiry</label>
+                                {{ form.warranty_expiry }}
+                            </div>
+                            <div class="col-md-4 border-start border-2 border-success border-opacity-25 ps-4">
+                                <label class="form-label fw-bold text-success small"><i
+                                        class="fas fa-tools me-2"></i>Next Scheduled PPM</label>
+                                {{ form.next_ppm_date }}
+                            </div>
+                        </div>
+
+                        <!-- Submit Actions -->
+                        <div class="d-flex gap-3 justify-content-end pt-3 border-top mt-5">
+                            <a href="{% if is_update %}{% url 'maintenance:asset_detail' asset.pk %}{% else %}{% url 'maintenance:asset_list' %}{% endif %}"
+                                class="btn btn-light btn-lg rounded-pill px-5 fw-bold text-muted">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm fw-bold">
+                                {% if is_update %}<i class="fas fa-save me-2"></i>Save Changes{% else %}<i
+                                    class="fas fa-check-circle me-2"></i>Register Asset{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Premium Form Styling */
+    .form-control,
+    .form-select {
+        border: 2px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        background-color: #f8fafc;
+    }
+
+    .form-label {
+        margin-bottom: 0.5rem;
+        font-size: 0.85rem;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: #475569;
+    }
+</style>
+{% endblock %}
+<!-- prettier-ignore-end -->

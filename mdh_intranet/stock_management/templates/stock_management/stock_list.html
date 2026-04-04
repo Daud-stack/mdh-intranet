@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Stock - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="fw-bold">
+                <i class="fas fa-warehouse text-info"></i> Stock Inventory
+            </h1>
+            <p class="text-muted">Browse available stock items</p>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-6">
+                            <input type="text" name="search" class="form-control" placeholder="Search items..."
+                                value="{{ search_query|default:'' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <select name="category" class="form-select">
+                                <option value="">All Categories</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Items -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            {% if items %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Category</th>
+                            <th>Current Stock</th>
+                            <th>Unit</th>
+                            <th>Status</th>
+                            <th>Unit Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td class="fw-bold">{{ item.name }}</td>
+                            <td><span class="badge bg-secondary">{{ item.category.name }}</span></td>
+                            <td>
+                                <span class="{% if item.is_low_stock %}text-danger fw-bold{% endif %}">
+                                    {{ item.current_quantity }}
+                                </span>
+                            </td>
+                            <td>{{ item.unit }}</td>
+                            <td>
+                                <span class="badge {% if item.current_quantity == 0 %}bg-danger{% elif item.is_low_stock %}bg-warning{% else %}bg-success{% endif %}">
+                                    {{ item.stock_status }}
+                                </span>
+                            </td>
+                            <td>${{ item.unit_cost }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No stock items found.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

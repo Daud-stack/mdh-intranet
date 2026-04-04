@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% load sop_extras %}
+
+{% block title %}
+{% if category %}{{ category.name }}{% else %}All SOPs{% endif %} - OpsHub
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'sop_manual:index' %}">SOP Manual</a></li>
+                    {% if category %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ category.name }}</li>
+                    {% else %}
+                    <li class="breadcrumb-item active" aria-current="page">List</li>
+                    {% endif %}
+                </ol>
+            </nav>
+
+            <h1 class="fw-bold">
+                {% if category %}
+                <i class="{{ category.icon }} text-primary me-2"></i> {{ category.name }}
+                {% else %}
+                <i class="fas fa-list text-primary me-2"></i> SOP List
+                {% endif %}
+            </h1>
+            {% if category and category.description %}
+            <p class="text-muted">{{ category.description }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filter/Search Bar -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-center">
+                <div class="col-md-10">
+                    <input type="text" name="search" class="form-control" placeholder="Search within lists..."
+                        value="{{ search_query|default:'' }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-primary w-100">Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 40%;">Title</th>
+                            <th>Version</th>
+                            <th>Last Updated</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sop in sops %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'sop_manual:detail' sop.pk %}"
+                                    class="text-decoration-none fw-bold text-dark">
+                                    {{ sop.title }}
+                                </a>
+                                <div class="mt-1">
+                                    <small class="text-muted">Created by {{ sop.created_by.username }}</small>
+                                    {% with target_file=sop.linked_document.file|default:sop.file_attachment %}
+                                    {% if target_file %}
+                                    {% with ext=target_file.name|slice:"-4:"|lower %}
+                                    <span class="badge bg-light text-secondary border ms-2">
+                                        <i class="fas fa-paperclip me-1"></i>
+                                        {% if ext|slice:"0:1" == "." %}{{ ext|slice:"1:"|upper }}{% else %}{{ ext|slice:"-3:"|upper }}{% endif %}
+                                    </span>
+                                    {% endwith %}
+                                    {% if sop.linked_document %}
+                                    <span class="badge bg-info text-dark ms-1" style="font-size: 0.6rem;">Linked</span>
+                                    {% endif %}
+                                    {% endif %}
+                                    {% endwith %}
+                                </div>
+                            </td>
+                            <td><span class="badge bg-light text-dark border">v{{ sop.version }}</span></td>
+                            <td>{{ sop.updated_at|date:"M d, Y" }}</td>
+                            <td>
+                                {% if sop.status == 'Published' %}
+                                <span class="badge bg-success">Published</span>
+                                {% elif sop.status == 'Draft' %}
+                                <span class="badge bg-warning text-dark">Draft</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Archived</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'sop_manual:detail' sop.pk %}"
+                                    class="btn btn-sm btn-outline-primary">Read</a>
+                                {% if sop.file_attachment|is_office_doc %}
+                                <a href="{% url 'sop_manual:office_viewer' sop.pk %}"
+                                    class="btn btn-sm btn-outline-success" title="View attachment online">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% endif %}
+                                {% if user.is_staff or user == sop.created_by %}
+                                <a href="{% url 'sop_manual:edit' sop.pk %}" class="btn btn-sm btn-outline-secondary"><i
+                                        class="fas fa-edit"></i></a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="fas fa-file-alt fa-2x mb-3"></i>
+                                <p>No SOPs found.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

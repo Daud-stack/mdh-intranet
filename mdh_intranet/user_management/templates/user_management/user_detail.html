@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}{{ view_user.username }} - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="fw-bold">
+                <i class="fas fa-user text-primary"></i> {{ view_user.username }}
+            </h1>
+            <p class="text-muted">User details and management</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'user_management:user_edit' view_user.pk %}" class="btn btn-primary btn-sm me-2">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{% url 'user_management:index' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0 fw-bold">User Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">Username</div>
+                        <div class="col-sm-8">{{ view_user.username }}</div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">Full Name</div>
+                        <div class="col-sm-8">{{ view_user.get_full_name|default:"-" }}</div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">Email</div>
+                        <div class="col-sm-8">{{ view_user.email|default:"-" }}</div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">Role</div>
+                        <div class="col-sm-8">
+                            {% if view_user.is_superuser %}
+                            <span class="badge bg-danger">Administrator</span>
+                            {% elif view_user.is_staff %}
+                            <span class="badge bg-primary">Staff</span>
+                            {% else %}
+                            <span class="badge bg-secondary">User</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">Status</div>
+                        <div class="col-sm-8">
+                            {% if view_user.is_active %}
+                            <span class="badge bg-success">Active</span>
+                            {% else %}
+                            <span class="badge bg-warning">Inactive</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">Date Joined</div>
+                        <div class="col-sm-8">{{ view_user.date_joined|date:"F d, Y H:i" }}</div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-4 fw-bold">Last Login</div>
+                        <div class="col-sm-8">{{ view_user.last_login|date:"F d, Y H:i"|default:"Never" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0 fw-bold">Actions</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'user_management:user_toggle_status' view_user.pk %}">
+                        {% csrf_token %}
+                        <button type="submit"
+                            class="btn btn-{% if view_user.is_active %}warning{% else %}success{% endif %} w-100 mb-2">
+                            <i class="fas fa-{% if view_user.is_active %}ban{% else %}check{% endif %}"></i>
+                            {% if view_user.is_active %}Deactivate{% else %}Activate{% endif %} User
+                        </button>
+                    </form>
+
+                    <a href="{% url 'user_management:user_reset_password' view_user.pk %}"
+                        class="btn btn-outline-primary w-100">
+                        <i class="fas fa-key"></i> Reset Password
+                    </a>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-2">Permissions</h6>
+                    <ul class="list-unstyled small mb-0">
+                        {% if view_user.is_superuser %}
+                        <li class="mb-1"><i class="fas fa-check text-success"></i> User Management</li>
+                        <li class="mb-1"><i class="fas fa-check text-success"></i> Approve Requisitions</li>
+                        <li class="mb-1"><i class="fas fa-check text-success"></i> System Administration</li>
+                        {% elif view_user.is_staff %}
+                        <li class="mb-1"><i class="fas fa-check text-success"></i> Approve Requisitions</li>
+                        <li class="mb-1"><i class="fas fa-times text-muted"></i> User Management</li>
+                        <li class="mb-1"><i class="fas fa-times text-muted"></i> System Administration</li>
+                        {% else %}
+                        <li class="mb-1"><i class="fas fa-check text-success"></i> Create Requests</li>
+                        <li class="mb-1"><i class="fas fa-times text-muted"></i> Approve Requisitions</li>
+                        <li class="mb-1"><i class="fas fa-times text-muted"></i> User Management</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

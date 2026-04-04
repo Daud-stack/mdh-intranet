@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Edit: {{ document.title }}{% endblock %}
+
+{% block extra_css %}
+<!-- TinyMCE (Community Edition via CDN) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js" referrerpolicy="no-referrer"></script>
+
+<style>
+    :root {
+        --editor-bg: #f3f4f6;
+    }
+
+    .editor-container {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 130px);
+        background: var(--editor-bg);
+    }
+
+    /* Header */
+    .header-bar {
+        background: white;
+        color: #333;
+        padding: 10px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #dee2e6;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        z-index: 100;
+    }
+
+    .doc-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #1a1a1a;
+    }
+
+    .tox-tinymce {
+        border: none !important;
+        flex: 1;
+    }
+
+    .tox-editor-header {
+        box-shadow: none !important;
+        border-bottom: 1px solid #dee2e6 !important;
+    }
+
+    /* Custom Scrollbar for editor */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+
+    /* Saving Indicator */
+    #savingOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.7);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        flex-direction: column;
+    }
+
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+        color: #ae1f23;
+        /* OpsHub Brand Color? Using a professional red/blue */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="savingOverlay">
+    <div class="spinner-border mb-3" role="status"></div>
+    <h5 class="fw-light">Saving document...</h5>
+</div>
+
+<div class="card border-0 shadow-sm rounded-0 h-100">
+    <!-- Header -->
+    <div class="header-bar">
+        <div class="d-flex align-items-center gap-3">
+            <a href="{% url 'documents:view_word' document.pk %}"
+                class="btn btn-outline-secondary btn-sm border-0 rounded-circle">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div>
+                <div class="doc-title">
+                    <i class="fas fa-file-word text-primary me-2"></i>{{ document.title }}
+                </div>
+                <div class="text-muted small">
+                    Last saved: {{ document.updated_at|date:"M d, H:i" }} • {{ document.category.name }}
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <div id="saveStatus" class="me-3 d-flex align-items-center text-muted small"></div>
+
+            <button onclick="saveDocument()" class="btn btn-primary d-flex align-items-center gap-2">
+                <i class="fas fa-save"></i> <span>Save</span>
+            </button>
+
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    Actions
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow">
+                    <li><a class="dropdown-item" href="{% url 'documents:download' document.pk %}">
+                            <i class="fas fa-download me-2 text-muted"></i>Download Original
+                        </a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item" href="#" onclick="tinymce.activeEditor.execCommand('mcePrint');">
+                            <i class="fas fa-print me-2 text-muted"></i>Print
+                        </a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    {% if is_large_document %}
+    <div class="alert alert-warning m-0 rounded-0 border-0 border-bottom small py-2 px-4">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>Large Document Mode:</strong> Images are disabled for performance. Saving will permanently remove them.
+    </div>
+    {% endif %}
+
+    <!-- Editor Container -->
+    <div class="editor-container">
+        <textarea id="my-editor">{{ html_content|safe }}</textarea>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        tinymce.init({
+            selector: '#my-editor',
+            height: '100%',
+            menubar: 'file edit view insert format tools table help',
+            plugins: [
+                'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                'insertdatetime', 'media', 'table', 'help', 'wordcount', 'pagebreak'
+            ],
+            toolbar: 'undo redo | blocks fontfamily fontsize | ' +
+                'bold italic underline strikethrough | alignleft aligncenter ' +
+                'alignright alignjustify | bullist numlist outdent indent | ' +
+                'forecolor backcolor | table link image pagebreak | removeformat | fullscreen help',
+
+            // Professional "Word-like" styling
+            content_style: `
+                body { 
+                    font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; 
+                    font-size: 11pt; 
+                    line-height: 1.6;
+                    color: #000;
+                    margin: 1cm 2cm;
+                    background: #fff;
+                    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                    min-height: 100vh;
+                    padding: 40px;
+                }
+                @media (min-width: 1000px) {
+                    body { margin: 2rem auto; max-width: 816px; } /* A4 width */
+                }
+                p { margin-bottom: 1em; }
+                table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+                td, th { border: 1px solid #ccc; padding: 0.4em; }
+                img { max-width: 100%; height: auto; }
+            `,
+
+            // Branding/UI
+            branding: false,
+            statusbar: true,
+            resize: false, // handled by flex container
+            promotion: false,
+
+            setup: function (editor) {
+                editor.on('change keyup', function (e) {
+                    document.getElementById('saveStatus').textContent = 'Unsaved changes';
+                    document.getElementById('saveStatus').classList.add('text-warning');
+                });
+
+                // Keyboard shortcut: Ctrl+S
+                editor.addShortcut('meta+s', 'Save', function () {
+                    saveDocument();
+                });
+            }
+        });
+    });
+
+    async function saveDocument() {
+        const overlay = document.getElementById('savingOverlay');
+        const saveStatus = document.getElementById('saveStatus');
+        const content = tinymce.activeEditor.getContent();
+
+        overlay.style.display = 'flex';
+        saveStatus.textContent = 'Saving...';
+
+        try {
+            // Get CSRF token
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                document.cookie.match(/csrftoken=([^;]+)/)?.[1];
+
+            // Create form data
+            const formData = new FormData();
+            formData.append('content', content);
+
+            const response = await fetch('{% url "documents:save_word" document.pk %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                saveStatus.textContent = 'All changes saved';
+                saveStatus.classList.remove('text-warning');
+                saveStatus.classList.add('text-success');
+
+                // Show toast or slight notification
+                tinymce.activeEditor.notificationManager.open({
+                    text: 'Document saved successfully.',
+                    type: 'success',
+                    timeout: 2000
+                });
+            } else {
+                alert('Error saving: ' + (data.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Save error:', error);
+            alert('Failed to save document. Please check your connection.');
+        } finally {
+            overlay.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

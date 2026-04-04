@@ -1,0 +1,476 @@
+{% extends "base.html" %}
+{% block title %}GP Consultation: {{ patient }} - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'clinical:dashboard' %}">Clinical Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'clinical:patient_list' %}">Patient List</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'clinical:patient_detail' patient.pk %}">{{ patient }}</a></li>
+            <li class="breadcrumb-item active">New Consultation</li>
+        </ol>
+    </nav>
+
+    <div class="row align-items-center mb-4">
+        <div class="col-md-8">
+            <h3 class="fw-bold mb-1">Electronic Clinical Recording</h3>
+            <p class="text-muted mb-0">Patient: <span class="fw-bold text-dark">{{ patient }}</span> (Member #{{ patient.medical_aid_number }})</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <span class="badge bg-light text-primary rounded-pill px-4 fw-bold border border-primary border-opacity-10 py-2 shadow-sm">
+                <i class="fas fa-user-md me-2"></i> Dr. {{ user.get_full_name|default:user.username }}
+            </span>
+        </div>
+    </div>
+
+    <form method="post" id="consultationForm">
+        {% csrf_token %}
+        <div class="row g-4">
+            <!-- Left Side: Clinical Notes (SOAP) -->
+            <div class="col-lg-8">
+                <div class="glass-card border-0 shadow-sm p-4 overflow-hidden mb-4 border-start border-4 border-primary">
+                    <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                        <i class="fas fa-file-medical-alt text-primary"></i> Clinical Notes (SOAP)
+                    </h5>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted text-uppercase mb-1">Subjective (Symptoms)</label>
+                            {{ form.subjective }}
+                            <small class="text-muted opacity-75">What the patient reports...</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted text-uppercase mb-1">Objective (Findings)</label>
+                            {{ form.objective }}
+                            <small class="text-muted opacity-75">Physical exam, vitals...</small>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label small fw-bold text-muted text-uppercase mb-0">Assessment & Diagnosis</label>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="small text-muted">Primary ICD-11:</span>
+                                    <input type="text" name="icd11_diagnosis" class="form-control form-control-sm border-primary border-opacity-25" style="width: 100px;" placeholder="e.g. 1A00">
+                                </div>
+                            </div>
+                            {{ form.assessment }}
+                            <small class="text-muted opacity-75">Diagnosis, impression...</small>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold text-muted text-uppercase mb-1">Plan & Orders</label>
+                            {{ form.plan }}
+                            <small class="text-muted opacity-75">Treatments, referrals, instructions...</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prescriptions -->
+                <div class="glass-card border-0 shadow-sm p-4 overflow-hidden mb-4 border-start border-4 border-warning">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                            <i class="fas fa-pills text-warning"></i> Prescription Order
+                        </h5>
+                        <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3 fw-bold" id="addMedBtn">
+                            <i class="fas fa-plus me-1"></i> Add Medication
+                        </button>
+                    </div>
+                    
+                    <div id="interactionWarnings" class="mb-3 d-none">
+                        <div class="alert alert-danger rounded-4 shadow-sm py-2 px-3 mb-0 d-flex align-items-center gap-3">
+                            <i class="fas fa-exclamation-triangle fs-4 pulsate-red"></i>
+                            <div>
+                                <div class="fw-bold small">Drug-Drug Interaction Warning</div>
+                                <div id="warningList" class="small opacity-90"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="medList">
+                        <!-- Initial medication row -->
+                        <div class="med-row p-3 border rounded-4 mb-3 bg-light bg-opacity-25 position-relative shadow-sm">
+                            <div class="row g-2">
+                                <div class="col-md-4">
+                                    <label class="small fw-bold text-muted">Medication Name</label>
+                                    <input type="text" name="med_name[]" class="form-control form-control-sm med-input" list="medicationOptions" placeholder="Select or type drug...">
+                                    <input type="hidden" name="med_id[]" class="med-id">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small fw-bold text-muted">Dosage</label>
+                                    <input type="text" name="med_dosage[]" class="form-control form-control-sm" placeholder="e.g. 1 Tab">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small fw-bold text-muted">Freq</label>
+                                    <input type="text" name="med_freq[]" class="form-control form-control-sm" placeholder="e.g. TDS">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small fw-bold text-muted">Duration</label>
+                                    <input type="text" name="med_duration[]" class="form-control form-control-sm" placeholder="e.g. 5 Days">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small fw-bold text-muted">Qty</label>
+                                    <input type="text" name="med_qty[]" class="form-control form-control-sm" placeholder="Total Qty">
+                                </div>
+                                <div class="col-12 mt-2">
+                                    <input type="text" name="med_inst[]" class="form-control form-control-sm bg-transparent border-0 border-bottom rounded-0 ps-0" placeholder="Instructions...">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <datalist id="medicationOptions">
+                        {% for med in medications %}
+                        <option value="{{ med.name }} - {{ med.generic_name }}" data-id="{{ med.id }}">
+                        {% endfor %}
+                    </datalist>
+                </div>
+
+                <!-- Lab Tests -->
+                <div class="glass-card border-0 shadow-sm p-4 overflow-hidden mb-4 border-start border-4 border-info">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                            <i class="fas fa-flask text-info"></i> Laboratory Requests
+                        </h5>
+                        <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3 fw-bold" id="addTestBtn">
+                            <i class="fas fa-plus me-1"></i> Add Lab Test
+                        </button>
+                    </div>
+                    
+                    <div class="mb-3 d-flex align-items-center gap-3 bg-light p-2 rounded-pill px-3 border border-info border-opacity-10">
+                        <span class="small fw-bold text-muted">Urgency Profile:</span>
+                        <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input" type="radio" name="lab_urgency" value="normal" checked id="lab_normal">
+                            <label class="form-check-label small fw-bold" for="lab_normal">Normal</label>
+                        </div>
+                        <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input" type="radio" name="lab_urgency" value="urgent" id="lab_urgent">
+                            <label class="form-check-label small fw-bold text-warning" for="lab_urgent">Urgent</label>
+                        </div>
+                        <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input" type="radio" name="lab_urgency" value="stat" id="lab_stat">
+                            <label class="form-check-label small fw-bold text-danger pulsate-red" for="lab_stat">STAT</label>
+                        </div>
+                    </div>
+
+                    <div id="testList">
+                        <div class="test-row p-3 border rounded-4 mb-2 bg-light bg-opacity-25 shadow-sm">
+                            <div class="row g-2">
+                                <div class="col-md-7">
+                                    <input type="text" name="test_name[]" class="form-control form-control-sm" placeholder="Test Name (e.g. FBC, CRP, LFT)">
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="text" name="specimen[]" class="form-control form-control-sm" placeholder="Specimen (e.g. Venous Blood)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Imaging & Scans -->
+                <div class="glass-card border-0 shadow-sm p-4 overflow-hidden mb-4 border-start border-4 border-primary">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                            <i class="fas fa-x-ray text-primary"></i> Radiology / Imaging Requests
+                        </h5>
+                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold" id="addImgBtn">
+                            <i class="fas fa-plus me-1"></i> New Scan Order
+                        </button>
+                    </div>
+                    
+                    <div class="mb-3 d-flex align-items-center gap-3 bg-light p-2 rounded-pill px-3 border border-primary border-opacity-10">
+                        <span class="small fw-bold text-muted">Scan Urgency:</span>
+                        <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input" type="radio" name="img_urgency" value="normal" checked id="img_normal">
+                            <label class="form-check-label small fw-bold" for="img_normal">Normal</label>
+                        </div>
+                        <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input" type="radio" name="img_urgency" value="urgent" id="img_urgent">
+                            <label class="form-check-label small fw-bold text-warning" for="img_urgent">Urgent</label>
+                        </div>
+                        <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input" type="radio" name="img_urgency" value="stat" id="img_stat">
+                            <label class="form-check-label small fw-bold text-danger pulsate-red" for="img_stat">STAT</label>
+                        </div>
+                    </div>
+
+                    <div id="imgList">
+                        <div class="img-row p-3 border rounded-4 mb-2 bg-light bg-opacity-25 shadow-sm">
+                            <div class="row g-2">
+                                <div class="col-md-4">
+                                    <select name="img_modality[]" class="form-select form-select-sm">
+                                        <option value="">Select Modality</option>
+                                        <option value="xray">X-Ray</option>
+                                        <option value="ct">CT Scan</option>
+                                        <option value="mri">MRI</option>
+                                        <option value="ultrasound">Ultrasound</option>
+                                        <option value="ecg">ECG</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-8">
+                                    <input type="text" name="img_area[]" class="form-control form-control-sm" placeholder="View Area (e.g. Chest AP/Lateral)">
+                                </div>
+                                <div class="col-12 mt-2">
+                                    <input type="text" name="img_question[]" class="form-control form-control-sm bg-transparent border-0 border-bottom rounded-0 ps-0" placeholder="Clinical Question / Indication for Radiologist...">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Theatre Booking -->
+                <div class="glass-card border-0 shadow-sm p-4 overflow-hidden mb-4 border-start border-4 border-danger">
+                    <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                        <i class="fas fa-procedures text-danger"></i> Operating Theatre Booking
+                    </h5>
+                    
+                    <div class="p-3 border rounded-4 bg-light bg-opacity-25 shadow-sm">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="small fw-bold text-muted">Proposed Surgical Procedure</label>
+                                <input type="text" name="theatre_procedure" class="form-control form-control-sm" placeholder="e.g. Laparoscopic Appendectomy">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small fw-bold text-muted">Priority</label>
+                                <select name="theatre_priority" class="form-select form-select-sm">
+                                    <option value="elective">Elective</option>
+                                    <option value="urgent">Urgent</option>
+                                    <option value="emergency">Emergency</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small fw-bold text-muted">Proposed Date & Time</label>
+                                <input type="datetime-local" name="theatre_date" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="small fw-bold text-muted">Est. Duration (Min)</label>
+                                <input type="number" name="theatre_duration" class="form-control form-control-sm" value="60">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="small fw-bold text-muted">Theatre Notes</label>
+                                <input type="text" name="theatre_notes" class="form-control form-control-sm" placeholder="O.R. Prep etc...">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small fw-bold text-muted">Assistant Surgeon</label>
+                                <input type="text" name="theatre_assistant" class="form-control form-control-sm" placeholder="Optional">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small fw-bold text-muted">Anaesthetist</label>
+                                <input type="text" name="theatre_anaesthetist" class="form-control form-control-sm" placeholder="Optional">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Patient Vitals / Submit -->
+            <div class="col-lg-4">
+                <div class="glass-card border-0 shadow-sm p-4 h-100 position-sticky" style="top: 1rem;">
+                    <h6 class="fw-bold mb-4 text-muted text-uppercase small">Patient Snapshot</h6>
+                    <div class="text-center p-3 rounded-4 bg-primary bg-opacity-10 text-primary mb-4">
+                        <div class="avatar-md mx-auto mb-2 fw-bold bg-primary text-white rounded-circle d-flex align-items-center justify-content-center">
+                            {{ patient.first_name|first }}{{ patient.last_name|first }}
+                        </div>
+                        <div class="fw-bold">{{ patient }}</div>
+                        <div class="small opacity-75">Age: {{ patient.age }} | {{ patient.get_gender_display }}</div>
+                    </div>
+
+                    <div class="p-3 bg-light rounded-4 mb-4">
+                        <h6 class="fw-bold small mb-3 opacity-75">Recent Vitals (Auto-fill)</h6>
+                        <div class="row g-2 text-center">
+                            <div class="col-4">
+                                <div class="small text-muted fw-bold">BP</div>
+                                <div class="fw-bold text-primary">120/80</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="small text-muted fw-bold">Temp</div>
+                                <div class="fw-bold text-primary">36.8°C</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="small text-muted fw-bold">Pulse</div>
+                                <div class="fw-bold text-primary">72 bpm</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-grid gap-3">
+                        <button type="submit" class="btn btn-primary rounded-pill py-3 fw-bold shadow-lg">
+                            COMPLETE ENCOUNTER <i class="fas fa-check-double ms-2"></i>
+                        </button>
+                        <a href="{% url 'clinical:patient_detail' patient.pk %}" class="btn btn-outline-danger rounded-pill fw-bold border-0">DISCARD NOTES</a>
+                    </div>
+                    
+                    <div class="mt-4 p-3 rounded-4 bg-light border-0">
+                        <div class="small fw-bold mb-2 opacity-50"><i class="fas fa-shield-alt me-1"></i> PRIVACY NOTE</div>
+                        <p class="small text-muted mb-0 lh-base" style="font-size: 0.72rem;">All entries are electronically signed by Dr. {{ user.username }} and timestamped for audit logging purposes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<template id="medRowTemplate">
+    <div class="med-row p-3 border rounded-4 mb-3 bg-light bg-opacity-25 position-relative shadow-sm animate-fade-in">
+        <button type="button" class="btn btn-sm btn-link text-danger position-absolute top-0 end-0 me-1 mt-1 remove-row"><i class="fas fa-times"></i></button>
+        <div class="row g-2">
+            <div class="col-md-4">
+                <label class="small fw-bold text-muted">Medication Name</label>
+                <input type="text" name="med_name[]" class="form-control form-control-sm med-input" list="medicationOptions" placeholder="Select or type drug...">
+                <input type="hidden" name="med_id[]" class="med-id">
+            </div>
+            <div class="col-md-2">
+                <label class="small fw-bold text-muted">Dosage</label>
+                <input type="text" name="med_dosage[]" class="form-control form-control-sm" placeholder="e.g. 1 Tab">
+            </div>
+            <div class="col-md-2">
+                <label class="small fw-bold text-muted">Freq</label>
+                <input type="text" name="med_freq[]" class="form-control form-control-sm" placeholder="e.g. TDS">
+            </div>
+            <div class="col-md-2">
+                <label class="small fw-bold text-muted">Duration</label>
+                <input type="text" name="med_duration[]" class="form-control form-control-sm" placeholder="e.g. 5 Days">
+            </div>
+            <div class="col-md-2">
+                <label class="small fw-bold text-muted">Qty</label>
+                <input type="text" name="med_qty[]" class="form-control form-control-sm" placeholder="Total Qty">
+            </div>
+            <div class="col-12 mt-2">
+                <input type="text" name="med_inst[]" class="form-control form-control-sm bg-transparent border-0 border-bottom rounded-0 ps-0" placeholder="Special instructions for pharmacist/patient...">
+            </div>
+        </div>
+    </div>
+</template>
+
+<template id="testRowTemplate">
+    <div class="test-row p-3 border rounded-4 mb-2 bg-light bg-opacity-25 shadow-sm position-relative animate-fade-in">
+        <button type="button" class="btn btn-sm btn-link text-danger position-absolute top-0 end-0 me-1 remove-row" style="margin-top:-5px;"><i class="fas fa-times small"></i></button>
+        <div class="row g-2">
+            <div class="col-md-7">
+                <input type="text" name="test_name[]" class="form-control form-control-sm" placeholder="Test Name (e.g. FBC, CRP, LFT)">
+            </div>
+            <div class="col-md-5">
+                <input type="text" name="specimen[]" class="form-control form-control-sm" placeholder="Specimen (e.g. Venous Blood)">
+            </div>
+        </div>
+    </div>
+</template>
+
+<template id="imgRowTemplate">
+    <div class="img-row p-3 border rounded-4 mb-2 bg-light bg-opacity-25 shadow-sm position-relative animate-fade-in">
+        <button type="button" class="btn btn-sm btn-link text-danger position-absolute top-0 end-0 me-1 remove-row" style="margin-top:-5px;"><i class="fas fa-times small"></i></button>
+        <div class="row g-2">
+            <div class="col-md-4">
+                <select name="img_modality[]" class="form-select form-select-sm">
+                    <option value="">Select Modality</option>
+                    <option value="xray">X-Ray</option>
+                    <option value="ct">CT Scan</option>
+                    <option value="mri">MRI</option>
+                    <option value="ultrasound">Ultrasound</option>
+                    <option value="ecg">ECG</option>
+                </select>
+            </div>
+            <div class="col-md-8">
+                <input type="text" name="img_area[]" class="form-control form-control-sm" placeholder="View Area (e.g. Chest AP/Lateral)">
+            </div>
+            <div class="col-12 mt-2">
+                <input type="text" name="img_question[]" class="form-control form-control-sm bg-transparent border-0 border-bottom rounded-0 ps-0" placeholder="Clinical Question / Indication for Radiologist...">
+            </div>
+        </div>
+    </div>
+</template>
+
+<style>
+    .form-control, .form-select { border-radius: 10px; border: 1px solid #e2e8f0; font-size: 14px; }
+    .form-control:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59,130,246,0.1); }
+    .avatar-md { width: 48px; height: 48px; }
+    .remove-row { text-decoration: none; opacity: 0.5; transition: all 0.2s; }
+    .remove-row:hover { opacity: 1; }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .pulsate-red { animation: pulsate 1.5s infinite; }
+    @keyframes pulsate { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+</style>
+
+<script>
+    const patient_id = "{{ patient.id }}";
+    
+    document.addEventListener('input', function(e) {
+        if(e.target.classList.contains('med-input')) {
+            const medInput = e.target;
+            const row = medInput.closest('.med-row');
+            const medIdInput = row.querySelector('.med-id');
+            const dataList = document.getElementById('medicationOptions');
+            const option = Array.from(dataList.options).find(opt => opt.value === medInput.value);
+            
+            if(option) {
+                medIdInput.value = option.dataset.id;
+                row.classList.add('border-primary'); // Highlight legitimate drug match
+            } else {
+                medIdInput.value = '';
+                row.classList.remove('border-primary');
+            }
+            checkInteractions();
+        }
+    });
+
+    function checkInteractions() {
+        const medIds = Array.from(document.querySelectorAll('.med-id')).map(i => i.value).filter(v => v !== '');
+        const warningContainer = document.getElementById('interactionWarnings');
+        const warningList = document.getElementById('warningList');
+
+        if(medIds.length === 0) {
+            warningContainer.classList.add('d-none');
+            return;
+        }
+
+        const params = new URLSearchParams();
+        params.append('patient_id', patient_id);
+        medIds.forEach(id => params.append('med_ids[]', id));
+
+        fetch(`{% url 'clinical:check_interactions' %}?${params.toString()}`)
+            .then(r => r.json())
+            .then(data => {
+                if(data.interactions.length > 0) {
+                    warningList.innerHTML = data.interactions.map(i => 
+                        `<div class="mb-1">• <strong>${i.drug_a}</strong> + <strong>${i.drug_b}</strong>: ${i.message} 
+                        <span class="badge bg-danger" style="font-size:0.6rem;">${i.severity.toUpperCase()}</span></div>`
+                    ).join('');
+                    warningContainer.classList.remove('d-none');
+                } else {
+                    warningContainer.classList.add('d-none');
+                }
+            });
+    }
+
+    document.getElementById('addMedBtn').addEventListener('click', function() {
+        const template = document.getElementById('medRowTemplate');
+        const clone = template.content.cloneNode(true);
+        document.getElementById('medList').appendChild(clone);
+    });
+
+    document.getElementById('addTestBtn').addEventListener('click', function() {
+        const template = document.getElementById('testRowTemplate');
+        const clone = template.content.cloneNode(true);
+        document.getElementById('testList').appendChild(clone);
+    });
+
+    document.getElementById('addImgBtn').addEventListener('click', function() {
+        const template = document.getElementById('imgRowTemplate');
+        const clone = template.content.cloneNode(true);
+        document.getElementById('imgList').appendChild(clone);
+    });
+
+    document.addEventListener('click', function(e) {
+        if(e.target.closest('.remove-row')) {
+            e.target.closest('.med-row, .test-row, .img-row').remove();
+            checkInteractions(); // Re-check after removal
+        }
+    });
+
+    // Auto-expand textareas
+    document.querySelectorAll('textarea').forEach(el => {
+        el.addEventListener('input', () => { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; });
+    });
+</script>
+{% endblock %}

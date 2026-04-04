@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard:home' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Notifications</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">
+                <i class="fas fa-bell text-primary me-2"></i>Notification Centre
+            </h3>
+            <p class="text-muted mb-0">
+                {{ unread_count }} unread notification{{ unread_count|pluralize }}
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            {% if unread_count > 0 %}
+            <form method="post" action="{% url 'core:notification_mark_all_read' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-primary rounded-pill px-4">
+                    <i class="fas fa-check-double me-1"></i> Mark All Read
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="d-flex gap-2 mb-4 flex-wrap">
+        <a href="{% url 'core:notifications' %}"
+            class="btn btn-sm {% if not filter_type %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">All</a>
+        <a href="?type=unread"
+            class="btn btn-sm {% if filter_type == 'unread' %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">
+            Unread {% if unread_count %}<span class="badge bg-danger ms-1">{{ unread_count }}</span>{% endif %}
+        </a>
+        <a href="?type=approval"
+            class="btn btn-sm {% if filter_type == 'approval' %}btn-warning{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">Approvals</a>
+        <a href="?type=sop_update"
+            class="btn btn-sm {% if filter_type == 'sop_update' %}btn-info{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">SOP
+            Updates</a>
+        <a href="?type=incident"
+            class="btn btn-sm {% if filter_type == 'incident' %}btn-danger{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">Incidents</a>
+        <a href="?type=ticket"
+            class="btn btn-sm {% if filter_type == 'ticket' %}btn-info{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">Helpdesk</a>
+    </div>
+
+    <!-- Notification List -->
+    <div class="glass-card border-0 overflow-hidden">
+        {% for notif in notifications %}
+        <a href="{% url 'core:notification_read' notif.pk %}"
+            class="d-flex align-items-start gap-3 p-4 text-decoration-none border-bottom {% if not notif.is_read %}bg-primary bg-opacity-5{% endif %}"
+            style="transition: background 0.2s;">
+            <div class="p-2 rounded-3 bg-{{ notif.type_color }} bg-opacity-10 flex-shrink-0">
+                <i class="{{ notif.type_icon }} text-{{ notif.type_color }}"></i>
+            </div>
+            <div class="flex-grow-1 min-w-0">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                    <h6 class="mb-0 {% if not notif.is_read %}fw-bold{% else %}fw-medium{% endif %} text-dark">
+                        {{ notif.title }}
+                    </h6>
+                    <small class="text-muted ms-2 flex-shrink-0">{{ notif.created_at|timesince }} ago</small>
+                </div>
+                <p class="mb-0 small text-muted">{{ notif.message|truncatechars:150 }}</p>
+            </div>
+            {% if not notif.is_read %}
+            <span class="badge bg-primary rounded-circle p-1 flex-shrink-0" title="Unread"
+                style="width: 10px; height: 10px;"></span>
+            {% endif %}
+        </a>
+        {% empty %}
+        <div class="text-center text-muted py-5">
+            <i class="fas fa-bell-slash fa-3x mb-3 opacity-25"></i>
+            <p class="mb-0">No notifications yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

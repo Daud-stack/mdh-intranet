@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}OpsHub{% endblock %}</title>
+    <meta name="description" content="OpsHub - Facility management and operations platform">
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --primary-bg: #f0f4f8;
+            --sidebar-width: 280px;
+            --accent-blue: #3b82f6;
+            --accent-blue-dark: #1d4ed8;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --sidebar-bg: #ffffff;
+            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+            --premium-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-main);
+            overflow-x: hidden;
+            letter-spacing: -0.01em;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: var(--sidebar-bg);
+            border-right: 1px solid #e2e8f0;
+            z-index: 1000;
+            padding: 2rem 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        .sidebar-brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            color: var(--accent-blue);
+            margin-bottom: 3rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .sidebar-brand i {
+            filter: drop-shadow(0 4px 3px rgba(59, 130, 246, 0.2));
+        }
+
+        .nav-section-title {
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin: 1.5rem 0 1rem 1rem;
+            letter-spacing: 0.05em;
+        }
+
+        .nav-link {
+            color: var(--text-muted);
+            padding: 0.875rem 1.25rem;
+            border-radius: 0.75rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            transition: all 0.25s ease;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+
+        .nav-link i {
+            font-size: 1.1rem;
+            transition: transform 0.25s ease;
+        }
+
+        .nav-link:hover {
+            background-color: #f8fafc;
+            color: var(--accent-blue);
+            transform: translateX(4px);
+        }
+
+        .nav-link.active {
+            background-color: #eff6ff;
+            color: var(--accent-blue);
+            font-weight: 600;
+            border-color: #dbeafe;
+            box-shadow: 0 4px 12px -2px rgba(37, 99, 235, 0.08);
+        }
+
+        .nav-link.active i {
+            transform: scale(1.1);
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 2.5rem;
+            min-height: 100vh;
+        }
+
+        .top-nav {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px) saturate(180%);
+            -webkit-backdrop-filter: blur(12px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            padding: 0.75rem 2rem;
+            margin-bottom: 2.5rem;
+            border-radius: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--card-shadow);
+        }
+
+        .search-container {
+            position: relative;
+            width: 350px;
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .search-bar {
+            background: #f1f5f9;
+            border: 1px solid transparent;
+            border-radius: 0.75rem;
+            padding: 0.625rem 1rem 0.625rem 2.75rem;
+            width: 100%;
+            transition: all 0.2s;
+            font-size: 0.935rem;
+        }
+
+        .search-bar:focus {
+            outline: none;
+            background: #ffffff;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Animations */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .content-block {
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.25rem;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--premium-shadow);
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <i class="fas fa-hospital-user"></i>
+            <span>OpsHub</span>
+        </div>
+        <nav class="nav flex-column" aria-label="Main navigation">
+            <div class="nav-section-title">Main</div>
+            <a href="{% url 'dashboard:home' %}" class="nav-link active" aria-current="page">
+                <i class="fas fa-th-large" aria-hidden="true"></i> Dashboard
+            </a>
+            <a href="{% url 'sop_manual:index' %}" class="nav-link">
+                <i class="fas fa-book" aria-hidden="true"></i> SOP Manual
+            </a>
+            <a href="{% url 'sop_assistant:index' %}" class="nav-link" aria-label="Navigate to SOP Assistant">
+                <i class="fas fa-robot" aria-hidden="true"></i> SOP Assistant
+            </a>
+            <a href="{% url 'hr_management:dashboard' %}"
+                class="nav-link {% if request.resolver_match.app_name == 'hr_management' %}active{% endif %}">
+                <i class="fas fa-user-tie" aria-hidden="true"></i> HR Management
+            </a>
+            <a href="{% url 'training_compliance:dashboard' %}"
+                class="nav-link {% if request.resolver_match.app_name == 'training_compliance' %}active{% endif %}">
+                <i class="fas fa-graduation-cap" aria-hidden="true"></i> Training & Compliance
+            </a>
+            <a href="{% url 'rostering:dashboard' %}"
+                class="nav-link {% if request.resolver_match.app_name == 'rostering' %}active{% endif %}">
+                <i class="fas fa-calendar-alt" aria-hidden="true"></i> Shift Management
+            </a>
+            <a href="{% url 'maintenance:dashboard' %}"
+                class="nav-link {% if request.resolver_match.app_name == 'maintenance' %}active{% endif %}">
+                <i class="fas fa-wrench" aria-hidden="true"></i> Maintenance
+            </a>
+            <a href="{% url 'fleet_management:dashboard' %}"
+                class="nav-link {% if request.resolver_match.app_name == 'fleet_management' %}active{% endif %}">
+                <i class="fas fa-car" aria-hidden="true"></i> Fleet Management
+            </a>
+
+            <div class="nav-section-title">Clinical Operations</div>
+            <a href="{% url 'clinical:manager_dashboard' %}" 
+                class="nav-link {% if request.resolver_match.url_name == 'manager_dashboard' %}active{% endif %}">
+                <i class="fas fa-broadcast-tower" aria-hidden="true"></i> Clinical Command
+            </a>
+            <a href="{% url 'clinical:dashboard' %}" 
+                class="nav-link {% if request.resolver_match.url_name == 'dashboard' and request.resolver_match.app_name == 'clinical' %}active{% endif %}">
+                <i class="fas fa-stethoscope" aria-hidden="true"></i> GP Dashboard
+            </a>
+            <a href="{% url 'clinical:my_consultations' %}" 
+                class="nav-link {% if request.resolver_match.url_name == 'my_consultations' %}active{% endif %}">
+                <i class="fas fa-user-md" aria-hidden="true"></i> My Encounters
+            </a>
+            <a href="{% url 'clinical:consultation_history' %}" 
+                class="nav-link {% if request.resolver_match.url_name == 'consultation_history' %}active{% endif %}">
+                <i class="fas fa-file-medical-alt" aria-hidden="true"></i> Clinical History
+            </a>
+            <a href="{% url 'clinical:nursing_dashboard' %}" 
+                class="nav-link {% if request.resolver_match.url_name == 'nursing_dashboard' %}active{% endif %}">
+                <i class="fas fa-user-nurse" aria-hidden="true"></i> Nursing Hub
+            </a>
+            <a href="{% url 'clinical:pharmacy_dashboard' %}" 
+                class="nav-link {% if request.resolver_match.url_name == 'pharmacy_dashboard' %}active{% endif %}">
+                <i class="fas fa-pills" aria-hidden="true"></i> Pharmacy
+            </a>
+            <a href="{% url 'clinical:lab_dashboard' %}" 
+                class="nav-link {% if request.resolver_match.url_name == 'lab_dashboard' %}active{% endif %}">
+                <i class="fas fa-flask" aria-hidden="true"></i> Laboratory
+            </a>
+            <a href="{% url 'clinical:imaging_dashboard' %}" 
+                class="nav-link">
+                <i class="fas fa-x-ray" aria-hidden="true"></i> Imaging & Scans
+            </a>
+            <a href="{% url 'clinical:theatre_dashboard' %}" 
+                class="nav-link">
+                <i class="fas fa-procedures" aria-hidden="true"></i> Operating Theatre
+            </a>
+
+            <div class="nav-section-title">Compliance</div>
+            <a href="{% url 'core:compliance_hub' %}"
+                class="nav-link {% if request.resolver_match.url_name == 'compliance_hub' %}active{% endif %}">
+                <i class="fas fa-shield-virus" aria-hidden="true"></i> Compliance Hub
+            </a>
+            <a href="{% url 'quality_audit:dashboard' %}"
+                class="nav-link {% if request.resolver_match.app_name == 'quality_audit' %}active{% endif %}">
+                <i class="fas fa-clipboard-check" aria-hidden="true"></i> Quality Inspections
+            </a>
+            <a href="{% url 'capa:list' %}"
+                class="nav-link {% if request.resolver_match.app_name == 'capa' %}active{% endif %}">
+                <i class="fas fa-exclamation-triangle" aria-hidden="true"></i> CAPA Records
+            </a>
+            <a href="{% url 'core:audit_log' %}"
+                class="nav-link {% if request.resolver_match.url_name == 'audit_log' %}active{% endif %}">
+                <i class="fas fa-fingerprint" aria-hidden="true"></i> Action Trail
+            </a>
+
+            <div class="nav-section-title">Operations</div>
+            <a href="{% url 'incident_log:index' %}" class="nav-link">
+                <i class="fas fa-clipboard-list" aria-hidden="true"></i> Incident Log
+            </a>
+            <a href="{% url 'stock_management:index' %}"
+                class="nav-link {% if request.resolver_match.app_name == 'stock_management' %}active{% endif %}"
+                aria-label="Navigate to Stock Management">
+                <i class="fas fa-box"></i> Stock & Requisitions
+            </a>
+            <a href="{% url 'projects:index' %}" class="nav-link">
+                <i class="fas fa-tasks" aria-hidden="true"></i> Projects
+            </a>
+            <a href="{% url 'leave_management:leave_list' %}"
+                class="nav-link {% if request.resolver_match.app_name == 'leave_management' %}active{% endif %}"
+                aria-label="Navigate to Leave Management">
+                <i class="fas fa-plane-departure"></i> Leave Management
+            </a>
+            <a href="{% url 'medical_aid:list' %}"
+                class="nav-link {% if request.resolver_match.app_name == 'medical_aid' %}active{% endif %}"
+                aria-label="Navigate to Medical Aid">
+                <i class="fas fa-notes-medical"></i> Medical Aid
+            </a>
+
+            <div class="nav-section-title">Support</div>
+            <a href="{% url 'helpdesk:index' %}" class="nav-link">
+                <i class="fas fa-headset" aria-hidden="true"></i> IT Helpdesk
+            </a>
+            <a href="{% url 'icd11_tools:index' %}" class="nav-link">
+                <i class="fas fa-stethoscope" aria-hidden="true"></i> ICD-11 Tools
+            </a>
+            <a href="{% url 'documents:index' %}" class="nav-link">
+                <i class="fas fa-file-alt" aria-hidden="true"></i> Documents
+            </a>
+            <a href="{% url 'feedback:index' %}"
+                class="nav-link {% if request.resolver_match.app_name == 'feedback' %}active{% endif %}"
+                aria-label="Navigate to Feedback">
+                <i class="fas fa-comment-dots"></i> Feedback
+            </a>
+
+            <div class="nav-section-title">Intelligence</div>
+            <a href="{% url 'analytics:dashboard' %}"
+                class="nav-link {% if request.resolver_match.app_name == 'analytics' %}active{% endif %}">
+                <i class="fas fa-chart-pie" aria-hidden="true"></i> Reporting & Analytics
+            </a>
+            <a href="{% url 'core:approvals' %}"
+                class="nav-link {% if request.resolver_match.url_name == 'approvals' or request.resolver_match.url_name == 'approval_detail' %}active{% endif %}">
+                <i class="fas fa-clipboard-check"></i> Approvals
+            </a>
+            <a href="{% url 'core:notifications' %}"
+                class="nav-link {% if request.resolver_match.url_name == 'notifications' %}active{% endif %}">
+                <i class="fas fa-bell"></i> Notifications
+                {% if unread_notification_count %}
+                <span class="badge bg-danger rounded-pill ms-auto" style="font-size: 0.65rem;">
+                    {{ unread_notification_count }}
+                </span>
+                {% endif %}
+            </a>
+
+            {% if user.is_superuser %}
+            <div class="nav-section-title">Admin Center</div>
+            <a href="{% url 'user_management:index' %}"
+                class="nav-link {% if request.resolver_match.app_name == 'user_management' %}active{% endif %}">
+                <i class="fas fa-users-cog"></i> Platform Settings
+            </a>
+            {% endif %}
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-nav">
+            <form action="{% url 'core:search' %}" method="get" class="search-container" id="globalSearchForm">
+                <i class="fas fa-search"></i>
+                <input type="text" name="q" class="search-bar" id="globalSearchInput"
+                    placeholder="Search SOPs, documents, incidents..." value="{{ request.GET.q }}" autocomplete="off">
+                <!-- Live Search Dropdown -->
+                <div id="searchDropdown" class="position-absolute w-100 mt-1 rounded-3 shadow-lg bg-white border d-none"
+                    style="z-index: 9999; max-height: 400px; overflow-y: auto; top: 100%;">
+                </div>
+            </form>
+            <div class="user-profile d-flex align-items-center gap-3">
+                {% if user.is_authenticated %}
+                <!-- Notification Bell -->
+                <div class="dropdown">
+                    <button class="btn btn-link text-muted position-relative p-2" type="button" id="notifBell"
+                        data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false"
+                        style="font-size: 1.2rem; text-decoration: none;">
+                        <i class="fas fa-bell"></i>
+                        {% if unread_notification_count %}
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                            style="font-size: 0.6rem;" id="notifBadge">
+                            {{ unread_notification_count }}
+                        </span>
+                        {% endif %}
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 p-0"
+                        style="width: 380px; max-height: 480px; overflow-y: auto;" aria-labelledby="notifBell">
+                        <div class="p-3 border-bottom d-flex justify-content-between align-items-center"
+                            style="background: #f8fafc;">
+                            <h6 class="mb-0 fw-bold">Notifications</h6>
+                            <a href="{% url 'core:notifications' %}" class="text-decoration-none small">View All</a>
+                        </div>
+                        <div id="notifDropdownBody">
+                            {% for notif in latest_notifications %}
+                            <a href="{% url 'core:notification_read' notif.pk %}"
+                                class="d-flex gap-2 p-3 text-decoration-none border-bottom {% if not notif.is_read %}bg-primary bg-opacity-5{% endif %}"
+                                style="transition: background 0.15s;">
+                                <div class="flex-shrink-0">
+                                    <i class="{{ notif.type_icon }} text-{{ notif.type_color }}"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="mb-0 small {% if not notif.is_read %}fw-bold{% endif %} text-dark">
+                                        {{ notif.title|truncatechars:60 }}
+                                    </p>
+                                    <small class="text-muted">{{ notif.created_at|timesince }} ago</small>
+                                </div>
+                            </a>
+                            {% empty %}
+                            <div class="text-center text-muted py-4">
+                                <i class="fas fa-bell-slash mb-2"></i>
+                                <p class="small mb-0">No notifications</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if unread_notification_count %}
+                        <div class="p-2 border-top text-center" style="background: #f8fafc;">
+                            <form method="post" action="{% url 'core:notification_mark_all_read' %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-link text-primary text-decoration-none">
+                                    <i class="fas fa-check-double me-1"></i>Mark all read
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center me-3">
+                    <div class="text-end">
+                        <div class="fw-bold text-dark mb-0" style="font-size: 0.95rem;">
+                            {{ display_name }}
+                            {% if user.is_superuser %}
+                            <span class="badge bg-danger ms-1"
+                                style="font-size: 0.6rem; vertical-align: middle;">Admin</span>
+                            {% endif %}
+                        </div>
+                        <div class="small text-muted" style="font-size: 0.75rem;">
+                            {{ user_profile.role|default:"Staff Member" }}
+                            {% if user_profile.department %}
+                            &middot; {{ user_profile.department }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% if user_profile.avatar %}
+                <img src="{{ user_profile.avatar.url }}" class="rounded-circle border border-2 border-white shadow-sm"
+                    width="40" height="40" style="object-fit: cover;" alt="User avatar">
+                {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ display_name|urlencode }}&background=6366f1&color=fff"
+                    class="rounded-circle border border-2 border-white shadow-sm" width="40" height="40"
+                    alt="User avatar">
+                {% endif %}
+                {% else %}
+                <a href="{% url 'admin:login' %}?next={{ request.path }}" class="btn btn-primary btn-sm">Login</a>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="content-block">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Global Live Search -->
+    <script>
+        (function () {
+            const input = document.getElementById('globalSearchInput');
+            const dropdown = document.getElementById('searchDropdown');
+            if (!input || !dropdown) return;
+
+            let debounce = null;
+            input.addEventListener('input', function () {
+                clearTimeout(debounce);
+                const q = this.value.trim();
+                if (q.length < 2) { dropdown.classList.add('d-none'); return; }
+                debounce = setTimeout(function () {
+                    fetch('/core/api/search/?q=' + encodeURIComponent(q))
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.results && data.results.length > 0) {
+                                dropdown.innerHTML = data.results.map(r =>
+                                    '<a href="' + r.url + '" class="d-flex align-items-center gap-2 px-3 py-2 text-decoration-none text-dark border-bottom" style="transition:background 0.15s;">' +
+                                    '<i class="' + r.icon + ' text-muted"></i>' +
+                                    '<div><div class="small fw-semibold">' + r.title + '</div>' +
+                                    '<small class="text-muted">' + r.type + '</small></div></a>'
+                                ).join('');
+                                dropdown.classList.remove('d-none');
+                            } else {
+                                dropdown.innerHTML = '<div class="text-center text-muted py-3 small">No results found</div>';
+                                dropdown.classList.remove('d-none');
+                            }
+                        });
+                }, 300);
+            });
+
+            input.addEventListener('blur', function () {
+                setTimeout(function () { dropdown.classList.add('d-none'); }, 200);
+            });
+            input.addEventListener('focus', function () {
+                if (dropdown.innerHTML.trim()) dropdown.classList.remove('d-none');
+            });
+        })();
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

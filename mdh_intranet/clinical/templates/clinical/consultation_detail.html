@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block title %}Encounter Summary: {{ consultation.patient }} - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'clinical:dashboard' %}">Clinical Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'clinical:patient_detail' consultation.patient.pk %}">{{ consultation.patient }}</a></li>
+            <li class="breadcrumb-item active">Consultation Detail</li>
+        </ol>
+    </nav>
+
+    <div class="row align-items-center mb-4">
+        <div class="col-md-8">
+            <h3 class="fw-bold mb-1">Clinical Encounter Record</h3>
+            <p class="text-muted mb-0">Recorded on {{ consultation.date|date:"D, d M Y @ H:i" }} by Dr. {{ consultation.gp.get_full_name|default:consultation.gp.username }}</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'clinical:consultation_pdf' consultation.pk %}" class="btn btn-danger rounded-pill px-4 shadow-sm border-0">
+                <i class="fas fa-file-pdf me-2"></i>Download PDF Notes
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <!-- SOAP Summary -->
+            <div class="glass-card border-0 shadow-sm p-4 mb-4">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <h6 class="text-uppercase text-primary fw-bold small mb-2">Subjective</h6>
+                        <div class="p-3 bg-light rounded-4 text-dark lh-base">
+                            {{ consultation.subjective|linebreaks }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-uppercase text-primary fw-bold small mb-2">Objective</h6>
+                        <div class="p-3 bg-light rounded-4 text-dark lh-base">
+                            {{ consultation.objective|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+                
+                <hr class="my-4 opacity-10">
+
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="text-uppercase text-primary fw-bold small mb-0">Assessment & Diagnosis</h6>
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 rounded-pill px-3">ICD-11: {{ consultation.icd11_diagnosis|default:"N/A" }}</span>
+                    </div>
+                    <div class="p-4 bg-white border border-primary border-opacity-10 rounded-4 text-dark fs-5 fw-bold shadow-sm">
+                        {{ consultation.assessment|linebreaks }}
+                    </div>
+                </div>
+
+                <div>
+                    <h6 class="text-uppercase text-primary fw-bold small mb-2">Plan</h6>
+                    <div class="p-3 bg-light rounded-4 text-dark lh-base">
+                        {{ consultation.plan|linebreaks }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Linked Items -->
+             <div class="row g-3">
+                 <!-- Prescription -->
+                 <div class="col-md-6">
+                    <div class="glass-card border-0 shadow-sm p-4 h-100 border-top border-4 border-warning">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0"><i class="fas fa-pills text-warning me-2"></i>Prescription</h6>
+                            {% if consultation.prescriptions.exists %}
+                            <a href="{% url 'clinical:prescription_pdf' consultation.prescriptions.first.pk %}" class="btn btn-xs btn-outline-warning border-0 p-0 text-decoration-none small">PDF <i class="fas fa-download ms-1"></i></a>
+                            {% endif %}
+                        </div>
+                        {% for rx in consultation.prescriptions.all %}
+                        <div class="small">
+                            <ul class="list-unstyled mb-0">
+                                {% for item in rx.items.all %}
+                                <li class="mb-1 border-bottom pb-1">• <strong>{{ item.medication_name }}</strong> ({{ item.dosage }})</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% empty %}
+                        <div class="text-muted small italic">No medications prescribed.</div>
+                        {% endfor %}
+                    </div>
+                 </div>
+                 <!-- Lab -->
+                 <div class="col-md-6">
+                    <div class="glass-card border-0 shadow-sm p-4 h-100 border-top border-4 border-info">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0"><i class="fas fa-flask text-info me-2"></i>Lab Requests</h6>
+                        </div>
+                        {% for req in consultation.lab_requests.all %}
+                        <div class="small">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="badge bg-{{ req.urgency|yesno:'danger,warning,info' }} rounded-pill">{{ req.get_urgency_display|upper }}</span>
+                                <a href="{% url 'clinical:lab_request_pdf' req.pk %}" class="btn btn-xs btn-outline-info border-0 p-0 text-decoration-none small">PDF <i class="fas fa-download ms-1"></i></a>
+                            </div>
+                            <ul class="list-unstyled mb-0">
+                                {% for item in req.test_items.all %}
+                                <li class="mb-1 border-bottom pb-1">• {{ item.test_name }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% empty %}
+                        <div class="text-muted small italic">No lab tests ordered.</div>
+                        {% endfor %}
+                    </div>
+                 </div>
+
+                 <!-- Imaging -->
+                 <div class="col-md-6 mt-3">
+                    <div class="glass-card border-0 shadow-sm p-4 h-100 border-top border-4 border-primary">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0 text-primary"><i class="fas fa-x-ray me-2"></i>Imaging Requests</h6>
+                            <a href="{% url 'clinical:imaging_dashboard' %}" class="small text-decoration-none shadow-none border-0 text-primary d-flex align-items-center gap-1 opacity-75">
+                                Dashboard <i class="fas fa-external-link-alt" style="font-size: 0.6rem;"></i>
+                            </a>
+                        </div>
+                        {% for req in consultation.imaging_requests.all %}
+                        <div class="mb-3 border-bottom border-opacity-10 pb-2">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge bg-{{ req.urgency|yesno:'danger,warning,info' }} rounded-pill" style="font-size: 0.6rem;">{{ req.get_urgency_display|upper }}</span>
+                                <span class="badge bg-light text-dark fw-normal rounded-pill" style="font-size: 0.65rem;">{{ req.get_status_display|upper }}</span>
+                            </div>
+                            <ul class="list-unstyled mb-0 small">
+                                {% for item in req.items.all %}
+                                <li class="text-dark">• <strong>{{ item.get_modality_display }}</strong>: {{ item.view_area }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% empty %}
+                        <div class="text-muted small italic">No imaging ordered.</div>
+                        {% endfor %}
+                    </div>
+                 </div>
+
+                 <!-- Theatre -->
+                 <div class="col-md-6 mt-3">
+                    <div class="glass-card border-0 shadow-sm p-4 h-100 border-top border-4 border-danger">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0 text-danger"><i class="fas fa-procedures me-2"></i>Surgical Bookings</h6>
+                            <a href="{% url 'clinical:theatre_dashboard' %}" class="small text-decoration-none shadow-none border-0 text-danger d-flex align-items-center gap-1 opacity-75">
+                                OR Schedule <i class="fas fa-external-link-alt" style="font-size: 0.6rem;"></i>
+                            </a>
+                        </div>
+                        {% for th in consultation.theatre_bookings.all %}
+                        <div class="border rounded-4 p-3 bg-light bg-opacity-25 shadow-xs mb-2">
+                            <div class="fw-bold text-dark small mb-1">{{ th.procedure_name }}</div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-{{ th.priority|yesno:'danger,warning,info' }} rounded-pill" style="font-size: 0.6rem;">{{ th.get_priority_display|upper }}</span>
+                                <span class="small text-muted" style="font-size: 0.65rem;">{{ th.proposed_date|date:"d M @ H:i" }}</span>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-muted small italic">No surgery booked.</div>
+                        {% endfor %}
+                    </div>
+                 </div>
+             </div>
+        </div>
+
+        <!-- Sidebar Patient -->
+        <div class="col-lg-4">
+            <div class="glass-card border-0 shadow-sm p-4 h-100 position-sticky" style="top: 1rem;">
+                <h6 class="text-uppercase text-muted fw-bold small mb-4">Patient Profile</h6>
+                <div class="text-center p-3 rounded-4 bg-primary bg-opacity-5 mb-4">
+                     <div class="avatar-md mx-auto mb-2 fw-bold bg-primary text-white rounded-circle d-flex align-items-center justify-content-center">
+                        {{ consultation.patient.first_name|first }}{{ consultation.patient.last_name|first }}
+                    </div>
+                    <div class="fw-bold fs-5">{{ consultation.patient }}</div>
+                    <div class="small text-muted">ID: #P{{ consultation.patient.id|stringformat:"05d" }}</div>
+                </div>
+
+                <div class="patient-vitals mb-4">
+                    <div class="d-flex justify-content-between py-2 border-bottom small">
+                        <span class="text-muted">Gender</span>
+                        <span class="fw-bold">{{ consultation.patient.get_gender_display }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 border-bottom small">
+                        <span class="text-muted">Age</span>
+                        <span class="fw-bold">{{ consultation.patient.age }} Years</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 border-bottom small">
+                        <span class="text-muted">Medical Aid</span>
+                        <span class="fw-bold">{{ consultation.patient.medical_aid_name|default:"Cash" }}</span>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <a href="{% url 'clinical:patient_detail' consultation.patient.pk %}" class="btn btn-light rounded-pill fw-bold">Return to Patient History</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-md { width: 56px; height: 56px; line-height: 56px; }
+    .btn-xs { font-size: 0.7rem; }
+</style>
+{% endblock %}

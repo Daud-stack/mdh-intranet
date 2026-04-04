@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Projects - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="fw-bold">
+                <i class="fas fa-tasks text-primary"></i> Project Management
+            </h1>
+            <p class="text-muted">Track organizational projects and initiatives</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'projects:create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> New Project
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <p class="text-muted mb-1 small">Active Projects</p>
+                    <h3 class="fw-bold mb-0 text-primary">{{ active_projects }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <p class="text-muted mb-1 small">Completed</p>
+                    <h3 class="fw-bold mb-0 text-success">{{ completed_projects }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <p class="text-muted mb-1 small">On Hold</p>
+                    <h3 class="fw-bold mb-0 text-warning">{{ on_hold_projects }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <p class="text-muted mb-1 small">Team Members</p>
+                    <h3 class="fw-bold mb-0">{{ total_members }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Cards -->
+    <div class="row g-4">
+        {% for project in projects %}
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100 hover-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="fw-bold mb-1">
+                                <a href="{% url 'projects:detail' project.pk %}" class="text-decoration-none text-dark">
+                                    {{ project.title }}
+                                </a>
+                            </h5>
+                            <small class="text-muted">Started: {{ project.start_date|date:"M Y" }}</small>
+                        </div>
+                        {% if project.status == 'Active' %}
+                        <span class="badge bg-success">Active</span>
+                        {% elif project.status == 'On Hold' %}
+                        <span class="badge bg-warning">On Hold</span>
+                        {% elif project.status == 'Completed' %}
+                        <span class="badge bg-secondary">Completed</span>
+                        {% else %}
+                        <span class="badge bg-info">Planning</span>
+                        {% endif %}
+                    </div>
+                    <p class="text-muted mb-3">{{ project.description|truncatewords:20 }}</p>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small class="text-muted">Progress</small>
+                            <small class="fw-bold">{{ project.progress }}%</small>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar {% if project.status == 'Completed' %}bg-success{% elif project.status == 'On Hold' %}bg-warning{% else %}bg-primary{% endif %}"
+                                style="width: {{ project.progress }}%"></div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="avatar-group">
+                            <img src="https://ui-avatars.com/api/?name={{ project.manager.username|urlencode }}&background=random&size=32"
+                                class="rounded-circle" width="32" title="Manager: {{ project.manager.username }}">
+                            {% for member in project.members.all|slice:":3" %}
+                            <img src="https://ui-avatars.com/api/?name={{ member.username|urlencode }}&background=random&size=32"
+                                class="rounded-circle" width="32" title="{{ member.username }}">
+                            {% endfor %}
+                            {% if project.members.count > 3 %}
+                            <span class="badge bg-secondary rounded-circle">+{{ project.members.count|add:"-3" }}</span>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'projects:detail' project.pk %}" class="btn btn-sm btn-outline-primary">View
+                            Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+            <p class="text-muted">No projects found. Create your first project to get started!</p>
+            <a href="{% url 'projects:create' %}" class="btn btn-primary">Create Project</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .avatar-group img {
+        margin-left: -8px;
+        border: 2px solid white;
+    }
+
+    .avatar-group img:first-child {
+        margin-left: 0;
+    }
+
+    .hover-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hover-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
+    }
+</style>
+{% endblock %}

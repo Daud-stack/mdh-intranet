@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Medical Aid Requests - OpsHub{% endblock %}
+
+{% block content %}
+<div class="row mb-5 align-items-end">
+    <div class="col-md-8">
+        <h4 class="text-muted fw-medium mb-1">Medical Aid</h4>
+        <h1 class="display-6 fw-bold tracking-tight">Preauthorization Requests</h1>
+        <p class="lead text-muted">Track and manage all medical aid preauthorization submissions.</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{% url 'medical_aid:create' %}" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+            <i class="fas fa-plus me-2"></i>New Request
+        </a>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="glass-card p-4 h-100 border-0">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-primary bg-opacity-10 p-3 rounded-4 text-primary">
+                    <i class="fas fa-file-medical fa-lg"></i>
+                </div>
+                <div>
+                    <div class="text-muted small fw-bold text-uppercase">Total</div>
+                    <div class="h3 fw-bold mb-0">{{ requests|length }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-card p-4 h-100 border-0">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-warning bg-opacity-10 p-3 rounded-4 text-warning">
+                    <i class="fas fa-clock fa-lg"></i>
+                </div>
+                <div>
+                    <div class="text-muted small fw-bold text-uppercase">Pending</div>
+                    <div class="h3 fw-bold mb-0">{{ pending_count|default:"0" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-card p-4 h-100 border-0">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-success bg-opacity-10 p-3 rounded-4 text-success">
+                    <i class="fas fa-check-circle fa-lg"></i>
+                </div>
+                <div>
+                    <div class="text-muted small fw-bold text-uppercase">Approved</div>
+                    <div class="h3 fw-bold mb-0">{{ approved_count|default:"0" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-card p-4 h-100 border-0">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-danger bg-opacity-10 p-3 rounded-4 text-danger">
+                    <i class="fas fa-times-circle fa-lg"></i>
+                </div>
+                <div>
+                    <div class="text-muted small fw-bold text-uppercase">Rejected</div>
+                    <div class="h3 fw-bold mb-0">{{ rejected_count|default:"0" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Requests Table -->
+<div class="glass-card overflow-hidden border-0">
+    <div class="p-4 bg-white border-bottom">
+        <h5 class="mb-0 fw-bold">All Requests</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="text-muted small text-uppercase">
+                <tr>
+                    <th class="ps-4">Reference</th>
+                    <th>Patient</th>
+                    <th>Scheme</th>
+                    <th>Procedure</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th class="text-end pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td class="ps-4 fw-bold text-primary">PA-{{ req.pk|stringformat:"04d" }}</td>
+                    <td>
+                        <div class="fw-bold">{{ req.patient_name|default:req.patient_id }}</div>
+                        <small class="text-muted">{{ req.patient_id }}</small>
+                    </td>
+                    <td>{{ req.get_scheme_display }}</td>
+                    <td><span class="text-truncate d-inline-block" style="max-width: 160px;">{{ req.procedure }}</span>
+                    </td>
+                    <td>{% if req.amount %}{{ req.currency }} {{ req.amount }}{% else %}<span
+                            class="text-muted">—</span>{% endif %}</td>
+                    <td>
+                        <span
+                            class="badge rounded-pill px-3 py-2 {% if req.status == 'PENDING' %}bg-warning bg-opacity-10 text-warning{% elif req.status == 'APPROVED' %}bg-success bg-opacity-10 text-success{% else %}bg-danger bg-opacity-10 text-danger{% endif %}">{{ req.get_status_display }}</span>
+                    </td>
+                    <td class="small text-muted">{{ req.created_at|date:"d M Y" }}</td>
+                    <td class="text-end pe-4">
+                        <a href="{% url 'medical_aid:detail' req.pk %}"
+                            class="btn btn-light btn-sm rounded-pill px-3 me-1" title="View">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="{% url 'medical_aid:export_excel' req.pk %}"
+                            class="btn btn-outline-success btn-sm rounded-pill px-3" title="Download Excel">
+                            <i class="fas fa-file-excel"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        <i class="fas fa-file-medical fa-3x mb-3 opacity-25"></i>
+                        <p class="mb-2">No preauthorization requests yet.</p>
+                        <a href="{% url 'medical_aid:create' %}" class="btn btn-primary rounded-pill px-4">Create First
+                            Request</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

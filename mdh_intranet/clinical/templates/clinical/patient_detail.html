@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+{% block title %}Patient History: {{ patient }} - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'clinical:dashboard' %}">Clinical Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'clinical:patient_list' %}">Patient List</a></li>
+            <li class="breadcrumb-item active">{{ patient }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4 mb-4">
+        <!-- Patient Info Card -->
+        <div class="col-lg-3">
+            <div class="glass-card border-0 shadow-sm p-4 h-100 position-relative overflow-hidden">
+                <div class="position-absolute top-0 end-0 p-3 opacity-10">
+                    <i class="fas fa-id-card fa-4x text-primary"></i>
+                </div>
+                <div class="text-center mb-4">
+                    <div class="avatar-xl mx-auto bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold mb-3 fs-3 shadow-sm" style="border: 4px solid #fff;">
+                        {{ patient.first_name|first }}{{ patient.last_name|first }}
+                    </div>
+                    <h5 class="fw-bold mb-0 text-dark">{{ patient }}</h5>
+                    <p class="text-primary small fw-bold mb-2">#P{{ patient.id|stringformat:"05d" }}</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <span class="badge bg-light text-primary rounded-pill px-3">{{ patient.get_gender_display }}</span>
+                        <span class="badge bg-light text-primary rounded-pill px-3">{{ patient.age }}Y</span>
+                    </div>
+                </div>
+
+                <div class="patient-vital-info">
+                   <div class="d-grid gap-2 mb-3">
+                       <a href="{% url 'clinical:consultation_create' patient.pk %}" class="btn btn-primary rounded-pill fw-bold shadow-sm">
+                           <i class="fas fa-plus me-2"></i>New Consultation
+                       </a>
+                       <div class="row g-2">
+                           <div class="col-6">
+                               <a href="{% url 'clinical:log_vitals' patient.pk %}" class="btn btn-outline-success border-2 rounded-pill fw-bold btn-sm w-100">
+                                   <i class="fas fa-heartbeat"></i> Triage
+                               </a>
+                           </div>
+                           <div class="col-6">
+                               <a href="{% url 'clinical:log_nursing_note' patient.pk %}" class="btn btn-outline-primary border-2 rounded-pill fw-bold btn-sm w-100">
+                                   <i class="fas fa-user-nurse"></i> Nursing
+                               </a>
+                           </div>
+                           <div class="col-12">
+                               <a href="{% url 'clinical:log_fluid_balance' patient.pk %}" class="btn btn-outline-info border-2 rounded-pill fw-bold btn-sm w-100">
+                                   <i class="fas fa-tint me-2"></i>Fluid Balance
+                               </a>
+                           </div>
+                       </div>
+                   </div>
+                   
+                   <div class="section-title small text-uppercase fw-bold text-muted mb-2 opacity-75">Contact & Coverage</div>
+                   <div class="d-flex justify-content-between py-2 border-bottom border-light">
+                       <span class="text-muted small">Phone</span>
+                       <span class="small fw-bold">{{ patient.phone_number|default:"—" }}</span>
+                   </div>
+                   <div class="d-flex justify-content-between py-2 border-bottom border-light">
+                       <span class="text-muted small">Medical Aid</span>
+                       <span class="small fw-bold">{{ patient.medical_aid_name|default:"Cash" }}</span>
+                   </div>
+                   
+                   <div class="mt-4">
+                       <div class="d-flex justify-content-between align-items-center mb-2">
+                           <div class="section-title small text-uppercase fw-bold text-danger opacity-75">Allergies</div>
+                           <button class="btn btn-xs btn-outline-danger border-0" data-bs-toggle="modal" data-bs-target="#allergyModal">
+                               <i class="fas fa-plus"></i>
+                           </button>
+                       </div>
+                       {% for allergy in allergies %}
+                       <div class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-2 py-1 small mb-1 me-1">
+                           {{ allergy.allergen }} <i class="fas fa-exclamation-circle ms-1"></i>
+                       </div>
+                       {% empty %}
+                       <span class="text-success small"><i class="fas fa-check-circle me-1"></i>No allergies known</span>
+                       {% endfor %}
+                   </div>
+
+                   <div class="mt-4">
+                        <div class="section-title small text-uppercase fw-bold text-muted mb-2 opacity-75">Chronic Conditions</div>
+                        {% for cond in conditions %}
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <i class="fas fa-circle text-warning fs-xs" style="font-size: 0.5rem;"></i>
+                            <span class="small fw-bold">{{ cond.condition_name }}</span>
+                        </div>
+                        {% empty %}
+                        <span class="text-muted small italic">None recorded</span>
+                        {% endfor %}
+                   </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clinical Snapshot & History -->
+        <div class="col-lg-9">
+            <!-- Vitals Snapshot -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-2">
+                    <div class="glass-card border-0 p-3 text-center {% if latest_vitals.triage_color == 'red' %}bg-danger bg-opacity-10 border-danger{% elif latest_vitals.triage_color == 'orange' %}bg-warning bg-opacity-10{% endif %}">
+                        <div class="text-muted small fw-bold mb-1" style="font-size: 0.65rem;">Triage Score (SATS)</div>
+                        {% if latest_vitals %}
+                        <div class="h3 fw-bold mb-0 text-{{ latest_vitals.triage_color }}">
+                            {{ latest_vitals.triage_score }}
+                        </div>
+                        <span class="badge rounded-pill bg-{{ latest_vitals.triage_color }} " style="font-size: 0.6rem;">
+                            {{ latest_vitals.triage_color|upper }}
+                        </span>
+                        {% else %}
+                        <div class="h4 text-muted mb-0">—</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="glass-card border-0 p-3 text-center">
+                        <div class="text-muted small fw-bold mb-1" style="font-size: 0.65rem;">Blood Pressure</div>
+                        {% if latest_vitals.blood_pressure_sys %}
+                        <div class="h5 fw-bold text-dark mb-0">
+                            {{ latest_vitals.blood_pressure_sys }}/{{ latest_vitals.blood_pressure_dia }}
+                        </div>
+                        <div class="small {% if latest_vitals.blood_pressure_sys > 140 %}text-danger{% else %}text-success{% endif %}" style="font-size: 0.65rem;">
+                            {{ latest_vitals.blood_pressure_sys|default:"—" }} SYS
+                        </div>
+                        {% else %}
+                        <div class="h4 text-muted mb-0">—</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="glass-card border-0 p-3 text-center">
+                        <div class="text-muted small fw-bold mb-1" style="font-size: 0.65rem;">Temp & LOC</div>
+                        {% if latest_vitals.temperature %}
+                        <div class="h5 fw-bold text-dark mb-0">
+                            {{ latest_vitals.temperature }}°C
+                        </div>
+                        <div class="small text-muted text-truncate" style="font-size: 0.65rem;">
+                            {{ latest_vitals.get_level_of_consciousness_display }}
+                        </div>
+                        {% else %}
+                        <div class="h4 text-muted mb-0">—</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="glass-card border-0 p-3 text-center">
+                        <div class="text-muted small fw-bold mb-1" style="font-size: 0.65rem;">Pulse</div>
+                        {% if latest_vitals.heart_rate %}
+                        <div class="h5 fw-bold text-dark mb-0">
+                            {{ latest_vitals.heart_rate }}
+                        </div>
+                        <div class="small text-muted" style="font-size: 0.65rem;">bpm</div>
+                        {% else %}
+                        <div class="h4 text-muted mb-0">—</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="glass-card border-0 p-3 text-center">
+                        <div class="text-muted small fw-bold mb-1" style="font-size: 0.65rem;">SpO2</div>
+                        {% if latest_vitals.oxygen_saturation %}
+                        <div class="h5 fw-bold text-dark mb-0">
+                            {{ latest_vitals.oxygen_saturation }}%
+                        </div>
+                        <div class="small {% if latest_vitals.oxygen_saturation < 94 %}text-danger{% else %}text-success{% endif %}" style="font-size: 0.65rem;">Oxygen</div>
+                        {% else %}
+                        <div class="h4 text-muted mb-0">—</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="glass-card border-0 p-3 text-center">
+                        <div class="text-muted small fw-bold mb-1" style="font-size: 0.65rem;">BMI</div>
+                        {% if latest_vitals.bmi %}
+                        <div class="h5 fw-bold text-dark mb-0">
+                            {{ latest_vitals.bmi }}
+                        </div>
+                        <div class="small text-muted" style="font-size: 0.65rem;">Score</div>
+                        {% else %}
+                        <div class="h4 text-muted mb-0">—</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card border-0 shadow-sm p-0 overflow-hidden mb-4">
+                <div class="p-3 bg-light border-bottom d-flex align-items-center justify-content-between">
+                    <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-history text-primary me-2"></i>Consultation History</h6>
+                    <span class="badge bg-primary rounded-pill">{{ consultations|length }} Visits</span>
+                </div>
+                <div class="p-3" style="max-height: 600px; overflow-y: auto;">
+                    {% for consult in consultations %}
+                    <div class="consultation-card p-4 border rounded-4 mb-3 hover-shadow transition-all bg-white">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <div class="bg-primary bg-opacity-10 text-primary p-2 rounded-3 text-center" style="min-width: 60px;">
+                                        <div class="small fw-bold">{{ consult.date|date:"d" }}</div>
+                                        <div class="fw-bold text-uppercase" style="font-size: 0.6rem;">{{ consult.date|date:"M Y" }}</div>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-1">Dr. {{ consult.gp.get_full_name|default:consult.gp.username }}</h6>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">{{ consult.icd11_diagnosis }}</span>
+                                            <small class="text-muted"><i class="far fa-clock me-1"></i>{{ consult.date|date:"H:i" }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-3 bg-light bg-opacity-50 rounded-4 border-start border-4 border-primary small mb-3 text-dark">
+                                    <div class="fw-bold mb-1 opacity-75">Assessment & Diagnosis:</div>
+                                    {{ consult.assessment|truncatechars:250 }}
+                                </div>
+                                <div class="d-flex gap-4">
+                                    {% if consult.prescriptions.exists %}
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="p-1 rounded bg-warning bg-opacity-10"><i class="fas fa-pills text-warning"></i></div>
+                                        <span class="small fw-bold">Prescription</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if consult.lab_requests.exists %}
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="p-1 rounded bg-info bg-opacity-10"><i class="fas fa-flask text-info"></i></div>
+                                        <span class="small fw-bold">Lab Tests</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="d-grid gap-2">
+                                    <a href="{% url 'clinical:consultation_detail' consult.pk %}" class="btn btn-primary rounded-pill fw-bold">View Full Notes</a>
+                                    <a href="{% url 'clinical:consultation_pdf' consult.pk %}" class="btn btn-outline-light text-dark border rounded-pill btn-sm">
+                                        <i class="fas fa-file-pdf me-2 text-danger"></i>Download PDF
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="py-5 text-center text-muted">
+                        <i class="fas fa-notes-medical opacity-25 fa-4x mb-3 d-block"></i>
+                        <h5>Empty Medical Record</h5>
+                        <p>This patient has no recorded clinical encounters yet.</p>
+                        <a href="{% url 'clinical:consultation_create' patient.pk %}" class="btn btn-primary rounded-pill mt-2">Start First Consultation</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Allergy Modal -->
+<div class="modal fade" id="allergyModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 glass-card">
+            <form action="{% url 'clinical:manage_allergies' patient.pk %}" method="post">
+                {% csrf_token %}
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">Add New Allergy</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Allergen (e.g. Penicillin)</label>
+                        <input type="text" name="allergen" class="form-control rounded-pill" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Severity</label>
+                        <select name="severity" class="form-select rounded-pill">
+                            <option value="mild">Mild</option>
+                            <option value="moderate">Moderate</option>
+                            <option value="severe">Severe</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Reaction</label>
+                        <textarea name="reaction" class="form-control rounded-4" rows="3" placeholder="Description of reaction..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm">Add Allergy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-xl { width: 84px; height: 84px; line-height: 84px; }
+    .hover-shadow:hover { box-shadow: 0 5px 15px -3px rgba(0,0,0,0.07); }
+    .transition-all { transition: all 0.2s; }
+    .btn-xs { font-size: 0.7rem; padding: 2px 8px; }
+</style>
+{% endblock %}
