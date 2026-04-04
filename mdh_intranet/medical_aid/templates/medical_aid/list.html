@@ -133,5 +133,47 @@
             </tbody>
         </table>
     </div>
+    </div>
+</div>
+
+<!-- Resources Section -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="glass-card p-4 border-0">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0 fw-bold"><i class="fas fa-file-invoice-dollar me-2 text-primary"></i>Reference Guidelines & Forms</h5>
+                <a href="{% url 'documents:index' %}?category=Medical Aid" class="btn btn-sm btn-link">Manage Documents</a>
+            </div>
+            <div class="row g-4">
+                {% for doc in mapped_docs %}
+                <div class="col-md-4 col-lg-3">
+                    <div class="card h-100 border-0 shadow-sm hover-translate transition">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-light p-2 rounded-3">
+                                    <i class="fas {{ doc.file_icon }} fa-2x"></i>
+                                </div>
+                                <div class="overflow-hidden">
+                                    <h6 class="mb-0 fw-bold text-truncate">{{ doc.title }}</h6>
+                                    <small class="text-muted">{{ doc.file_size_formatted }}</small>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
+                                <span class="badge bg-light text-dark fw-normal">{{ doc.category.name }}</span>
+                                <a href="{% url 'documents:download' doc.pk %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                    <i class="fas fa-download me-1"></i>Get
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-4 bg-light bg-opacity-50 rounded-4">
+                    <p class="text-muted mb-0 small">No pre-authorization guidelines mapped yet.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

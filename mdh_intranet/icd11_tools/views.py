@@ -3,11 +3,15 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.utils import timezone
 from .models import ICDCode, RecentlyViewedCode
+from mdh_intranet.documents.models import Document
 
 @login_required
 def index(request):
     """ICD-11 Tools - Medical coding reference"""
     query = request.GET.get('search', '')
+    
+    # Get mapped documents
+    mapped_docs = Document.objects.filter(category__target_app='icd11').select_related('category')
     
     # Get all chapters (group by chapter)
     # Using a distinct query to get unique chapters
@@ -52,6 +56,7 @@ def index(request):
         'chapters': chapters,
         'search_query': query,
         'results': results,
+        'mapped_docs': mapped_docs,
     }
     return render(request, 'icd11_tools/index.html', context)
 

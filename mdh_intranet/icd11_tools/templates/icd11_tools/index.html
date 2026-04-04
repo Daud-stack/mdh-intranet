@@ -133,6 +133,39 @@
         </div>
 
         <div class="col-md-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">Reference Documents</h5>
+                    <a href="{% url 'documents:index' %}?category=ICD-11" class="btn btn-sm btn-link">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for doc in mapped_docs %}
+                        <div class="list-group-item px-3 py-2">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas {{ doc.file_icon }} fa-lg"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="d-flex justify-content-between">
+                                        <h6 class="mb-0 small fw-bold text-truncate" style="max-width: 150px;">{{ doc.title }}</h6>
+                                        <a href="{% url 'documents:download' doc.pk %}" class="text-muted small" title="Download">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                    </div>
+                                    <small class="text-muted d-block" style="font-size: 0.75rem;">{{ doc.category.name }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="p-4 text-center">
+                            <p class="text-muted small mb-0">No documents mapped yet.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-white border-bottom">
                     <h5 class="mb-0 fw-bold">Recently Used Codes</h5>

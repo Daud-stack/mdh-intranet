@@ -6,9 +6,28 @@ import os
 
 class DocumentCategory(models.Model):
     """Categories for organizing documents"""
+    APP_CHOICES = [
+        ('all', 'General / All Modules'),
+        ('clinical', 'Clinical (Patients/Consultations)'),
+        ('icd11', 'ICD-11 Coding Tools'),
+        ('medical_aid', 'Medical Aid / Billing'),
+        ('hr', 'Human Resources'),
+        ('finance', 'Finance & Accounting'),
+        ('fleet', 'Fleet Management'),
+        ('maintenance', 'Maintenance'),
+        ('quality', 'Quality & Compliance'),
+        ('sops', 'Standard Operating Procedures'),
+    ]
+
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     icon = models.CharField(max_length=50, default='fa-file', help_text="FontAwesome icon class")
+    target_app = models.CharField(
+        max_length=50, 
+        choices=APP_CHOICES, 
+        default='all',
+        help_text="Module where documents in this category will be automatically mapped"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:

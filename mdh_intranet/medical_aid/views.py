@@ -131,12 +131,16 @@ def request_detail(request, pk):
 
 @login_required
 def request_list(request):
+    from mdh_intranet.documents.models import Document
     requests = PreauthorizationRequest.objects.all()
+    mapped_docs = Document.objects.filter(category__target_app='medical_aid').select_related('category')
+    
     context = {
         'requests': requests,
         'pending_count': requests.filter(status='PENDING').count(),
         'approved_count': requests.filter(status='APPROVED').count(),
         'rejected_count': requests.filter(status='REJECTED').count(),
+        'mapped_docs': mapped_docs,
     }
     return render(request, 'medical_aid/list.html', context)
 
