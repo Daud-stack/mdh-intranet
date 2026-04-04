@@ -34,7 +34,11 @@ def index(request):
         )
     
     if category_id:
-        documents = documents.filter(category_id=category_id)
+        if str(category_id).isdigit():
+            documents = documents.filter(category_id=category_id)
+        else:
+            # Handle category name strings (e.g. from dashboard links)
+            documents = documents.filter(category__name__icontains=category_id)
     
     # Get categories with counts
     categories = DocumentCategory.objects.all()
