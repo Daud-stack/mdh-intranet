@@ -48,5 +48,6 @@ urlpatterns = [
     path('patients/<int:patient_id>/nursing-note/', views.log_nursing_note, name='log_nursing_note'),
     path('patients/<int:patient_id>/fluid-balance/', views.log_fluid_balance, name='log_fluid_balance'),
     path('nursing/handover/', views.handover_create, name='handover_create'),
+    path('nursing/handover/<int:pk>/', views.handover_detail, name='handover_detail'),
     path('management/', views.clinical_manager_dashboard, name='manager_dashboard'),
 ]

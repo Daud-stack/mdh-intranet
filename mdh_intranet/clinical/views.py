@@ -662,6 +662,11 @@ def handover_create(request):
     return render(request, 'clinical/handover_form.html', {'form': form})
 
 @login_required
+def handover_detail(request, pk):
+    handover = get_object_or_404(ShiftHandover, pk=pk)
+    return render(request, 'clinical/handover_detail.html', {'handover': handover})
+
+@login_required
 @user_passes_test(lambda u: u.is_staff or u.is_superuser)
 def clinical_manager_dashboard(request):
     """Unified management view for all clinical activities."""

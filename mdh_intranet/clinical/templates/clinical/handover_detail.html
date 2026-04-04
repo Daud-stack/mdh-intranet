@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Handover Detail: {{ handover.shift_date }} - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header Card -->
+            <div class="glass-card border-0 shadow-sm p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="fw-bold mb-1 text-primary">
+                            <i class="fas fa-file-invoice me-2"></i>Shift Handover Report
+                        </h4>
+                        <p class="text-muted mb-0">Record ID: #H{{ handover.pk|stringformat:"05d" }} | Submitted on {{ handover.created_at|date:"d M Y H:i" }}</p>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-4 py-2 fs-6 fw-bold">
+                            {{ handover.get_shift_type_display }}
+                        </span>
+                        <div class="mt-2 small text-muted fw-bold">{{ handover.shift_date|date:"l, d F Y" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Main SBAR Content -->
+                <div class="col-lg-8">
+                    <div class="glass-card border-0 shadow-sm p-0 overflow-hidden h-100">
+                        <div class="p-3 bg-light border-bottom">
+                            <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-notes-medical text-primary me-2"></i>Clinical SBAR Summary</h6>
+                        </div>
+                        <div class="p-4">
+                            <!-- Situation -->
+                            <div class="mb-4">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <div class="bg-info bg-opacity-10 text-info p-2 rounded-3"><i class="fas fa-exclamation-circle"></i></div>
+                                    <h6 class="fw-bold mb-0 text-info text-uppercase" style="letter-spacing: 1px; font-size: 0.8rem;">Situation</h6>
+                                </div>
+                                <div class="p-3 bg-light rounded-4 border-start border-4 border-info">
+                                    {{ handover.situation|default:"No situation details provided."|linebreaks }}
+                                </div>
+                            </div>
+
+                            <!-- Background -->
+                            <div class="mb-4">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <div class="bg-secondary bg-opacity-10 text-secondary p-2 rounded-3"><i class="fas fa-history"></i></div>
+                                    <h6 class="fw-bold mb-0 text-muted text-uppercase" style="letter-spacing: 1px; font-size: 0.8rem;">Background</h6>
+                                </div>
+                                <div class="p-3 bg-light rounded-4">
+                                    {{ handover.background|default:"No background details provided."|linebreaks }}
+                                </div>
+                            </div>
+
+                            <!-- Assessment -->
+                            <div class="mb-4">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <div class="bg-primary bg-opacity-10 text-primary p-2 rounded-3"><i class="fas fa-stethoscope"></i></div>
+                                    <h6 class="fw-bold mb-0 text-primary text-uppercase" style="letter-spacing: 1px; font-size: 0.8rem;">Assessment</h6>
+                                </div>
+                                <div class="p-3 bg-light rounded-4 border-start border-4 border-primary">
+                                    {{ handover.assessment|default:"No assessment details provided."|linebreaks }}
+                                </div>
+                            </div>
+
+                            <!-- Recommendation -->
+                            <div class="mb-4">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <div class="bg-success bg-opacity-10 text-success p-2 rounded-3"><i class="fas fa-check-double"></i></div>
+                                    <h6 class="fw-bold mb-0 text-success text-uppercase" style="letter-spacing: 1px; font-size: 0.8rem;">Recommendation</h6>
+                                </div>
+                                <div class="p-3 bg-light rounded-4 border-start border-4 border-success">
+                                    {{ handover.recommendation|default:"No recommendations provided."|linebreaks }}
+                                </div>
+                            </div>
+
+                            {% if handover.general_ward_notes %}
+                            <div class="mt-5 border-top pt-4">
+                                <h6 class="fw-bold small text-muted text-uppercase mb-3">Supplemental Ward Notes</h6>
+                                <div class="text-dark small opacity-75">
+                                    {{ handover.general_ward_notes|linebreaks }}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Handover Metadata & Patients -->
+                <div class="col-lg-4">
+                    <!-- Staff Info -->
+                    <div class="glass-card border-0 shadow-sm p-4 mb-4">
+                        <h6 class="fw-bold mb-3 small text-uppercase text-muted">Handover Staff</h6>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="bg-danger bg-opacity-10 text-danger p-2 rounded-pill"><i class="fas fa-sign-out-alt"></i></div>
+                            <div>
+                                <div class="small text-muted">Outgoing Nurse</div>
+                                <div class="fw-bold">Sr. {{ handover.outgoing_nurse.last_name }}</div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-success bg-opacity-10 text-success p-2 rounded-pill"><i class="fas fa-sign-in-alt"></i></div>
+                            <div>
+                                <div class="small text-muted">Incoming Nurse</div>
+                                <div class="fw-bold">Sr. {{ handover.incoming_nurse.last_name }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Included Patients -->
+                    <div class="glass-card border-0 shadow-sm p-0 overflow-hidden">
+                        <div class="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
+                            <h6 class="fw-bold mb-0 text-dark small text-uppercase">Included Patients</h6>
+                            <span class="badge bg-dark rounded-pill">{{ handover.patients.count }}</span>
+                        </div>
+                        <div class="p-3" style="max-height: 400px; overflow-y: auto;">
+                            {% for p in handover.patients.all %}
+                            <div class="d-flex align-items-center gap-3 mb-2 p-2 rounded-3 hover-bg-light transition-all border">
+                                <div class="avatar-xs bg-primary bg-opacity-10 text-primary rounded-circle text-center fw-bold" style="width: 32px; height: 32px; line-height: 32px; font-size: 0.7rem;">
+                                    {{ p.first_name|first }}{{ p.last_name|first }}
+                                </div>
+                                <div class="flex-fill">
+                                    <div class="fw-bold small">{{ p }}</div>
+                                    <div class="text-muted" style="font-size: 0.65rem;">Age: {{ p.age }} | #P{{ p.id|stringformat:"05d" }}</div>
+                                </div>
+                                <a href="{% url 'clinical:patient_detail' p.pk %}" class="btn btn-link btn-sm p-0"><i class="fas fa-chevron-right text-muted"></i></a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{% url 'clinical:nursing_dashboard' %}" class="btn btn-outline-secondary w-100 rounded-pill fw-bold">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Hub
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-bg-light:hover { background: rgba(0,0,0,0.02); }
+    .avatar-xs { flex-shrink: 0; }
+</style>
+{% endblock %}

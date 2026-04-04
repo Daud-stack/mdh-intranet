@@ -44,7 +44,7 @@
                                         <td class="small">{{ h.incoming_nurse.get_full_name }}</td>
                                         <td class="small">{{ h.patients.count }}</td>
                                         <td>
-                                            <a href="#" class="btn btn-sm btn-outline-primary rounded-pill px-3">View Details</a>
+                                            <a href="{% url 'clinical:handover_detail' h.pk %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">View Details</a>
                                         </td>
                                     </tr>
                                 {% endfor %}
