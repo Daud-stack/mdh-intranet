@@ -15,25 +15,22 @@
         <!-- ═══ LEFT COLUMN — Main Content ═══ -->
         <div class="col-lg-8">
             <!-- Title Card -->
-            <div class="card border-0 mb-4"
-                style="border-radius:20px; overflow:hidden; background:rgba(255,255,255,0.88); backdrop-filter:blur(16px); box-shadow:0 8px 32px rgba(0,0,0,0.08);">
-                <div style="background:linear-gradient(135deg,#3b82f6 0%,#6366f1 100%); padding:24px 28px;">
+            <div class="card border-0 mb-4 premium-capa-card">
+                <div class="capa-header-gradient">
                     <div class="d-flex flex-wrap align-items-start justify-content-between">
                         <div>
-                            <span class="badge bg-light text-primary mb-2"
-                                style="border-radius:8px; font-size:0.8rem; font-weight:700;">
+                            <span class="badge bg-light text-primary mb-2 capa-badge-pill">
                                 {{ capa.capa_number }}
                             </span>
-                            <h2 class="text-white mb-1" style="font-weight:700; letter-spacing:-0.5px;">{{ capa.title }}
+                            <h2 class="text-white mb-1 title-heading">{{ capa.title }}
                             </h2>
-                            <div style="color:rgba(255,255,255,0.75); font-size:0.9rem;">
+                            <div class="header-meta">
                                 <span class="me-3"><i class="fas fa-user me-1"></i>{{ capa.initiated_by.get_full_name|default:capa.initiated_by.username  }}</span>
                                 <span><i class="fas fa-clock me-1"></i>{{ capa.created_at|date:"d M Y H:i" }}</span>
                             </div>
                         </div>
                         <div class="text-end">
-                            <span class="badge bg-{{ capa.status_color }}"
-                                style="font-size:0.95rem; padding:8px 16px; border-radius:10px;">
+                            <span class="badge bg-{{ capa.status_color }} capa-status-badge">
                                 <i class="{{ capa.status_icon }} me-1"></i>{{ capa.get_status_display }}
                             </span>
                         </div>
@@ -41,12 +38,12 @@
                 </div>
 
                 <!-- Progress Bar -->
-                <div style="padding:0 28px; margin-top:-12px;">
-                    <div class="progress"
-                        style="height:10px; border-radius:10px; background:rgba(0,0,0,0.08); box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-                        <div class="progress-bar bg-{{ capa.status_color }}" role="progressbar"
-                            style="width:{{ capa.progress_pct }}%; border-radius:10px; transition:width 0.6s ease;"
-                            aria-valuenow="{{ capa.progress_pct }}" aria-valuemin="0" aria-valuemax="100">
+                <div class="capa-progress-wrapper">
+                    <div class="progress capa-progress-container">
+                        <div class="progress-bar bg-{{ capa.status_color }} capa-progress-fill" role="progressbar"
+                            style="width:{{ capa.progress_pct }}%;"
+                            aria-valuenow="{{ capa.progress_pct|default:0 }}" aria-valuemin="0" aria-valuemax="100"
+                            aria-label="Implementation Progress" title="{{ capa.progress_pct|default:0 }}% Complete">
                         </div>
                     </div>
                     <div class="text-end mt-1"><small class="text-muted">{{ capa.progress_pct }}% complete</small></div>
@@ -55,32 +52,28 @@
                 <div class="card-body p-4">
                     <!-- Meta Badges -->
                     <div class="d-flex flex-wrap gap-2 mb-3">
-                        <span class="badge"
-                            style="background:rgba(99,102,241,0.12); color:#6366f1; border-radius:8px; padding:6px 12px;">
+                        <span class="badge capa-meta-badge-indigo">
                             <i class="fas fa-tag me-1"></i>{{ capa.get_capa_type_display }}
                         </span>
-                        <span class="badge bg-{{ capa.priority_color }}" style="border-radius:8px; padding:6px 12px;">
+                        <span class="badge bg-{{ capa.priority_color }} capa-meta-badge-plain">
                             <i class="fas fa-flag me-1"></i>{{ capa.get_priority_display }}
                         </span>
-                        <span class="badge"
-                            style="background:rgba(59,130,246,0.12); color:#3b82f6; border-radius:8px; padding:6px 12px;">
+                        <span class="badge capa-meta-badge-blue">
                             <i class="fas fa-folder-open me-1"></i>{{ capa.get_source_display }}
                         </span>
                         {% if capa.is_overdue %}
-                        <span class="badge bg-danger" style="border-radius:8px; padding:6px 12px;">
+                        <span class="badge bg-danger capa-meta-badge-plain">
                             <i class="fas fa-exclamation-triangle me-1"></i>OVERDUE
                         </span>
                         {% endif %}
-                        <span class="badge"
-                            style="background:rgba(0,0,0,0.06); color:#475569; border-radius:8px; padding:6px 12px;">
+                        <span class="badge capa-meta-badge-gray">
                             <i class="fas fa-calendar-day me-1"></i>{{ capa.days_open }} days open
                         </span>
                     </div>
 
                     <!-- Linked Incident -->
                     {% if capa.linked_incident %}
-                    <div class="alert alert-info d-flex align-items-center mb-3"
-                        style="border-radius:12px; border:none; background:rgba(59,130,246,0.08);">
+                    <div class="alert alert-info d-flex align-items-center mb-3 capa-linked-alert">
                         <i class="fas fa-link me-2 text-primary"></i>
                         <div>
                             <strong>Linked Incident:</strong>
@@ -93,7 +86,7 @@
 
                     <!-- Description -->
                     <h5 class="fw-bold mb-2"><i class="fas fa-align-left me-2 text-primary"></i>Description</h5>
-                    <div class="p-3 mb-4" style="background:rgba(0,0,0,0.02); border-radius:12px; line-height:1.7;">
+                    <div class="p-3 mb-4 capa-text-block">
                         {{ capa.description|linebreaksbr }}
                     </div>
 
@@ -101,8 +94,7 @@
                     {% if capa.impact_assessment %}
                     <h5 class="fw-bold mb-2"><i class="fas fa-exclamation-triangle me-2 text-warning"></i>Impact
                         Assessment</h5>
-                    <div class="p-3 mb-4"
-                        style="background:rgba(245,158,11,0.06); border-radius:12px; line-height:1.7;">
+                    <div class="p-3 mb-4 capa-impact-block">
                         {{ capa.impact_assessment|linebreaksbr }}
                     </div>
                     {% endif %}
@@ -113,14 +105,11 @@
             <div class="accordion" id="capaPhases">
 
                 <!-- Phase: Investigation -->
-                <div class="card border-0 mb-3"
-                    style="border-radius:16px; overflow:hidden; background:rgba(255,255,255,0.85); backdrop-filter:blur(12px);">
+                <div class="card border-0 mb-3 capa-phase-card">
                     <div class="card-header border-0 p-0" style="background:none;">
                         <button class="btn w-100 text-start p-3 d-flex align-items-center" type="button"
                             data-bs-toggle="collapse" data-bs-target="#phaseInvestigation" style="font-weight:600;">
-                            <span class="me-3"
-                                style="width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center;
-                                {% if capa.root_cause_analysis %}background:#10b981; color:#fff;{% else %}background:rgba(0,0,0,0.06); color:#94a3b8;{% endif %}">
+                            <span class="me-3 capa-phase-icon-box {% if capa.root_cause_analysis %}bg-success text-white{% else %}bg-light text-muted{% endif %}">
                                 <i class="fas fa-search"></i>
                             </span>
                             <span>Root Cause Analysis</span>
@@ -190,9 +179,7 @@
                     <div class="card-header border-0 p-0" style="background:none;">
                         <button class="btn w-100 text-start p-3 d-flex align-items-center" type="button"
                             data-bs-toggle="collapse" data-bs-target="#phaseAction" style="font-weight:600;">
-                            <span class="me-3"
-                                style="width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center;
-                                {% if capa.corrective_action_plan %}background:#10b981; color:#fff;{% else %}background:rgba(0,0,0,0.06); color:#94a3b8;{% endif %}">
+                            <span class="me-3 capa-phase-icon-box {% if capa.corrective_action_plan %}bg-success text-white{% else %}bg-light text-muted{% endif %}">
                                 <i class="fas fa-clipboard-list"></i>
                             </span>
                             <span>Action Plan</span>
@@ -208,22 +195,19 @@
                             {% if capa.corrective_action_plan or capa.preventive_action_plan or capa.immediate_containment %}
                             <div class="mb-3">
                                 {% if capa.immediate_containment %}
-                                <div class="p-3 mb-2"
-                                    style="background:rgba(239,68,68,0.06); border-radius:10px; border-left:4px solid #f59e0b;">
+                                <div class="p-3 mb-2 containment-block">
                                     <strong><i class="fas fa-shield-alt me-1"></i>Immediate Containment:</strong><br>
                                     {{ capa.immediate_containment|linebreaksbr }}
                                 </div>
                                 {% endif %}
                                 {% if capa.corrective_action_plan %}
-                                <div class="p-3 mb-2"
-                                    style="background:rgba(59,130,246,0.06); border-radius:10px; border-left:4px solid #3b82f6;">
+                                <div class="p-3 mb-2 corrective-block">
                                     <strong><i class="fas fa-wrench me-1"></i>Corrective Actions:</strong><br>
                                     {{ capa.corrective_action_plan|linebreaksbr }}
                                 </div>
                                 {% endif %}
                                 {% if capa.preventive_action_plan %}
-                                <div class="p-3"
-                                    style="background:rgba(16,185,129,0.06); border-radius:10px; border-left:4px solid #10b981;">
+                                <div class="p-3 preventive-block">
                                     <strong><i class="fas fa-shield-alt me-1"></i>Preventive Actions:</strong><br>
                                     {{ capa.preventive_action_plan|linebreaksbr }}
                                 </div>
@@ -266,9 +250,7 @@
                     <div class="card-header border-0 p-0" style="background:none;">
                         <button class="btn w-100 text-start p-3 d-flex align-items-center" type="button"
                             data-bs-toggle="collapse" data-bs-target="#phaseVerification" style="font-weight:600;">
-                            <span class="me-3"
-                                style="width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center;
-                                {% if capa.is_effective is not None %}background:#10b981; color:#fff;{% else %}background:rgba(0,0,0,0.06); color:#94a3b8;{% endif %}">
+                            <span class="me-3 capa-phase-icon-box {% if capa.is_effective is not None %}bg-success text-white{% else %}bg-light text-muted{% endif %}">
                                 <i class="fas fa-check-double"></i>
                             </span>
                             <span>Effectiveness Verification</span>
@@ -288,12 +270,11 @@
                             {% if capa.verification_results %}
                             <div class="mb-3">
                                 {% if capa.verification_criteria %}
-                                <div class="p-3 mb-2" style="background:rgba(0,0,0,0.02); border-radius:10px;">
+                                <div class="p-3 mb-2 criteria-block">
                                     <strong>Criteria:</strong><br>{{ capa.verification_criteria|linebreaksbr }}
                                 </div>
                                 {% endif %}
-                                <div class="p-3"
-                                    style="background:{% if capa.is_effective %}rgba(16,185,129,0.06){% else %}rgba(239,68,68,0.06){% endif %}; border-radius:10px; border-left:4px solid {% if capa.is_effective %}#10b981{% else %}#ef4444{% endif %};">
+                                <div class="p-3 results-block {% if capa.is_effective %}effective{% else %}ineffective{% endif %}">
                                     <strong>Results:</strong><br>{{ capa.verification_results|linebreaksbr }}
                                 </div>
                             </div>
@@ -325,15 +306,13 @@
             </div>
 
             <!-- ── Timeline / Comments ── -->
-            <div class="card border-0"
-                style="border-radius:16px; background:rgba(255,255,255,0.85); backdrop-filter:blur(12px);">
+            <div class="card border-0 timeline-card">
                 <div class="card-body p-4">
                     <h5 class="fw-bold mb-3"><i class="fas fa-comments me-2 text-primary"></i>Timeline</h5>
 
                     {% for c in comments %}
                     <div class="d-flex mb-3">
-                        <div class="me-3"
-                            style="width:36px; height:36px; background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; flex-shrink:0;">
+                        <div class="me-3 comment-avatar">
                             {{ c.author.username|make_list|first|upper }}
                         </div>
                         <div style="flex:1;">
@@ -369,8 +348,7 @@
         <div class="col-lg-4">
 
             <!-- Status Workflow -->
-            <div class="card border-0 mb-4"
-                style="border-radius:16px; background:rgba(255,255,255,0.85); backdrop-filter:blur(12px);">
+            <div class="card border-0 mb-4 workflow-card">
                 <div class="card-body p-4">
                     <h6 class="fw-bold mb-3"><i class="fas fa-route me-2 text-primary"></i>Workflow Status</h6>
 
@@ -384,12 +362,11 @@
                         {% for val, label in capa.STATUS_CHOICES %}
                         {% if val != 'cancelled' %}
                         <div class="d-flex align-items-center p-2 rounded-3
-                            {% if val == capa.status %}border border-primary{% endif %}"
-                            style="{% if val == capa.status %}background:rgba(59,130,246,0.08);{% endif %}">
-                            <span style="width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.7rem; margin-right:10px;
-                                {% if val == capa.status %}background:#3b82f6; color:#fff;
-                                {% elif forloop.counter0 < 5 and capa.progress_pct > 0 %}background:#10b981; color:#fff;
-                                {% else %}background:rgba(0,0,0,0.08); color:#94a3b8;
+                            {% if val == capa.status %}border border-primary bg-light-blue{% endif %}">
+                            <span class="status-indicator-pill 
+                                {% if val == capa.status %}bg-primary text-white
+                                {% elif forloop.counter0 < 5 and capa.progress_pct > 0 %}bg-success text-white
+                                {% else %}bg-light text-muted
                                 {% endif %}">
                                 {% if val == capa.status %}
                                 <i class="fas fa-circle" style="font-size:8px;"></i>
@@ -486,8 +463,7 @@
 
             <!-- Related SOPs -->
             {% if capa.related_sops.exists %}
-            <div class="card border-0"
-                style="border-radius:16px; background:rgba(255,255,255,0.85); backdrop-filter:blur(12px);">
+            <div class="card border-0 sidebar-info-card">
                 <div class="card-body p-4">
                     <h6 class="fw-bold mb-3"><i class="fas fa-file-alt me-2 text-primary"></i>Related SOPs</h6>
                     {% for sop in capa.related_sops.all %}
@@ -504,4 +480,164 @@
         </div>
     </div>
 </div>
+
+<style>
+    .premium-capa-card {
+        border-radius: 20px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.88);
+        -webkit-backdrop-filter: blur(16px);
+        backdrop-filter: blur(16px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    }
+    .capa-header-gradient {
+        background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+        padding: 24px 28px;
+    }
+    .capa-badge-pill {
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+    .title-heading {
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+    .header-meta {
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 0.9rem;
+    }
+    .capa-status-badge {
+        font-size: 0.95rem;
+        padding: 8px 16px;
+        border-radius: 10px;
+    }
+    .capa-progress-wrapper {
+        padding: 0 28px;
+        margin-top: -12px;
+    }
+    .capa-progress-container {
+        height: 10px;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.08);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .capa-progress-fill {
+        border-radius: 10px;
+        transition: width 0.6s ease;
+    }
+    .capa-meta-badge-indigo {
+        background: rgba(99, 102, 241, 0.12);
+        color: #6366f1;
+        border-radius: 8px;
+        padding: 6px 12px;
+    }
+    .capa-meta-badge-blue {
+        background: rgba(59, 130, 246, 0.12);
+        color: #3b82f6;
+        border-radius: 8px;
+        padding: 6px 12px;
+    }
+    .capa-meta-badge-gray {
+        background: rgba(0, 0, 0, 0.06);
+        color: #475569;
+        border-radius: 8px;
+        padding: 6px 12px;
+    }
+    .capa-meta-badge-plain {
+        border-radius: 8px;
+        padding: 6px 12px;
+    }
+    .capa-linked-alert {
+        border-radius: 12px;
+        border: none;
+        background: rgba(59, 130, 246, 0.08);
+    }
+    .capa-text-block {
+        background: rgba(0, 0, 0, 0.02);
+        border-radius: 12px;
+        line-height: 1.7;
+    }
+    .capa-impact-block {
+        background: rgba(245, 158, 11, 0.06);
+        border-radius: 12px;
+        line-height: 1.7;
+    }
+    .capa-phase-card {
+        border-radius: 16px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.85);
+        -webkit-backdrop-filter: blur(12px);
+        backdrop-filter: blur(12px);
+    }
+    .capa-phase-icon-box {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .containment-block {
+        background: rgba(239, 68, 68, 0.06);
+        border-radius: 10px;
+        border-left: 4px solid #f59e0b;
+    }
+    .corrective-block {
+        background: rgba(59, 130, 246, 0.06);
+        border-radius: 10px;
+        border-left: 4px solid #3b82f6;
+    }
+    .preventive-block {
+        background: rgba(16, 185, 129, 0.06);
+        border-radius: 10px;
+        border-left: 4px solid #10b981;
+    }
+    .criteria-block {
+        background: rgba(0, 0, 0, 0.02);
+        border-radius: 10px;
+    }
+    .results-block {
+        border-radius: 10px;
+        border-left: 4px solid transparent;
+    }
+    .results-block.effective {
+        background: rgba(16, 185, 129, 0.06);
+        border-left-color: #10b981;
+    }
+    .results-block.ineffective {
+        background: rgba(239, 68, 68, 0.06);
+        border-left-color: #ef4444;
+    }
+    .timeline-card, .workflow-card, .sidebar-info-card {
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.85);
+        -webkit-backdrop-filter: blur(12px);
+        backdrop-filter: blur(12px);
+    }
+    .comment-avatar {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #3b82f6, #6366f1);
+        color: #fff;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    .bg-light-blue { background: rgba(59, 130, 246, 0.08); }
+    .status-indicator-pill {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        margin-right: 10px;
+    }
+</style>
 {% endblock %}

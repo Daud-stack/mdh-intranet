@@ -410,7 +410,7 @@
             <a href="{% url 'documents:download' document.pk %}" class="btn btn-success btn-sm">
                 <i class="fas fa-download"></i> Download
             </a>
-            <button onclick="window.print()" class="btn btn-light btn-sm">
+            <button onclick="window.print()" class="btn btn-light btn-sm" aria-label="Print document" title="Print">
                 <i class="fas fa-print"></i>
             </button>
         </div>
@@ -433,7 +433,7 @@
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <span><i class="fas fa-list me-2"></i>Contents</span>
-                <button class="btn btn-sm btn-light" onclick="toggleSidebar()">
+                <button class="btn btn-sm btn-light" onclick="toggleSidebar()" aria-label="Close sidebar" title="Close Sidebar">
                     <i class="fas fa-chevron-left"></i>
                 </button>
             </div>
@@ -456,15 +456,15 @@
                 </div>
 
                 <div class="toolbar-group">
-                    <button class="tool-btn" onclick="zoomOut()"><i class="fas fa-search-minus"></i></button>
+                    <button class="tool-btn" onclick="zoomOut()" aria-label="Zoom out" title="Zoom Out"><i class="fas fa-search-minus"></i></button>
                     <span class="px-2" id="zoomLevel">100%</span>
-                    <button class="tool-btn" onclick="zoomIn()"><i class="fas fa-search-plus"></i></button>
+                    <button class="tool-btn" onclick="zoomIn()" aria-label="Zoom in" title="Zoom In"><i class="fas fa-search-plus"></i></button>
                 </div>
 
                 <div class="toolbar-group">
                     <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Search..."
-                        style="width: 150px;" onkeyup="if(event.key==='Enter') performSearch()">
-                    <button class="tool-btn" onclick="performSearch()"><i class="fas fa-search"></i></button>
+                        style="width: 150px;" onkeyup="if(event.key==='Enter') performSearch()" aria-label="Search document">
+                    <button class="tool-btn" onclick="performSearch()" aria-label="Perform search" title="Search"><i class="fas fa-search"></i></button>
                 </div>
 
                 <div class="toolbar-group text-muted small">
@@ -507,7 +507,7 @@
                 </div>
 
                 <div class="page-jump">
-                    <input type="number" id="pageInput" min="1" value="1" onkeyup="if(event.key==='Enter') goToPage()">
+                    <input type="number" id="pageInput" min="1" value="1" onkeyup="if(event.key==='Enter') goToPage()" aria-label="Go to page number">
                     <button class="page-btn" onclick="goToPage()">Go</button>
                 </div>
 

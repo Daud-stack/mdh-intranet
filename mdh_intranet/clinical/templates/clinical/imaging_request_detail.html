@@ -37,8 +37,7 @@
                     </div>
 
                     <h6 class="fw-bold text-uppercase text-muted border-bottom pb-2 mb-3 small">Investigations Requested</h6>
-                    <ul class="list-group list-group-flush mb-4 rounded-4 overflow-hidden border">
-                        {% for item in img_req.items.all %}
+                    <ul class="list-group list-group-flush mb-4 rounded-4 overflow-hidden border">{% for item in img_req.items.all %}
                         <li class="list-group-item py-3 px-4">
                             <div class="row align-items-center">
                                 <div class="col-md-4"><span class="badge bg-primary rounded px-2">{{ item.get_modality_display }}</span></div>
@@ -49,9 +48,7 @@
                                     {% endif %}
                                 </div>
                             </div>
-                        </li>
-                        {% endfor %}
-                    </ul>
+                        </li>{% endfor %}</ul>
 
                     {% if img_req.imaging_notes %}
                     <h6 class="fw-bold text-uppercase text-muted border-bottom pb-2 mb-3 small">Clinical Context (GP Notes)</h6>
@@ -80,8 +77,8 @@
                 <form method="post" action="{% url 'clinical:update_imaging_status' img_req.pk %}" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="mb-4">
-                        <label class="form-label small fw-bold text-muted">Update Process Status</label>
-                        <select name="status" class="form-select mb-3 status-selector" data-target="resultsBlock">
+                        <label class="form-label small fw-bold text-muted" for="status_select">Update Process Status</label>
+                        <select name="status" id="status_select" class="form-select mb-3 status-selector" data-target="resultsBlock" aria-label="Update Order Status" title="Update Order Status">
                             <option value="requested" {% if img_req.status == 'requested' %}selected{% endif %}>Requested (Pending)</option>
                             <option value="scheduled" {% if img_req.status == 'scheduled' %}selected{% endif %}>Scheduled For Capture</option>
                             <option value="capturing" {% if img_req.status == 'capturing' %}selected{% endif %}>Currently Capturing</option>
@@ -93,12 +90,12 @@
 
                     <div id="resultsBlock" class="mb-4 d-none">
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted">DICOM / PACS URL</label>
-                            <input type="url" name="results_url" class="form-control" value="{{ img_req.results_url }}" placeholder="External link...">
+                            <label class="form-label small fw-bold text-muted" for="results_url">DICOM / PACS URL</label>
+                            <input type="url" name="results_url" id="results_url" class="form-control" value="{{ img_req.results_url }}" placeholder="External link...">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted">Report PDF / Image</label>
-                            <input type="file" name="report_file" class="form-control">
+                            <label class="form-label small fw-bold text-muted" for="report_file">Report PDF / Image</label>
+                            <input type="file" name="report_file" id="report_file" class="form-control">
                             {% if img_req.report_file %}
                             <div class="mt-2">
                                 <a href="{{ img_req.report_file.url }}" target="_blank" class="small text-primary fw-bold">

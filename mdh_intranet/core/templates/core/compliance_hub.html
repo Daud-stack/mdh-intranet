@@ -107,8 +107,9 @@
                                     <td><span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill">{{ insp.department_audited }}</span></td>
                                     <td>
                                         {% widthratio insp.score insp.template.questions.count 100 as score_pct %}
-                                        <div class="progress" style="height: 5px; width: 60px;">
-                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ score_pct }}%"></div>
+                                        <div class="progress" style="height: 5px; width: 60px;" title="Score: {{ score_pct }}%">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ score_pct }}%" 
+                                                aria-valuenow="{{ score_pct|default:0 }}" aria-valuemin="0" aria-valuemax="100" aria-label="Inspection Score"></div>
                                         </div>
                                         <small class="text-muted" style="font-size: 0.65rem;">{{ insp.score }} / {{ insp.template.questions.count }}</small>
                                     </td>

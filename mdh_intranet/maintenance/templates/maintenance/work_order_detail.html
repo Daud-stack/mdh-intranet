@@ -61,7 +61,8 @@
                         {% csrf_token %}
                         <h6 class="fw-bold mb-3">Update Work Order Status</h6>
                         <div class="d-flex gap-2">
-                            <select name="status" class="form-select rounded-pill px-4" style="width: auto;">
+                            <label for="statusSelect" class="visually-hidden">Status</label>
+                            <select id="statusSelect" name="status" class="form-select rounded-pill px-4" style="width: auto;" title="Update work order status" aria-label="Work Order Status">
                                 <option value="OPEN" {% if wo.status=='OPEN' %}selected{% endif %}>Open</option>
                                 <option value="IN_PROGRESS" {% if wo.status=='IN_PROGRESS' %}selected{% endif %}>In
                                     Progress</option>

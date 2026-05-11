@@ -23,23 +23,26 @@
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white border-bottom py-0">
                     <ul class="nav nav-tabs border-0" id="sopTabs" role="tablist">
-                        <li class="nav-item">
+                        <li class="nav-item" role="presentation">
                             <button class="nav-link active fw-bold py-3 border-0 rounded-0" id="content-tab"
                                 data-bs-toggle="tab" data-bs-target="#content-pane" type="button" role="tab"
+                                aria-controls="content-pane" aria-selected="true"
                                 style="color: #1e293b; border-bottom: 3px solid transparent !important;">
                                 <i class="fas fa-file-alt me-2 text-primary"></i> Document Content
                             </button>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item" role="presentation">
                             <button class="nav-link fw-bold py-3 border-0 rounded-0" id="audit-tab" data-bs-toggle="tab"
                                 data-bs-target="#audit-pane" type="button" role="tab"
+                                aria-controls="audit-pane" aria-selected="false"
                                 style="color: #64748b; border-bottom: 3px solid transparent !important;">
                                 <i class="fas fa-history me-2 text-info"></i> Revision History
                             </button>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item" role="presentation">
                             <button class="nav-link fw-bold py-3 border-0 rounded-0" id="ack-tab" data-bs-toggle="tab"
                                 data-bs-target="#ack-pane" type="button" role="tab"
+                                aria-controls="ack-pane" aria-selected="false"
                                 style="color: #64748b; border-bottom: 3px solid transparent !important;">
                                 <i class="fas fa-check-double me-2 text-success"></i> Acknowledgements
                                 <span class="badge bg-light text-muted ms-1 rounded-pill">{{ acknowledgements|length  }}</span>

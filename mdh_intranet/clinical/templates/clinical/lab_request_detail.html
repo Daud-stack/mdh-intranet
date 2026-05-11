@@ -41,19 +41,16 @@
                     </div>
 
                     <h6 class="fw-bold text-uppercase text-muted border-bottom pb-2 mb-3 small">Tests Requested</h6>
-                    <ul class="list-group list-group-flush mb-4 rounded-4 overflow-hidden border">
-                        {% for test in lab_req.test_items.all %}
+                    <ul class="list-group list-group-flush mb-4 rounded-4 overflow-hidden border">{% for test in lab_req.test_items.all %}
                         <li class="list-group-item d-flex justify-content-between align-items-center py-3 px-4">
                             <div>
                                 <span class="fw-bold d-block mb-1">{{ test.test_name }}</span>
                                 <small class="text-muted opacity-75">Specimen: <strong>{{ test.specimen_type|default:"Blood (Default)" }}</strong></small>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" checked disabled>
+                                <input class="form-check-input" type="checkbox" id="test_{{ test.pk }}" checked disabled aria-label="Test Completed">
                             </div>
-                        </li>
-                        {% endfor %}
-                    </ul>
+                        </li>{% endfor %}</ul>
 
                     <h6 class="fw-bold text-uppercase text-muted border-bottom pb-2 mb-3 small">Clinical History & Context</h6>
                     <div class="p-3 bg-light rounded-4 opacity-75 small mb-3 border">
@@ -82,8 +79,8 @@
                 <form method="post" action="{% url 'clinical:update_lab_status' lab_req.pk %}">
                     {% csrf_token %}
                     <div class="mb-4">
-                        <label class="form-label small fw-bold text-muted">Processing Status</label>
-                        <select name="status" class="form-select mb-3">
+                        <label class="form-label small fw-bold text-muted" for="lab_status">Processing Status</label>
+                        <select name="status" id="lab_status" class="form-select mb-3" aria-label="Update Lab Status" title="Update Lab Status">
                             <option value="requested" {% if lab_req.status == 'requested' %}selected{% endif %}>Requested/Received</option>
                             <option value="collecting" {% if lab_req.status == 'collecting' %}selected{% endif %}>Specimen Collected</option>
                             <option value="processing" {% if lab_req.status == 'processing' %}selected{% endif %}>Processing (In Lab)</option>
@@ -93,8 +90,8 @@
                     </div>
 
                     <div id="resultsBlock" class="mb-4 d-none">
-                        <label class="form-label small fw-bold text-muted">Electronic Results URL/Link</label>
-                        <input type="url" name="results_url" class="form-control" placeholder="Link to external PDF or LIS record...">
+                        <label class="form-label small fw-bold text-muted" for="results_url">Electronic Results URL/Link</label>
+                        <input type="url" name="results_url" id="results_url" class="form-control" placeholder="Link to external PDF or LIS record...">
                         <small class="text-muted opacity-50">Link will be accessible by the ordering physician.</small>
                     </div>
 

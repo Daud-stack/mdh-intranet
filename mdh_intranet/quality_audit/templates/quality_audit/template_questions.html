@@ -10,12 +10,12 @@
                     {% csrf_token %}
                     <input type="hidden" name="add_question" value="1">
                     <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted text-uppercase">Question Text</label>
-                        <textarea name="text" class="form-control rounded-3" rows="3" placeholder="e.g. Are gloves being worn correctly?" required></textarea>
+                        <label for="question_text" class="form-label fw-bold small text-muted text-uppercase">Question Text</label>
+                        <textarea id="question_text" name="text" class="form-control rounded-3" rows="3" placeholder="e.g. Are gloves being worn correctly?" required></textarea>
                     </div>
                     <div class="mb-4">
-                        <label class="form-label fw-bold small text-muted text-uppercase">Display Order (optional)</label>
-                        <input type="number" name="order" class="form-control rounded-3" value="0">
+                        <label for="display_order" class="form-label fw-bold small text-muted text-uppercase">Display Order (optional)</label>
+                        <input type="number" id="display_order" name="order" class="form-control rounded-3" value="0">
                     </div>
                     <button type="submit" class="btn btn-primary w-100 rounded-pill px-4">
                         <i class="fas fa-plus me-2"></i>Add Question
@@ -50,7 +50,8 @@
                                         {% csrf_token %}
                                         <input type="hidden" name="delete_question" value="1">
                                         <input type="hidden" name="question_id" value="{{ q.id }}">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger border-0 rounded-circle" onclick="return confirm('Remove this question?')">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger border-0 rounded-circle" 
+                                            onclick="return confirm('Remove this question?')" aria-label="Delete question">
                                             <i class="fas fa-trash-alt"></i>
                                         </button>
                                     </form>

@@ -92,7 +92,8 @@
                     {% csrf_token %}
                     <div class="mb-4">
                         <label class="form-label small fw-bold text-muted">Intra-Op Status</label>
-                        <select name="status" class="form-select mb-3 status-selector text-dark fw-bold">
+                        <select name="status" class="form-select mb-3 status-selector text-dark fw-bold"
+                            title="Update surgery status" aria-label="Surgical Case Status">
                             <option value="scheduled" {% if booking.status == 'scheduled' %}selected{% endif %}>Scheduled (Pending)</option>
                             <option value="pre-op" {% if booking.status == 'pre-op' %}selected{% endif %}>Pre-Op Preparation</option>
                             <option value="in-theatre" {% if booking.status == 'in-theatre' %}selected{% endif %}>Currently in O.R.</option>

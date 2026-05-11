@@ -22,7 +22,7 @@
     {% for message in messages %}
     <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
         {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     {% endfor %}
     {% endif %}
@@ -116,8 +116,8 @@
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label small fw-bold text-muted">Status</label>
-                        <select name="status" class="form-select">
+                        <label class="form-label small fw-bold text-muted" for="status_filter">Status</label>
+                        <select name="status" id="status_filter" class="form-select" aria-label="Filter by Status" title="Filter by Status">
                             <option value="">All Statuses</option>
                             {% for val, label in status_choices %}
                             <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}
@@ -126,8 +126,8 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label small fw-bold text-muted">Severity</label>
-                        <select name="severity" class="form-select">
+                        <label class="form-label small fw-bold text-muted" for="severity_filter">Severity</label>
+                        <select name="severity" id="severity_filter" class="form-select" aria-label="Filter by Severity" title="Filter by Severity">
                             <option value="">All Severities</option>
                             {% for val, label in severity_choices %}
                             <option value="{{ val }}" {% if severity_filter == val %}selected{% endif %}>{{ label }}
@@ -136,8 +136,8 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label small fw-bold text-muted">Category</label>
-                        <select name="category" class="form-select">
+                        <label class="form-label small fw-bold text-muted" for="category_filter">Category</label>
+                        <select name="category" id="category_filter" class="form-select" aria-label="Filter by Category" title="Filter by Category">
                             <option value="">All Categories</option>
                             {% for val, label in category_choices %}
                             <option value="{{ val }}" {% if category_filter == val %}selected{% endif %}>{{ label }}

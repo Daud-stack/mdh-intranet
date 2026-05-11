@@ -27,7 +27,7 @@
             class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} me-2"></i>
         {{ message }}
     </div>
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
 {% endfor %}
 {% endif %}
@@ -51,10 +51,12 @@
                             <div class="position-relative">
                                 {% if profile.avatar %}
                                 <img src="{{ profile.avatar.url }}"
+                                    alt="Profile Avatar"
                                     class="rounded-circle border border-3 border-white shadow" width="80" height="80"
                                     style="object-fit: cover;" id="avatarPreview">
                                 {% else %}
                                 <img src="https://ui-avatars.com/api/?name={{ user.first_name|default:user.username }}+{{ user.last_name }}&background=6366f1&color=fff&size=80"
+                                    alt="Profile Avatar Placeholder"
                                     class="rounded-circle border border-3 border-white shadow" width="80" height="80"
                                     id="avatarPreview">
                                 {% endif %}
@@ -80,40 +82,40 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold small text-muted text-uppercase"
+                        <label for="first_name" class="form-label fw-semibold small text-muted text-uppercase"
                             style="letter-spacing: 0.05em;">First Name</label>
-                        <input type="text" class="form-control rounded-3 border-light bg-light" name="first_name"
+                        <input type="text" id="first_name" class="form-control rounded-3 border-light bg-light" name="first_name"
                             value="{{ user.first_name }}" placeholder="Enter first name">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold small text-muted text-uppercase"
+                        <label for="last_name" class="form-label fw-semibold small text-muted text-uppercase"
                             style="letter-spacing: 0.05em;">Last Name</label>
-                        <input type="text" class="form-control rounded-3 border-light bg-light" name="last_name"
+                        <input type="text" id="last_name" class="form-control rounded-3 border-light bg-light" name="last_name"
                             value="{{ user.last_name }}" placeholder="Enter last name">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold small text-muted text-uppercase"
+                        <label for="email" class="form-label fw-semibold small text-muted text-uppercase"
                             style="letter-spacing: 0.05em;">Email Address</label>
-                        <input type="email" class="form-control rounded-3 border-light bg-light" name="email"
+                        <input type="email" id="email" class="form-control rounded-3 border-light bg-light" name="email"
                             value="{{ user.email }}" placeholder="email@example.com">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold small text-muted text-uppercase"
+                        <label for="username" class="form-label fw-semibold small text-muted text-uppercase"
                             style="letter-spacing: 0.05em;">Username</label>
-                        <input type="text" class="form-control rounded-3 border-light bg-light"
+                        <input type="text" id="username" class="form-control rounded-3 border-light bg-light"
                             value="{{ user.username }}" disabled>
                         <div class="form-text small">Username cannot be changed</div>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold small text-muted text-uppercase"
+                        <label for="department" class="form-label fw-semibold small text-muted text-uppercase"
                             style="letter-spacing: 0.05em;">Department</label>
-                        <input type="text" class="form-control rounded-3 border-light bg-light" name="department"
+                        <input type="text" id="department" class="form-control rounded-3 border-light bg-light" name="department"
                             value="{{ profile.department }}" placeholder="e.g. Nursing, Administration">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold small text-muted text-uppercase"
+                        <label for="role" class="form-label fw-semibold small text-muted text-uppercase"
                             style="letter-spacing: 0.05em;">Role / Position</label>
-                        <input type="text" class="form-control rounded-3 border-light bg-light" name="role"
+                        <input type="text" id="role" class="form-control rounded-3 border-light bg-light" name="role"
                             value="{{ profile.role }}" placeholder="e.g. Ward Nurse, IT Manager">
                     </div>
                 </div>
@@ -138,19 +140,19 @@
 
                 <div class="row g-3">
                     <div class="col-md-12">
-                        <label class="form-label fw-semibold small text-muted text-uppercase"
+                        <label for="current_password" class="form-label fw-semibold small text-muted text-uppercase"
                             style="letter-spacing: 0.05em;">Current Password</label>
-                        <input type="password" class="form-control rounded-3 border-light bg-light"
+                        <input type="password" id="current_password" class="form-control rounded-3 border-light bg-light"
                             name="current_password" required placeholder="Enter your current password">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold small text-muted text-uppercase"
+                        <label for="newPassword" class="form-label fw-semibold small text-muted text-uppercase"
                             style="letter-spacing: 0.05em;">New Password</label>
                         <input type="password" class="form-control rounded-3 border-light bg-light" name="new_password"
                             required minlength="8" placeholder="Minimum 8 characters" id="newPassword">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold small text-muted text-uppercase"
+                        <label for="confirmPassword" class="form-label fw-semibold small text-muted text-uppercase"
                             style="letter-spacing: 0.05em;">Confirm New Password</label>
                         <input type="password" class="form-control rounded-3 border-light bg-light"
                             name="confirm_password" required minlength="8" placeholder="Re-enter new password"

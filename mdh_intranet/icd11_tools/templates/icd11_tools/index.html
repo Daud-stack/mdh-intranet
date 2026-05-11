@@ -21,7 +21,8 @@
                     <h5 class="fw-bold mb-3">Search ICD-11 Codes</h5>
                     <form method="get">
                         <div class="input-group input-group-lg">
-                            <input type="text" name="search" class="form-control"
+                            <label for="icd_search" class="visually-hidden">Search ICD-11 Codes</label>
+                            <input type="text" id="icd_search" name="search" class="form-control"
                                 placeholder="Search by disease, symptom, or code..." value="{{ search_query }}">
                             <button type="submit" class="btn btn-primary px-4">
                                 <i class="fas fa-search"></i> Search

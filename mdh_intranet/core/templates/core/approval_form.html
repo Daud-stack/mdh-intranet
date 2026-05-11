@@ -66,8 +66,8 @@
                                         <div class="flex-grow-1">
                                             <div class="row g-2">
                                                 <div class="col-md-7">
-                                                    <label class="small fw-bold mb-1 d-block">Select Approver</label>
-                                                    <select name="approver_1" class="form-select form-select-sm" required>
+                                                    <label class="small fw-bold mb-1 d-block" for="id_approver_1">Select Approver</label>
+                                                    <select name="approver_1" id="id_approver_1" class="form-select form-select-sm" required aria-label="Select Approver" title="Select Approver">
                                                         <option value="">Select User...</option>
                                                         {% for user in users %}
                                                         <option value="{{ user.id }}">{{ user.get_full_name|default:user.username }}</option>
@@ -75,8 +75,8 @@
                                                     </select>
                                                 </div>
                                                 <div class="col-md-5">
-                                                    <label class="small fw-bold mb-1 d-block">Role/Designation</label>
-                                                    <input type="text" name="role_1" class="form-control form-control-sm" placeholder="e.g. Dept Head" required>
+                                                    <label class="small fw-bold mb-1 d-block" for="id_role_1">Role/Designation</label>
+                                                    <input type="text" name="role_1" id="id_role_1" class="form-control form-control-sm" placeholder="e.g. Dept Head" required title="Enter Role">
                                                 </div>
                                             </div>
                                         </div>
@@ -156,7 +156,7 @@
                     <div class="flex-grow-1">
                         <div class="row g-2">
                             <div class="col-md-7">
-                                <select name="approver_${newCount}" class="form-select form-select-sm" required>
+                                <select name="approver_${newCount}" class="form-select form-select-sm" required aria-label="Select Approver ${newCount}" title="Select Approver">
                                     <option value="">Select User...</option>
                                     {% for user in users %}
                                     <option value="{{ user.id }}">{{ user.get_full_name|default:user.username }}</option>
@@ -164,7 +164,7 @@
                                 </select>
                             </div>
                             <div class="col-md-5">
-                                <input type="text" name="role_${newCount}" class="form-control form-control-sm" placeholder="e.g. Role label" required>
+                                <input type="text" name="role_${newCount}" class="form-control form-control-sm" placeholder="e.g. Role label" required title="Enter Role">
                             </div>
                         </div>
                     </div>

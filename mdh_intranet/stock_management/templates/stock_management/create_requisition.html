@@ -25,8 +25,8 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Department <span class="text-danger">*</span></label>
-                                <select name="department" class="form-select" required>
+                                <label for="departmentSelect" class="form-label fw-bold">Department <span class="text-danger">*</span></label>
+                                <select id="departmentSelect" name="department" class="form-select" required title="Select your department">
                                     <option value="">Select department...</option>
                                     {% for value, label in departments %}
                                     <option value="{{ value }}">{{ label }}</option>
@@ -35,8 +35,8 @@
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Justification <span class="text-danger">*</span></label>
-                            <textarea name="justification" class="form-control" rows="3"
+                            <label for="justificationText" class="form-label fw-bold">Justification <span class="text-danger">*</span></label>
+                            <textarea id="justificationText" name="justification" class="form-control" rows="3"
                                 placeholder="Explain why these items are needed..." required></textarea>
                         </div>
                     </div>
@@ -54,8 +54,8 @@
                             <div class="item-row mb-3 border-bottom pb-3">
                                 <div class="row">
                                     <div class="col-md-5">
-                                        <label class="form-label">Item <span class="text-danger">*</span></label>
-                                        <select name="item_id[]" class="form-select" required>
+                                        <label for="item_select_0" class="form-label">Item <span class="text-danger">*</span></label>
+                                        <select id="item_select_0" name="item_id[]" class="form-select" required title="Select item">
                                             <option value="">Select item...</option>
                                             {% for item in stock_items %}
                                             <option value="{{ item.id }}">{{ item.name }} ({{ item.category.name }})
@@ -64,16 +64,16 @@
                                         </select>
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label">Quantity <span class="text-danger">*</span></label>
-                                        <input type="number" name="quantity[]" class="form-control" min="1" required>
+                                        <label for="qty_0" class="form-label">Quantity <span class="text-danger">*</span></label>
+                                        <input type="number" id="qty_0" name="quantity[]" class="form-control" min="1" required>
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label">Notes</label>
-                                        <input type="text" name="notes[]" class="form-control" placeholder="Optional">
+                                        <label for="notes_0" class="form-label">Notes</label>
+                                        <input type="text" id="notes_0" name="notes[]" class="form-control" placeholder="Optional">
                                     </div>
                                     <div class="col-md-1 d-flex align-items-end">
                                         <button type="button" class="btn btn-danger btn-sm"
-                                            onclick="removeItemRow(this)" disabled>
+                                            onclick="removeItemRow(this)" disabled aria-label="Remove item">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </div>
@@ -128,8 +128,8 @@
         <div class="item-row mb-3 border-bottom pb-3">
             <div class="row">
                 <div class="col-md-5">
-                    <label class="form-label">Item <span class="text-danger">*</span></label>
-                    <select name="item_id[]" class="form-select" required>
+                    <label for="item_select_${itemRowIndex}" class="form-label">Item <span class="text-danger">*</span></label>
+                    <select id="item_select_${itemRowIndex}" name="item_id[]" class="form-select" required title="Select item">
                         <option value="">Select item...</option>
                         {% for item in stock_items %}
                         <option value="{{ item.id }}">{{ item.name }} ({{ item.category.name }})</option>
@@ -137,15 +137,15 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Quantity <span class="text-danger">*</span></label>
-                    <input type="number" name="quantity[]" class="form-control" min="1" required>
+                    <label for="qty_${itemRowIndex}" class="form-label">Quantity <span class="text-danger">*</span></label>
+                    <input type="number" id="qty_${itemRowIndex}" name="quantity[]" class="form-control" min="1" required>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Notes</label>
-                    <input type="text" name="notes[]" class="form-control" placeholder="Optional">
+                    <label for="notes_${itemRowIndex}" class="form-label">Notes</label>
+                    <input type="text" id="notes_${itemRowIndex}" name="notes[]" class="form-control" placeholder="Optional">
                 </div>
                 <div class="col-md-1 d-flex align-items-end">
-                    <button type="button" class="btn btn-danger btn-sm" onclick="removeItemRow(this)">
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeItemRow(this)" aria-label="Remove item">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>

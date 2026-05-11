@@ -41,7 +41,7 @@
     {% for message in messages %}
     <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
         {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     {% endfor %}
     {% endif %}
@@ -85,7 +85,7 @@
                         <small class="text-muted d-block mb-2">PROJECT MANAGER</small>
                         <div class="d-flex align-items-center">
                             <img src="https://ui-avatars.com/api/?name={{ project.manager.username|urlencode }}&background=random&size=40"
-                                class="rounded-circle me-3" width="40">
+                                class="rounded-circle me-3" width="40" alt="Manager avatar">
                             <div>
                                 <h6 class="mb-0 fw-bold">{{ project.manager.get_full_name|default:project.manager.username }}</h6>
                                 <small class="text-muted">{{ project.manager.email }}</small>
@@ -99,7 +99,7 @@
                             {% for member in project.members.all %}
                             <div class="d-flex align-items-center">
                                 <img src="https://ui-avatars.com/api/?name={{ member.username|urlencode }}&background=random&size=32"
-                                    class="rounded-circle me-3" width="32">
+                                    class="rounded-circle me-3" width="32" alt="{{ member.username }} avatar">
                                 <div>
                                     <span class="d-block">{{ member.get_full_name|default:member.username }}</span>
                                 </div>

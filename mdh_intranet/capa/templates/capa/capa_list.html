@@ -8,7 +8,7 @@
     <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
         <div>
             <h1 class="mb-1" style="font-weight:700; letter-spacing:-0.5px;">
-                <i class="fas fa-clipboard-check me-2" style="color:var(--accent-primary);"></i>
+                <i class="fas fa-clipboard-check me-2 text-primary"></i>
                 CAPA Management
             </h1>
             <p class="text-muted mb-0">Corrective & Preventive Action tracking — close the quality loop</p>
@@ -22,46 +22,41 @@
     <!-- ── KPI Cards ── -->
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
-            <div class="card border-0 h-100"
-                style="border-radius:16px; background:linear-gradient(135deg,#3b82f6 0%,#1d4ed8 100%); color:#fff;">
+            <div class="card border-0 h-100 kpi-card-blue">
                 <div class="card-body text-center py-3">
-                    <div style="font-size:2rem; font-weight:800;">{{ total }}</div>
-                    <div style="font-size:0.85rem; opacity:0.85;">Total CAPAs</div>
+                    <div class="kpi-value">{{ total }}</div>
+                    <div class="kpi-label">Total CAPAs</div>
                 </div>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="card border-0 h-100"
-                style="border-radius:16px; background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%); color:#fff;">
+            <div class="card border-0 h-100 kpi-card-warning">
                 <div class="card-body text-center py-3">
-                    <div style="font-size:2rem; font-weight:800;">{{ open_count }}</div>
-                    <div style="font-size:0.85rem; opacity:0.85;">Open</div>
+                    <div class="kpi-value">{{ open_count }}</div>
+                    <div class="kpi-label">Open</div>
                 </div>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="card border-0 h-100"
-                style="border-radius:16px; background:linear-gradient(135deg,#ef4444 0%,#dc2626 100%); color:#fff;">
+            <div class="card border-0 h-100 kpi-card-danger">
                 <div class="card-body text-center py-3">
-                    <div style="font-size:2rem; font-weight:800;">{{ overdue_count }}</div>
-                    <div style="font-size:0.85rem; opacity:0.85;">Overdue</div>
+                    <div class="kpi-value">{{ overdue_count }}</div>
+                    <div class="kpi-label">Overdue</div>
                 </div>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="card border-0 h-100"
-                style="border-radius:16px; background:linear-gradient(135deg,#10b981 0%,#059669 100%); color:#fff;">
+            <div class="card border-0 h-100 kpi-card-success">
                 <div class="card-body text-center py-3">
-                    <div style="font-size:2rem; font-weight:800;">{{ closed_this_month }}</div>
-                    <div style="font-size:0.85rem; opacity:0.85;">Closed This Month</div>
+                    <div class="kpi-value">{{ closed_this_month }}</div>
+                    <div class="kpi-label">Closed This Month</div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- ── Filters ── -->
-    <div class="card border-0 mb-4"
-        style="border-radius:16px; background:rgba(255,255,255,0.7); backdrop-filter:blur(12px);">
+    <div class="card border-0 mb-4 glass-filter-card">
         <div class="card-body py-3">
             <form method="get" class="row g-2 align-items-end">
                 <div class="col-md-3">
@@ -69,7 +64,7 @@
                         value="{{ search_query }}" style="border-radius:10px;">
                 </div>
                 <div class="col-md-2">
-                    <select name="status" class="form-select" style="border-radius:10px;">
+                    <select name="status" class="form-select" style="border-radius:10px;" aria-label="Filter by Status" title="Filter by Status">
                         <option value="">All Statuses</option>
                         {% for val, label in status_choices %}
                         <option value="{{ val }}" {% if selected_status == val %}selected{% endif %}>{{ label }}</option>
@@ -77,7 +72,7 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <select name="priority" class="form-select" style="border-radius:10px;">
+                    <select name="priority" class="form-select" style="border-radius:10px;" aria-label="Filter by Priority" title="Filter by Priority">
                         <option value="">All Priorities</option>
                         {% for val, label in priority_choices %}
                         <option value="{{ val }}" {% if selected_priority == val %}selected{% endif %}>{{ label }}
@@ -86,7 +81,7 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <select name="type" class="form-select" style="border-radius:10px;">
+                    <select name="type" class="form-select" style="border-radius:10px;" aria-label="Filter by Type" title="Filter by Type">
                         <option value="">All Types</option>
                         {% for val, label in type_choices %}
                         <option value="{{ val }}" {% if selected_type == val %}selected{% endif %}>{{ label }}</option>
@@ -94,7 +89,7 @@
                     </select>
                 </div>
                 <div class="col-md-1">
-                    <button type="submit" class="btn btn-primary w-100" style="border-radius:10px;">
+                    <button type="submit" class="btn btn-primary w-100" style="border-radius:10px;" aria-label="Search" title="Search">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
@@ -115,8 +110,7 @@
     </div>
 
     <!-- ── Records Table ── -->
-    <div class="card border-0"
-        style="border-radius:16px; overflow:hidden; background:rgba(255,255,255,0.85); backdrop-filter:blur(12px);">
+    <div class="card border-0 premium-table-card">
         <div class="table-responsive">
             <table class="table table-hover mb-0 align-middle">
                 <thead style="background:rgba(15,23,42,0.04);">

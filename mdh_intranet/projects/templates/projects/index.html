@@ -22,7 +22,7 @@
     {% for message in messages %}
     <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
         {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     {% endfor %}
     {% endif %}
@@ -102,10 +102,10 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="avatar-group">
                             <img src="https://ui-avatars.com/api/?name={{ project.manager.username|urlencode }}&background=random&size=32"
-                                class="rounded-circle" width="32" title="Manager: {{ project.manager.username }}">
+                                class="rounded-circle" width="32" title="Manager: {{ project.manager.username }}" alt="Manager avatar">
                             {% for member in project.members.all|slice:":3" %}
                             <img src="https://ui-avatars.com/api/?name={{ member.username|urlencode }}&background=random&size=32"
-                                class="rounded-circle" width="32" title="{{ member.username }}">
+                                class="rounded-circle" width="32" title="{{ member.username }}" alt="{{ member.username }} avatar">
                             {% endfor %}
                             {% if project.members.count > 3 %}
                             <span class="badge bg-secondary rounded-circle">+{{ project.members.count|add:"-3" }}</span>

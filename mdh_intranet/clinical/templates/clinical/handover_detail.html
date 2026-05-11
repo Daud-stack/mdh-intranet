@@ -124,7 +124,9 @@
                                     <div class="fw-bold small">{{ p }}</div>
                                     <div class="text-muted" style="font-size: 0.65rem;">Age: {{ p.age }} | #P{{ p.id|stringformat:"05d" }}</div>
                                 </div>
-                                <a href="{% url 'clinical:patient_detail' p.pk %}" class="btn btn-link btn-sm p-0"><i class="fas fa-chevron-right text-muted"></i></a>
+                                <a href="{% url 'clinical:patient_detail' p.pk %}" class="btn btn-link btn-sm p-0" aria-label="View Patient Details" title="View Patient Details">
+                                    <i class="fas fa-chevron-right text-muted"></i>
+                                </a>
                             </div>
                             {% endfor %}
                         </div>

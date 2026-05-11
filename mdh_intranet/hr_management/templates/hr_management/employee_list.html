@@ -36,7 +36,7 @@
                     <div class="position-relative d-inline-block mb-3">
                         {% if p.avatar %}
                         <img src="{{ p.avatar.url }}" class="rounded-circle shadow-sm"
-                            style="width: 100px; height: 100px; object-fit: cover;">
+                            style="width: 100px; height: 100px; object-fit: cover;" alt="{{ e.get_full_name|default:e.username }}">
                         {% else %}
                         <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center shadow-sm"
                             style="width: 100px; height: 100px; font-size: 2.5rem;">

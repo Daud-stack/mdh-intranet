@@ -33,7 +33,7 @@
             <i class="fas fa-info-circle text-primary"></i>
             <span>{{ message }}</span>
         </div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     {% endfor %}
 </div>
@@ -46,7 +46,8 @@
             <form method="get" class="search-form position-relative">
                 <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                 <input type="text" name="search" class="form-control rounded-pill border-light bg-light py-2 ps-5"
-                    placeholder="Search by title, tags or content..." value="{{ search_query|default:'' }}">
+                    placeholder="Search by title, tags or content..." value="{{ search_query|default:'' }}"
+                    aria-label="Search documents">
                 <button type="submit" class="d-none">Search</button>
             </form>
         </div>
@@ -143,21 +144,21 @@
                         <td class="text-end pe-4">
                             <div class="btn-group shadow-sm rounded-pill overflow-hidden">
                                 <a href="{% url 'documents:detail' doc.pk %}" class="btn btn-white btn-sm px-3"
-                                    title="Info">
+                                    title="Info" aria-label="Document Info">
                                     <i class="fas fa-info-circle"></i>
                                 </a>
                                 {% if doc.file_type in 'docx,xlsx,pptx,doc,xls,ppt' %}
                                 <a href="{% url 'documents:office_web_viewer' doc.pk %}"
-                                    class="btn btn-white btn-sm px-3" title="View in Office Online">
+                                    class="btn btn-white btn-sm px-3" title="View in Office Online" aria-label="View Online">
                                     <i class="fas fa-desktop text-primary"></i>
                                 </a>
                                 {% endif %}
                                 <a href="{% url 'documents:collabora_editor' doc.pk %}"
-                                    class="btn btn-white btn-sm px-3" title="Editor">
+                                    class="btn btn-white btn-sm px-3" title="Editor" aria-label="Edit Document">
                                     <i class="fas fa-pen text-warning"></i>
                                 </a>
                                 <a href="{% url 'documents:download' doc.pk %}" class="btn btn-white btn-sm px-3"
-                                    title="Download">
+                                    title="Download" aria-label="Download Document">
                                     <i class="fas fa-download text-success"></i>
                                 </a>
                             </div>

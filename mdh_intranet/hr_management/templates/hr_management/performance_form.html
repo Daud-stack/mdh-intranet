@@ -17,13 +17,13 @@
 
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label fw-bold small text-muted">Review Date</label>
-                                <input type="date" name="review_date" class="form-control rounded-3"
+                                <label for="review_date" class="form-label fw-bold small text-muted">Review Date</label>
+                                <input type="date" id="review_date" name="review_date" class="form-control rounded-3"
                                     value="{% now 'Y-m-d' %}" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold small text-muted">Rating (1-5)</label>
-                                <select name="rating" class="form-select rounded-3" required>
+                                <label for="rating" class="form-label fw-bold small text-muted">Rating (1-5)</label>
+                                <select id="rating" name="rating" class="form-select rounded-3" required title="Select performance rating">
                                     <option value="5">5 - Exceptional</option>
                                     <option value="4">4 - Exceeds Expectations</option>
                                     <option value="3" selected>3 - Meets Expectations</option>
@@ -33,26 +33,26 @@
                             </div>
 
                             <div class="col-12 mt-4">
-                                <label class="form-label fw-bold small text-muted">Strengths</label>
-                                <textarea name="strengths" class="form-control rounded-3" rows="3"
+                                <label for="strengths" class="form-label fw-bold small text-muted">Strengths</label>
+                                <textarea id="strengths" name="strengths" class="form-control rounded-3" rows="3"
                                     placeholder="What does this employee do well?"></textarea>
                             </div>
 
                             <div class="col-12 mt-3">
-                                <label class="form-label fw-bold small text-muted">Areas for Improvement</label>
-                                <textarea name="areas_for_improvement" class="form-control rounded-3" rows="3"
+                                <label for="areas_for_improvement" class="form-label fw-bold small text-muted">Areas for Improvement</label>
+                                <textarea id="areas_for_improvement" name="areas_for_improvement" class="form-control rounded-3" rows="3"
                                     placeholder="Where can they develop?"></textarea>
                             </div>
 
                             <div class="col-12 mt-3">
-                                <label class="form-label fw-bold small text-muted">Future Goals</label>
-                                <textarea name="goals" class="form-control rounded-3" rows="2"
+                                <label for="goals" class="form-label fw-bold small text-muted">Future Goals</label>
+                                <textarea id="goals" name="goals" class="form-control rounded-3" rows="2"
                                     placeholder="Specific goals for the next period..."></textarea>
                             </div>
 
                             <div class="col-12 mt-3">
-                                <label class="form-label fw-bold small text-muted">Additional Comments</label>
-                                <textarea name="comments" class="form-control rounded-3" rows="2"></textarea>
+                                <label for="comments" class="form-label fw-bold small text-muted">Additional Comments</label>
+                                <textarea id="comments" name="comments" class="form-control rounded-3" rows="2"></textarea>
                             </div>
 
                             <div class="col-12 mt-4 d-flex gap-2">

@@ -13,7 +13,7 @@
                         {% if p.avatar %}
                         <img src="
 {{ p.avatar.url }}
-" class="rounded-circle shadow" style="width:150px;height:150px;object-fit:cover;border:5px solid white;">
+" class="rounded-circle shadow" style="width:150px;height:150px;object-fit:cover;border:5px solid white;" alt="{{ employee.get_full_name|default:employee.username }}">
                         {% else %}
                         <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center shadow"
                             style="width:150px;height:150px;font-size:4rem;border:5px solid white;">
@@ -96,17 +96,17 @@
         <div class="col-lg-8">
             <ul class="nav nav-pills mb-4 bg-white p-2 rounded-pill shadow-sm d-inline-flex" id="pills-tab"
                 role="tablist">
-                <li class="nav-item">
+                <li class="nav-item" role="presentation">
                     <button class="nav-link active rounded-pill px-4" id="pills-perf-tab" data-bs-toggle="pill"
-                        data-bs-target="#p-perf" type="button" role="tab">Performance</button>
+                        data-bs-target="#p-perf" type="button" role="tab" aria-controls="p-perf" aria-selected="true">Performance</button>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" role="presentation">
                     <button class="nav-link rounded-pill px-4" id="pills-att-tab" data-bs-toggle="pill"
-                        data-bs-target="#p-att" type="button" role="tab">Attendance</button>
+                        data-bs-target="#p-att" type="button" role="tab" aria-controls="p-att" aria-selected="false">Attendance</button>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" role="presentation">
                     <button class="nav-link rounded-pill px-4" id="pills-train-tab" data-bs-toggle="pill"
-                        data-bs-target="#p-train" type="button" role="tab">Training</button>
+                        data-bs-target="#p-train" type="button" role="tab" aria-controls="p-train" aria-selected="false">Training</button>
                 </li>
             </ul>
             <div class="tab-content">

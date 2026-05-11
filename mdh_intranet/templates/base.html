@@ -380,7 +380,8 @@
             <form action="{% url 'core:search' %}" method="get" class="search-container" id="globalSearchForm">
                 <i class="fas fa-search"></i>
                 <input type="text" name="q" class="search-bar" id="globalSearchInput"
-                    placeholder="Search SOPs, documents, incidents..." value="{{ request.GET.q }}" autocomplete="off">
+                    placeholder="Search SOPs, documents, incidents..." value="{{ request.GET.q }}" autocomplete="off"
+                    aria-label="Search">
                 <!-- Live Search Dropdown -->
                 <div id="searchDropdown" class="position-absolute w-100 mt-1 rounded-3 shadow-lg bg-white border d-none"
                     style="z-index: 9999; max-height: 400px; overflow-y: auto; top: 100%;">
@@ -392,7 +393,7 @@
                 <div class="dropdown">
                     <button class="btn btn-link text-muted position-relative p-2" type="button" id="notifBell"
                         data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false"
-                        style="font-size: 1.2rem; text-decoration: none;">
+                        style="font-size: 1.2rem; text-decoration: none;" aria-label="Notifications">
                         <i class="fas fa-bell"></i>
                         {% if unread_notification_count %}
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
@@ -466,7 +467,7 @@
                 {% else %}
                 <img src="https://ui-avatars.com/api/?name={{ display_name|urlencode }}&background=6366f1&color=fff"
                     class="rounded-circle border border-2 border-white shadow-sm" width="40" height="40"
-                    alt="User avatar">
+                    alt="{{ display_name }} avatar">
                 {% endif %}
                 {% else %}
                 <a href="{% url 'admin:login' %}?next={{ request.path }}" class="btn btn-primary btn-sm">Login</a>

@@ -21,8 +21,8 @@
                     </div>
                     <div class="card-body p-4">
                         <div class="mb-4">
-                            <label class="form-label fw-bold small text-uppercase text-muted">Transaction Date</label>
-                            <select name="date_col" class="form-select rounded-pill" required>
+                            <label for="date_col" class="form-label fw-bold small text-uppercase text-muted">Transaction Date</label>
+                            <select id="date_col" name="date_col" class="form-select rounded-pill" required>
                                 <option value="">-- Select Column --</option>
                                 {% for col in columns %}
                                 <option value="{{ col }}" {% if "date" in col|lower %}selected{% endif %}>{{ col }}</option>
@@ -31,8 +31,8 @@
                         </div>
                         
                         <div class="mb-4">
-                            <label class="form-label fw-bold small text-uppercase text-muted">Description / Memo</label>
-                            <select name="desc_col" class="form-select rounded-pill" required>
+                            <label for="desc_col" class="form-label fw-bold small text-uppercase text-muted">Description / Memo</label>
+                            <select id="desc_col" name="desc_col" class="form-select rounded-pill" required>
                                 <option value="">-- Select Column --</option>
                                 {% for col in columns %}
                                 <option value="{{ col }}" {% if "desc" in col|lower or "memo" in col|lower or "detail" in col|lower %}selected{% endif %}>{{ col }}</option>
@@ -41,8 +41,8 @@
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label fw-bold small text-uppercase text-muted">Amount</label>
-                            <select name="amount_col" class="form-select rounded-pill" required>
+                            <label for="amount_col" class="form-label fw-bold small text-uppercase text-muted">Amount</label>
+                            <select id="amount_col" name="amount_col" class="form-select rounded-pill" required>
                                 <option value="">-- Select Column --</option>
                                 {% for col in columns %}
                                 <option value="{{ col }}" {% if "amount" in col|lower or "value" in col|lower or "total" in col|lower %}selected{% endif %}>{{ col }}</option>
@@ -53,8 +53,8 @@
                         <hr class="my-4">
 
                         <div class="mb-4">
-                            <label class="form-label fw-bold small text-uppercase text-muted text-primary">Offset Account (Debit/Credit To)</label>
-                            <select name="category_account" class="form-select rounded-pill border-primary" required>
+                            <label for="category_account" class="form-label fw-bold small text-uppercase text-muted text-primary">Offset Account (Debit/Credit To)</label>
+                            <select id="category_account" name="category_account" class="form-select rounded-pill border-primary" required>
                                 <option value="">-- Choose destination account --</option>
                                 {% for acc in accounts %}
                                 <option value="{{ acc.id }}">{{ acc.code }} - {{ acc.name }}</option>

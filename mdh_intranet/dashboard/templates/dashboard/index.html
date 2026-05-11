@@ -36,8 +36,8 @@
             <div class="stat-content">
                 <div class="text-muted small fw-semibold text-uppercase tracking-wider">Active Projects</div>
                 <div class="display-6 fw-bold my-1 tracking-tighter">{{ project_count }}</div>
-                <div class="progress mt-3" style="height: 6px; border-radius: 10px; background: rgba(0,0,0,0.05);">
-                    <div class="progress-bar" role="progressbar"
+                <div class="progress mt-3" style="height: 6px; border-radius: 10px; background: rgba(0,0,0,0.05);" title="70% Progress">
+                    <div class="progress-bar" role="progressbar" aria-label="Project Progress" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100"
                         style="width: 70%; border-radius: 10px; background: #3b82f6;"></div>
                 </div>
             </div>
@@ -56,8 +56,8 @@
             <div class="stat-content">
                 <div class="text-muted small fw-semibold text-uppercase tracking-wider">SOP Library</div>
                 <div class="display-6 fw-bold my-1 tracking-tighter">{{ sop_count }}</div>
-                <div class="progress mt-3" style="height: 6px; border-radius: 10px; background: rgba(0,0,0,0.05);">
-                    <div class="progress-bar" role="progressbar"
+                <div class="progress mt-3" style="height: 6px; border-radius: 10px; background: rgba(0,0,0,0.05);" title="85% Progress">
+                    <div class="progress-bar" role="progressbar" aria-label="SOP Library Coverage" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"
                         style="width: 85%; border-radius: 10px; background: #10b981;"></div>
                 </div>
             </div>
@@ -76,8 +76,8 @@
             <div class="stat-content">
                 <div class="text-muted small fw-semibold text-uppercase tracking-wider">Open Incidents</div>
                 <div class="display-6 fw-bold my-1 tracking-tighter">{{ incident_count }}</div>
-                <div class="progress mt-3" style="height: 6px; border-radius: 10px; background: rgba(0,0,0,0.05);">
-                    <div class="progress-bar" role="progressbar"
+                <div class="progress mt-3" style="height: 6px; border-radius: 10px; background: rgba(0,0,0,0.05);" title="{{ incident_count|default:0 }} Incidents">
+                    <div class="progress-bar" role="progressbar" aria-label="Open Incidents" aria-valuenow="{{ incident_count|default:0 }}" aria-valuemin="0" aria-valuemax="100"
                         style="--progress-width: {{ incident_count|default:0 }}%; width: var(--progress-width); min-width: 15%; border-radius: 10px; background: #f59e0b;">
                     </div>
                 </div>
@@ -97,8 +97,8 @@
             <div class="stat-content">
                 <div class="text-muted small fw-semibold text-uppercase tracking-wider">Total Documents</div>
                 <div class="display-6 fw-bold my-1 tracking-tighter">{{ doc_count }}</div>
-                <div class="progress mt-3" style="height: 6px; border-radius: 10px; background: rgba(0,0,0,0.05);">
-                    <div class="progress-bar" role="progressbar"
+                <div class="progress mt-3" style="height: 6px; border-radius: 10px; background: rgba(0,0,0,0.05);" title="60% Progress">
+                    <div class="progress-bar" role="progressbar" aria-label="Document Progress" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
                         style="width: 60%; border-radius: 10px; background: #06b6d4;"></div>
                 </div>
             </div>
@@ -112,21 +112,21 @@
         <div class="glass-card overflow-hidden">
             <div class="px-4 pt-4 border-0">
                 <ul class="nav nav-pills custom-pills mb-3" id="dashboardTabs" role="tablist">
-                    <li class="nav-item">
+                    <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="medical-tab" data-bs-toggle="tab"
-                            data-bs-target="#medical-aid" type="button">
+                            data-bs-target="#medical-aid" type="button" role="tab" aria-controls="medical-aid" aria-selected="true">
                             <i class="fas fa-notes-medical me-2"></i>Medical Aid
                         </button>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" role="presentation">
                         <button class="nav-link" id="staff-tab" data-bs-toggle="tab" data-bs-target="#staff-dir"
-                            type="button">
+                            type="button" role="tab" aria-controls="staff-dir" aria-selected="false">
                             <i class="fas fa-users me-2"></i>Staff Directory
                         </button>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" role="presentation">
                         <button class="nav-link" id="announcements-tab" data-bs-toggle="tab"
-                            data-bs-target="#announcements" type="button">
+                            data-bs-target="#announcements" type="button" role="tab" aria-controls="announcements" aria-selected="false">
                             <i class="fas fa-bullhorn me-2"></i>Announcements
                         </button>
                     </li>
@@ -218,10 +218,12 @@
                                     <div class="avatar-wrapper position-relative">
                                         {% if staff.profile.avatar %}
                                         <img src="{{ staff.profile.avatar.url }}"
+                                            alt="{{ staff.get_full_name|default:staff.username }}"
                                             class="rounded-circle border border-2 border-white shadow-sm" width="56"
                                             height="56" style="object-fit:cover;">
                                         {% else %}
                                         <img src="https://ui-avatars.com/api/?name={{ staff.first_name|default:staff.username }}+{{ staff.last_name }}&background=6366f1&color=fff"
+                                            alt="{{ staff.get_full_name|default:staff.username }}"
                                             class="rounded-circle border border-2 border-white shadow-sm" width="56">
                                         {% endif %}
                                         <span
@@ -236,8 +238,9 @@
                                             {{ staff.profile.role|default:"Staff Member" }}
                                         </div>
                                     </div>
-                                    <button class="btn btn-light btn-sm rounded-circle ms-auto"><i
-                                            class="fas fa-envelope"></i></button>
+                                    <button class="btn btn-light btn-sm rounded-circle ms-auto" title="Send Email" aria-label="Send Email">
+                                        <i class="fas fa-envelope"></i>
+                                    </button>
                                 </div>
                             </div>
                             {% empty %}
@@ -377,7 +380,7 @@
                         <div class="progress-bar bg-white" style="width: 75%;"></div>
                     </div>
                 </div>
-                <a href="https://www.nursescouncil.co.zw/" target="_blank"
+                <a href="https://www.nursescouncil.co.zw/" target="_blank" rel="noopener"
                     class="btn btn-white btn-sm w-100 rounded-pill fw-bold py-2">
                     Access NCZ CPD Portal
                 </a>

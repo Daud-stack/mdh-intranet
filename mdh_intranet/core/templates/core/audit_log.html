@@ -60,8 +60,8 @@
             <div class="col-md-9">
                 <form method="get" class="row g-2 align-items-end">
                     <div class="col-md-2">
-                        <label class="form-label small fw-bold text-muted">Module</label>
-                        <select name="module" class="form-select form-select-sm rounded-3">
+                        <label class="form-label small fw-bold text-muted" for="id_module">Module</label>
+                        <select name="module" id="id_module" class="form-select form-select-sm rounded-3" aria-label="Filter by Module" title="Filter by Module">
                             <option value="">All</option>
                             {% for m in modules %}
                             <option value="{{ m }}" {% if m == selected_module %}selected{% endif %}>{{ m|capfirst }}</option>
@@ -69,8 +69,8 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label small fw-bold text-muted">Action</label>
-                        <select name="action" class="form-select form-select-sm rounded-3">
+                        <label class="form-label small fw-bold text-muted" for="id_action">Action</label>
+                        <select name="action" id="id_action" class="form-select form-select-sm rounded-3" aria-label="Filter by Action" title="Filter by Action">
                             <option value="">All</option>
                             {% for value, label in actions %}
                             <option value="{{ value }}" {% if value == selected_action %}selected{% endif %}>{{ label }}</option>
@@ -78,8 +78,8 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label small fw-bold text-muted">User</label>
-                        <select name="user" class="form-select form-select-sm rounded-3">
+                        <label class="form-label small fw-bold text-muted" for="id_user">User</label>
+                        <select name="user" id="id_user" class="form-select form-select-sm rounded-3" aria-label="Filter by User" title="Filter by User">
                             <option value="">All</option>
                             {% for u in users %}
                             <option value="{{ u.pk }}" {% if u.pk|stringformat:"s" == selected_user %}selected{% endif %}>{{ u.username }}</option>
@@ -87,16 +87,16 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label small fw-bold text-muted">Date Range</label>
-                        <input type="date" name="date_from" class="form-control form-control-sm rounded-3" value="{{ date_from }}">
+                        <label class="form-label small fw-bold text-muted" for="id_date_from">Date From</label>
+                        <input type="date" name="date_from" id="id_date_from" class="form-control form-control-sm rounded-3" value="{{ date_from }}" title="Start Date">
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label small fw-bold text-muted">&nbsp;</label>
-                        <input type="date" name="date_to" class="form-control form-control-sm rounded-3" value="{{ date_to }}">
+                        <label class="form-label small fw-bold text-muted" for="id_date_to">Date To</label>
+                        <input type="date" name="date_to" id="id_date_to" class="form-control form-control-sm rounded-3" value="{{ date_to }}" title="End Date">
                     </div>
                     <div class="col-md-1">
                         <label class="form-label small">&nbsp;</label>
-                        <button type="submit" class="btn btn-primary btn-sm w-100 rounded-3"><i class="fas fa-search"></i></button>
+                        <button type="submit" class="btn btn-primary btn-sm w-100 rounded-3" aria-label="Apply Filters" title="Search"><i class="fas fa-search"></i></button>
                     </div>
                 </form>
             </div>

@@ -38,8 +38,8 @@
                         <input type="hidden" name="action" value="add_shift">
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted text-uppercase mb-1">Shift Type</label>
-                            <select name="template_id" class="form-select" required>
+                            <label for="shiftTemplate" class="form-label fw-bold small text-muted text-uppercase mb-1">Shift Type</label>
+                            <select id="shiftTemplate" name="template_id" class="form-select" required title="Select a shift template">
                                 <option value="" disabled selected>Select a shift template...</option>
                                 {% for template in templates %}
                                 <option value="{{ template.id }}">{{ template.name }} ({{ template.start_time|time:"H:i"                                     }} - {{ template.end_time|time:"H:i" }})</option>
@@ -48,15 +48,14 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted text-uppercase mb-1">Date</label>
-                            <input type="date" name="shift_date" class="form-control" required
+                            <label for="shiftDate" class="form-label fw-bold small text-muted text-uppercase mb-1">Date</label>
+                            <input type="date" id="shiftDate" name="shift_date" class="form-control" required
                                 min="{{ roster.start_date|date:'Y-m-d' }}" max="{{ roster.end_date|date:'Y-m-d' }}">
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label fw-bold small text-muted text-uppercase mb-1">Staff
-                                Required</label>
-                            <input type="number" name="required_staff" class="form-control" value="1" min="1" required>
+                            <label for="requiredStaff" class="form-label fw-bold small text-muted text-uppercase mb-1">Staff Required</label>
+                            <input type="number" id="requiredStaff" name="required_staff" class="form-control" value="1" min="1" required>
                         </div>
 
                         <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold">Add to
@@ -111,8 +110,9 @@
                                         {% csrf_token %}
                                         <input type="hidden" name="action" value="assign_staff">
                                         <input type="hidden" name="shift_id" value="{{ shift.id }}">
-                                        <select name="employee_id" class="form-select form-select-sm" required
-                                            style="width: auto;">
+                                        <label for="employeeSelect_{{ shift.id }}" class="visually-hidden">Select Staff</label>
+                                        <select id="employeeSelect_{{ shift.id }}" name="employee_id" class="form-select form-select-sm" required
+                                            style="width: auto;" title="Assign staff to this shift" aria-label="Assign Staff">
                                             <option value="" disabled selected>Select Staff...</option>
                                             {% for employee in employees %}
                                             <option value="{{ employee.id }}">{{                                                 employee.get_full_name|default:employee.username }}</option>
