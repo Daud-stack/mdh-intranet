@@ -192,25 +192,10 @@
             <!-- Timeline -->
             <div class="card border-0 shadow-sm mb-3">
                 <div class="card-header bg-white fw-bold border-bottom py-3">Timeline</div>
-                <ul class="list-group list-group-flush small">
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between">
-                            <span class="text-muted">Occurred</span>
-                            <span>{{ incident.date_occurred|date:"M d, Y H:i" }}</span>
-                        </div>
-                    </li>
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between">
-                            <span class="text-muted">Reported</span>
-                            <span>{{ incident.date_reported|date:"M d, Y H:i" }}</span>
-                        </div>
-                    </li>
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between">
-                            <span class="text-muted">Reported By</span>
-                            <span class="fw-bold">{{ incident.reported_by.get_full_name|default:incident.reported_by.username }}</span>
-                        </div>
-                    </li>
+                <ul class="list-group list-group-flush small">{% spaceless %}
+                    <li class="list-group-item"><div class="d-flex justify-content-between"><span class="text-muted">Occurred</span><span>{{ incident.date_occurred|date:"M d, Y H:i" }}</span></div></li>
+                    <li class="list-group-item"><div class="d-flex justify-content-between"><span class="text-muted">Reported</span><span>{{ incident.date_reported|date:"M d, Y H:i" }}</span></div></li>
+                    <li class="list-group-item"><div class="d-flex justify-content-between"><span class="text-muted">Reported By</span><span class="fw-bold">{{ incident.reported_by.get_full_name|default:incident.reported_by.username }}</span></div></li>{% endspaceless %}
                     {% if incident.assigned_to %}
                     <li class="list-group-item">
                         <div class="d-flex justify-content-between">

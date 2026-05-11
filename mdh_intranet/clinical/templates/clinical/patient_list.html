@@ -23,7 +23,7 @@
                         <input type="text" name="q" class="form-control border-start-0 ps-0" placeholder="Patient Name, ID, Phone..." value="{{ query }}">
                     </div>
                     <button type="submit" class="btn btn-primary rounded-pill px-4">Search</button>
-                    <a href="{% url 'clinical:patient_create' %}" class="btn btn-success rounded-pill px-3 shadow-sm d-flex align-items-center justify-content-center">
+                    <a href="{% url 'clinical:patient_create' %}" class="btn btn-success rounded-pill px-3 shadow-sm d-flex align-items-center justify-content-center" aria-label="Add New Patient" title="Add New Patient">
                         <i class="fas fa-plus"></i>
                     </a>
                 </form>
@@ -74,7 +74,7 @@
                         <td class="text-end pe-4">
                             <div class="d-flex gap-2 justify-content-end">
                                 <a href="{% url 'clinical:consultation_create' patient.pk %}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">Record Consult</a>
-                                <a href="{% url 'clinical:patient_detail' patient.pk %}" class="btn btn-sm btn-light rounded-circle shadow-sm p-2"><i class="fas fa-chevron-right px-1"></i></a>
+                                <a href="{% url 'clinical:patient_detail' patient.pk %}" class="btn btn-sm btn-light rounded-circle shadow-sm p-2" aria-label="View Patient Details" title="View Patient Details"><i class="fas fa-chevron-right px-1"></i></a>
                             </div>
                         </td>
                     </tr>
@@ -96,13 +96,7 @@
             Showing <strong>{{ patients.start_index|default:0 }}</strong> to <strong>{{ patients.end_index|default:0 }}</strong> of <strong>{{ patients.paginator.count }}</strong> patients
         </div>
         <nav aria-label="Page navigation">
-            <ul class="pagination pagination-sm mb-0">{% if patients.has_previous %}
-                <li class="page-item"><a class="page-link border-0 rounded-pill px-3 me-1 bg-light text-dark" href="?page=1{% if query %}&q={{ query }}{% endif %}">First</a></li>
-                <li class="page-item"><a class="page-link border-0 rounded-pill px-3 me-1 bg-light text-dark" href="?page={{ patients.previous_page_number }}{% if query %}&q={{ query }}{% endif %}"><i class="fas fa-chevron-left small"></i></a></li>{% endif %}
-                <li class="page-item active"><a class="page-link border-0 rounded-pill px-3 me-1 bg-primary text-white border-0" href="#">{{ patients.number }}</a></li>{% if patients.has_next %}
-                <li class="page-item"><a class="page-link border-0 rounded-pill px-3 me-1 bg-light text-dark" href="?page={{ patients.next_page_number }}{% if query %}&q={{ query }}{% endif %}"><i class="fas fa-chevron-right small"></i></a></li>
-                <li class="page-item"><a class="page-link border-0 rounded-pill px-3 me-1 bg-light text-dark" href="?page={{ patients.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}">Last</a></li>{% endif %}
-            </ul>
+            <ul class="pagination pagination-sm mb-0">{% if patients.has_previous %}<li class="page-item"><a class="page-link border-0 rounded-pill px-3 me-1 bg-light text-dark" href="?page=1{% if query %}&q={{ query }}{% endif %}">First</a></li><li class="page-item"><a class="page-link border-0 rounded-pill px-3 me-1 bg-light text-dark" href="?page={{ patients.previous_page_number }}{% if query %}&q={{ query }}{% endif %}" aria-label="Previous Page" title="Previous Page"><i class="fas fa-chevron-left small"></i></a></li>{% endif %}<li class="page-item active"><a class="page-link border-0 rounded-pill px-3 me-1 bg-primary text-white border-0" href="#">{{ patients.number }}</a></li>{% if patients.has_next %}<li class="page-item"><a class="page-link border-0 rounded-pill px-3 me-1 bg-light text-dark" href="?page={{ patients.next_page_number }}{% if query %}&q={{ query }}{% endif %}" aria-label="Next Page" title="Next Page"><i class="fas fa-chevron-right small"></i></a></li><li class="page-item"><a class="page-link border-0 rounded-pill px-3 me-1 bg-light text-dark" href="?page={{ patients.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}">Last</a></li>{% endif %}</ul>
         </nav>
     </div>
 </div>

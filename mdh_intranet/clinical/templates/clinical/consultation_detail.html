@@ -75,9 +75,7 @@
                         </div>
                         {% for rx in consultation.prescriptions.all %}
                         <div class="small">
-                            <ul class="list-unstyled mb-0">{% for item in rx.items.all %}
-                                <li class="mb-1 border-bottom pb-1">• <strong>{{ item.medication_name }}</strong> ({{ item.dosage }})</li>{% endfor %}
-                            </ul>
+                            <ul class="list-unstyled mb-0">{% for item in rx.items.all %}<li class="mb-1 border-bottom pb-1">• <strong>{{ item.medication_name }}</strong> ({{ item.dosage }})</li>{% endfor %}</ul>
                         </div>
                         {% empty %}
                         <div class="text-muted small italic">No medications prescribed.</div>
@@ -96,9 +94,7 @@
                                 <span class="badge bg-{{ req.urgency|yesno:'danger,warning,info' }} rounded-pill">{{ req.get_urgency_display|upper }}</span>
                                 <a href="{% url 'clinical:lab_request_pdf' req.pk %}" class="btn btn-xs btn-outline-info border-0 p-0 text-decoration-none small">PDF <i class="fas fa-download ms-1"></i></a>
                             </div>
-                            <ul class="list-unstyled mb-0">{% for item in req.test_items.all %}
-                                <li class="mb-1 border-bottom pb-1">• {{ item.test_name }}</li>{% endfor %}
-                            </ul>
+                            <ul class="list-unstyled mb-0">{% for item in req.test_items.all %}<li class="mb-1 border-bottom pb-1">• {{ item.test_name }}</li>{% endfor %}</ul>
                         </div>
                         {% empty %}
                         <div class="text-muted small italic">No lab tests ordered.</div>
@@ -121,9 +117,7 @@
                                 <span class="badge bg-{{ req.urgency|yesno:'danger,warning,info' }} rounded-pill" style="font-size: 0.6rem;">{{ req.get_urgency_display|upper }}</span>
                                 <span class="badge bg-light text-dark fw-normal rounded-pill" style="font-size: 0.65rem;">{{ req.get_status_display|upper }}</span>
                             </div>
-                            <ul class="list-unstyled mb-0 small">{% for item in req.items.all %}
-                                <li class="text-dark">• <strong>{{ item.get_modality_display }}</strong>: {{ item.view_area }}</li>{% endfor %}
-                            </ul>
+                            <ul class="list-unstyled mb-0 small">{% for item in req.items.all %}<li class="text-dark">• <strong>{{ item.get_modality_display }}</strong>: {{ item.view_area }}</li>{% endfor %}</ul>
                         </div>
                         {% empty %}
                         <div class="text-muted small italic">No imaging ordered.</div>

@@ -14,21 +14,7 @@
                 <button class="btn btn-primary rounded-pill px-4 shadow-sm dropdown-toggle" type="button" id="startAuditBtn" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="fas fa-search-plus me-2"></i>Start New Audit
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 p-2" aria-labelledby="startAuditBtn" style="min-width: 250px;">
-                    <li class="dropdown-header text-uppercase small fw-bold">Select Template</li>
-                    {% for template in templates %}
-                    <li><a class="dropdown-item rounded-3 py-2" href="{% url 'quality_audit:perform_audit' template.id %}">
-                        <i class="fas fa-file-signature text-muted me-2 small"></i>{{ template.title }}
-                        <div class="small text-muted" style="font-size: 0.7rem;">{{ template.department_target|default:"General" }}</div>
-                    </a></li>
-                    {% empty %}
-                    <li class="text-center py-3 text-muted small">No active templates</li>
-                    {% endfor %}
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item rounded-3 py-2 text-primary fw-bold" href="{% url 'quality_audit:template_create' %}">
-                        <i class="fas fa-plus-circle me-2"></i>Create New Template
-                    </a></li>
-                </ul>
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 p-2" aria-labelledby="startAuditBtn" style="min-width: 250px;">{% for template in templates %}<li class="dropdown-header text-uppercase small fw-bold">Select Template</li><li><a class="dropdown-item rounded-3 py-2" href="{% url 'quality_audit:perform_audit' template.id %}"><i class="fas fa-file-signature text-muted me-2 small"></i>{{ template.title }}<div class="small text-muted" style="font-size: 0.7rem;">{{ template.department_target|default:"General" }}</div></a></li>{% empty %}<li class="text-center py-3 text-muted small">No active templates</li>{% endfor %}<li><hr class="dropdown-divider"></li><li><a class="dropdown-item rounded-3 py-2 text-primary fw-bold" href="{% url 'quality_audit:template_create' %}"><i class="fas fa-plus-circle me-2"></i>Create New Template</a></li></ul>
             </div>
             <a href="{% url 'core:audit_log' %}" class="btn btn-outline-secondary rounded-pill px-4 ms-2">
                 <i class="fas fa-fingerprint me-2"></i>Access Action Logs
@@ -109,7 +95,7 @@
                                         {% widthratio insp.score insp.template.questions.count 100 as score_pct %}
                                         <div class="progress" style="height: 5px; width: 60px;" title="Score: {{ score_pct }}%">
                                             <div class="progress-bar bg-success" role="progressbar" style="width: {{ score_pct }}%" 
-                                                aria-valuenow="{{ score_pct|default:0 }}" aria-valuemin="0" aria-valuemax="100" aria-label="Inspection Score"></div>
+                                                aria-valuenow="{{ score_pct|default:0|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100" aria-label="Inspection Score"></div>
                                         </div>
                                         <small class="text-muted" style="font-size: 0.65rem;">{{ insp.score }} / {{ insp.template.questions.count }}</small>
                                     </td>
@@ -154,8 +140,8 @@
                                     <span class="text-{{ log.action_color }} fw-semibold">{{ log.get_action_display }}</span> {{ log.object_repr }}
                                 </div>
                             </div>
-                            <div class="flex-shrink-0">
-                                <a href="{% url 'core:audit_detail' log.id %}" class="btn btn-sm btn-light rounded-circle border-0" style="padding: 2px 6px;">
+                             <div class="flex-shrink-0">
+                                <a href="{% url 'core:audit_detail' log.id %}" class="btn btn-sm btn-light rounded-circle border-0" style="padding: 2px 6px;" aria-label="View Audit Detail" title="View Audit Detail">
                                     <i class="fas fa-chevron-right text-muted" style="font-size: 0.6rem;"></i>
                                 </a>
                             </div>

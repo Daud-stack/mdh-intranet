@@ -7,7 +7,7 @@
     <!-- Header -->
     <div class="bg-white border-bottom px-3 py-2 d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2">
-            <a href="{% url 'documents:detail' document.pk %}" class="btn btn-sm btn-outline-secondary">
+            <a href="{% url 'documents:detail' document.pk %}" class="btn btn-sm btn-outline-secondary" aria-label="Back to Document Details" title="Back to Document Details">
                 <i class="fas fa-arrow-left"></i>
             </a>
             <strong>{{ document.title }}</strong>
@@ -47,7 +47,7 @@
         </div>
 
         <!-- Office Web Viewer Iframe -->
-        <iframe id="officeFrame" src="{{ viewer_url }}" width="100%" height="100%" style="border:none;" allowfullscreen
+        <iframe id="officeFrame" src="{{ viewer_url }}" width="100%" height="100%" style="border:none;" allowfullscreen title="Office Online Document Viewer"
             onload="document.getElementById('loadingOverlay').style.display='none';">
         </iframe>
         {% endif %}

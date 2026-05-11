@@ -128,18 +128,7 @@
                     </h5>
                 </div>
                 <div class="card-body pt-0">
-                    <ul class="list-group list-group-flush">{% for rx in renewals %}
-                        <li class="list-group-item px-0 border-0 mb-2 border-start border-4 border-warning ps-3">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="fw-bold text-dark">{{ rx.license_plate }}</span>
-                                <a href="{% url 'fleet_management:vehicle_detail' rx.pk %}"
-                                    class="btn btn-sm btn-link p-0">View</a>
-                            </div>
-                            <small class="text-danger d-block">Service/Reg due: {{ rx.next_service_date|date:"j M Y"                                 }}</small>
-                        </li>{% empty %}
-                        <li class="list-group-item px-0 border-0 text-center py-4 text-muted">No upcoming renewals in 30
-                            days.</li>{% endfor %}
-                    </ul>
+                    <ul class="list-group list-group-flush">{% spaceless %}{% for rx in renewals %}<li class="list-group-item px-0 border-0 mb-2 border-start border-4 border-warning ps-3"><div class="d-flex justify-content-between align-items-center"><span class="fw-bold text-dark">{{ rx.license_plate }}</span><a href="{% url 'fleet_management:vehicle_detail' rx.pk %}" class="btn btn-sm btn-link p-0">View</a></div><small class="text-danger d-block">Service/Reg due: {{ rx.next_service_date|date:"j M Y" }}</small></li>{% empty %}<li class="list-group-item px-0 border-0 text-center py-4 text-muted">No upcoming renewals in 30 days.</li>{% endfor %}{% endspaceless %}</ul>
                 </div>
             </div>
         </div>

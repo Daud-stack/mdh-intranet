@@ -7,7 +7,7 @@
     <!-- Header -->
     <div class="bg-white border-bottom px-3 py-2 d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2">
-            <a href="{% url 'documents:detail' document.pk %}" class="btn btn-sm btn-outline-secondary">
+            <a href="{% url 'documents:detail' document.pk %}" class="btn btn-sm btn-outline-secondary" aria-label="Back to Document Details" title="Back to Document Details">
                 <i class="fas fa-arrow-left"></i>
             </a>
             <strong>{{ document.title }}</strong>
@@ -21,7 +21,7 @@
 
     <!-- Editor Frame -->
     <div style="height: calc(100vh - 110px);">
-        <iframe src="{{ collabora_src }}" width="100%" height="100%" style="border:none;" allowfullscreen>
+        <iframe src="{{ collabora_src }}" width="100%" height="100%" style="border:none;" allowfullscreen title="Collabora Online Document Editor">
         </iframe>
     </div>
 </div>

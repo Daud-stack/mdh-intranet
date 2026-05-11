@@ -77,7 +77,7 @@
                 <div class="text-muted small fw-semibold text-uppercase tracking-wider">Open Incidents</div>
                 <div class="display-6 fw-bold my-1 tracking-tighter">{{ incident_count }}</div>
                 <div class="progress mt-3" style="height: 6px; border-radius: 10px; background: rgba(0,0,0,0.05);" title="{{ incident_count|default:0 }} Incidents">
-                    <div class="progress-bar" role="progressbar" aria-label="Open Incidents" aria-valuenow="{{ incident_count|default:0 }}" aria-valuemin="0" aria-valuemax="100"
+                    <div class="progress-bar" role="progressbar" aria-label="Open Incidents" aria-valuenow="{{ incident_count|default:0|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100"
                         style="--progress-width: {{ incident_count|default:0 }}%; width: var(--progress-width); min-width: 15%; border-radius: 10px; background: #f59e0b;">
                     </div>
                 </div>

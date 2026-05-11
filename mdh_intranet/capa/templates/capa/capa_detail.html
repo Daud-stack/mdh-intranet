@@ -42,7 +42,7 @@
                     <div class="progress capa-progress-container">
                         <div class="progress-bar bg-{{ capa.status_color }} capa-progress-fill" role="progressbar"
                             style="width:{{ capa.progress_pct }}%;"
-                            aria-valuenow="{{ capa.progress_pct|default:0 }}" aria-valuemin="0" aria-valuemax="100"
+                            aria-valuenow="{{ capa.progress_pct|default:0|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100"
                             aria-label="Implementation Progress" title="{{ capa.progress_pct|default:0 }}% Complete">
                         </div>
                     </div>
@@ -106,17 +106,17 @@
 
                 <!-- Phase: Investigation -->
                 <div class="card border-0 mb-3 capa-phase-card">
-                    <div class="card-header border-0 p-0" style="background:none;">
-                        <button class="btn w-100 text-start p-3 d-flex align-items-center" type="button"
-                            data-bs-toggle="collapse" data-bs-target="#phaseInvestigation" style="font-weight:600;">
+                    <div class="card-header border-0 p-0 bg-none">
+                        <button class="btn w-100 text-start p-3 d-flex align-items-center fw-600" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#phaseInvestigation">
                             <span class="me-3 capa-phase-icon-box {% if capa.root_cause_analysis %}bg-success text-white{% else %}bg-light text-muted{% endif %}">
                                 <i class="fas fa-search"></i>
                             </span>
                             <span>Root Cause Analysis</span>
                             {% if capa.root_cause_analysis %}
-                            <span class="badge bg-success ms-auto" style="border-radius:8px;">✓ Complete</span>
+                            <span class="badge bg-success ms-auto badge-rounded">✓ Complete</span>
                             {% else %}
-                            <span class="badge bg-light text-muted ms-auto" style="border-radius:8px;">Pending</span>
+                            <span class="badge bg-light text-muted ms-auto badge-rounded">Pending</span>
                             {% endif %}
                         </button>
                     </div>
@@ -126,19 +126,18 @@
                             {% if capa.root_cause_analysis %}
                             <div class="mb-3">
                                 {% if capa.root_cause_method %}
-                                <span class="badge bg-info mb-2" style="border-radius:8px;">Method: {{ capa.get_root_cause_method_display  }}</span>
+                                <span class="badge bg-info mb-2 badge-rounded">Method: {{ capa.get_root_cause_method_display  }}</span>
                                 {% endif %}
                                 {% if capa.root_cause_summary %}
-                                <div class="p-3 mb-2"
-                                    style="background:rgba(239,68,68,0.06); border-radius:10px; border-left:4px solid #ef4444;">
+                                <div class="mb-2 premium-alert-red">
                                     <strong>Root Cause:</strong> {{ capa.root_cause_summary }}
                                 </div>
                                 {% endif %}
-                                <div class="p-3" style="background:rgba(0,0,0,0.02); border-radius:10px;">
+                                <div class="premium-muted-box">
                                     {{ capa.root_cause_analysis|linebreaksbr }}
                                 </div>
                                 {% if capa.contributing_factors %}
-                                <div class="mt-2 p-3" style="background:rgba(0,0,0,0.02); border-radius:10px;">
+                                <div class="mt-2 premium-muted-box">
                                     <strong>Contributing Factors:</strong><br>{{ capa.contributing_factors|linebreaksbr }}
                                 </div>
                                 {% endif %}
@@ -174,19 +173,18 @@
                 </div>
 
                 <!-- Phase: Action Plan -->
-                <div class="card border-0 mb-3"
-                    style="border-radius:16px; overflow:hidden; background:rgba(255,255,255,0.85); backdrop-filter:blur(12px);">
-                    <div class="card-header border-0 p-0" style="background:none;">
-                        <button class="btn w-100 text-start p-3 d-flex align-items-center" type="button"
-                            data-bs-toggle="collapse" data-bs-target="#phaseAction" style="font-weight:600;">
+                <div class="card border-0 mb-3 capa-phase-card">
+                    <div class="card-header border-0 p-0 bg-none">
+                        <button class="btn w-100 text-start p-3 d-flex align-items-center fw-600" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#phaseAction">
                             <span class="me-3 capa-phase-icon-box {% if capa.corrective_action_plan %}bg-success text-white{% else %}bg-light text-muted{% endif %}">
                                 <i class="fas fa-clipboard-list"></i>
                             </span>
                             <span>Action Plan</span>
                             {% if capa.corrective_action_plan %}
-                            <span class="badge bg-success ms-auto" style="border-radius:8px;">✓ Complete</span>
+                            <span class="badge bg-success ms-auto badge-rounded">✓ Complete</span>
                             {% else %}
-                            <span class="badge bg-light text-muted ms-auto" style="border-radius:8px;">Pending</span>
+                            <span class="badge bg-light text-muted ms-auto badge-rounded">Pending</span>
                             {% endif %}
                         </button>
                     </div>
@@ -235,7 +233,7 @@
                                     {{ action_plan_form.related_sops }}
                                     <small class="text-muted">Hold Ctrl to select multiple</small>
                                 </div>
-                                <button type="submit" class="btn btn-primary btn-sm" style="border-radius:10px;">
+                                <button type="submit" class="btn btn-primary btn-sm badge-rounded">
                                     <i class="fas fa-save me-1"></i>Save Action Plan
                                 </button>
                             </form>
@@ -245,10 +243,9 @@
                 </div>
 
                 <!-- Phase: Verification -->
-                <div class="card border-0 mb-3"
-                    style="border-radius:16px; overflow:hidden; background:rgba(255,255,255,0.85); backdrop-filter:blur(12px);">
-                    <div class="card-header border-0 p-0" style="background:none;">
-                        <button class="btn w-100 text-start p-3 d-flex align-items-center" type="button"
+                <div class="card border-0 mb-3 capa-phase-card">
+                    <div class="card-header border-0 p-0 bg-none">
+                        <button class="btn w-100 text-start p-3 d-flex align-items-center fw-600" type="button"
                             data-bs-toggle="collapse" data-bs-target="#phaseVerification" style="font-weight:600;">
                             <span class="me-3 capa-phase-icon-box {% if capa.is_effective is not None %}bg-success text-white{% else %}bg-light text-muted{% endif %}">
                                 <i class="fas fa-check-double"></i>
@@ -256,12 +253,11 @@
                             <span>Effectiveness Verification</span>
                             {% if capa.is_effective is not None %}
                             <span
-                                class="badge {% if capa.is_effective %}bg-success{% else %}bg-danger{% endif %} ms-auto"
-                                style="border-radius:8px;">
+                                class="badge {% if capa.is_effective %}bg-success{% else %}bg-danger{% endif %} ms-auto badge-rounded">
                                 {% if capa.is_effective %}✓ Effective{% else %}✗ Not Effective{% endif %}
                             </span>
                             {% else %}
-                            <span class="badge bg-light text-muted ms-auto" style="border-radius:8px;">Pending</span>
+                            <span class="badge bg-light text-muted ms-auto badge-rounded">Pending</span>
                             {% endif %}
                         </button>
                     </div>
@@ -295,7 +291,7 @@
                                     <label class="form-label fw-semibold">Were the actions effective?</label>
                                     {{ verification_form.is_effective }}
                                 </div>
-                                <button type="submit" class="btn btn-primary btn-sm" style="border-radius:10px;">
+                                <button type="submit" class="btn btn-primary btn-sm badge-rounded">
                                     <i class="fas fa-save me-1"></i>Save Verification
                                 </button>
                             </form>
@@ -315,12 +311,12 @@
                         <div class="me-3 comment-avatar">
                             {{ c.author.username|make_list|first|upper }}
                         </div>
-                        <div style="flex:1;">
+                        <div class="flex-grow-1">
                             <div class="d-flex justify-content-between align-items-start">
-                                <strong style="font-size:0.9rem;">{{ c.author.get_full_name|default:c.author.username }}</strong>
+                                <strong class="small">{{ c.author.get_full_name|default:c.author.username }}</strong>
                                 <small class="text-muted">{{ c.created_at|timesince }} ago</small>
                             </div>
-                            <div style="font-size:0.9rem; line-height:1.6; color:#475569;">
+                            <div class="small text-muted" style="line-height:1.6;">
                                 {{ c.content|linebreaksbr }}
                             </div>
                         </div>
@@ -331,11 +327,10 @@
                     {% endfor %}
 
                     {% if capa.status != 'closed' and capa.status != 'cancelled' %}
-                    <form method="post" action="{% url 'capa:add_comment' pk=capa.pk %}" class="mt-3 pt-3"
-                        style="border-top:1px solid rgba(0,0,0,0.06);">
+                    <form method="post" action="{% url 'capa:add_comment' pk=capa.pk %}" class="mt-3 pt-3 border-top border-light">
                         {% csrf_token %}
                         {{ comment_form.content }}
-                        <button type="submit" class="btn btn-primary btn-sm mt-2" style="border-radius:10px;">
+                        <button type="submit" class="btn btn-primary btn-sm mt-2 badge-rounded">
                             <i class="fas fa-paper-plane me-1"></i>Post Comment
                         </button>
                     </form>
@@ -404,8 +399,8 @@
                     <h6 class="fw-bold mb-3"><i class="fas fa-info-circle me-2 text-primary"></i>Details</h6>
                     <table class="table table-borderless table-sm mb-0">
                         <tr>
-                            <td class="text-muted" style="width:40%;">Initiated By</td>
-                            <td class="fw-semibold">{{ capa.initiated_by.get_full_name|default:capa.initiated_by.username  }}</td>
+                            <td class="text-muted small" style="width:40%;">Initiated By</td>
+                            <td class="fw-semibold small">{{ capa.initiated_by.get_full_name|default:capa.initiated_by.username  }}</td>
                         </tr>
                         <tr>
                             <td class="text-muted">Assigned To</td>
