@@ -42,6 +42,7 @@ urlpatterns = [
     path('audit/', include('mdh_intranet.quality_audit.urls')),
     path('clinical/', include('mdh_intranet.clinical.urls')),
     path('analytics/', include('mdh_intranet.analytics.urls')),
+    path('finance/', include('mdh_intranet.finance.urls')),
     # Django's built-in authentication URLs (login, logout, password reset)
     path('accounts/', include('django.contrib.auth.urls')),
 ]

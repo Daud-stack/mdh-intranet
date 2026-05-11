@@ -130,9 +130,9 @@
                                 </td>
                                 <td class="pe-4 text-end">
                                     {% if val.certificate_file %}
-                                    <a href="{{ val.certificate_file.url }}" target="_blank"
-                                        class="btn btn-sm btn-light rounded-pill"><i
-                                            class="fas fa-download me-1"></i>View</a>
+                                    <a href="{% url 'core:download_file' 'training_compliance' 'Certification' val.pk 'certificate_file' %}"
+                                         class="btn btn-sm btn-light rounded-pill"><i
+                                             class="fas fa-download me-1"></i>View</a>
                                     {% else %}
                                     <span class="text-muted small fst-italic">No file attached</span>
                                     {% endif %}

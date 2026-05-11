@@ -30,6 +30,9 @@ class PreauthorizationRequest(models.Model):
         'OTHER': '',
     }
 
+    # ── Connections ──────────────────────────────────────────
+    patient_link = models.ForeignKey('clinical.Patient', on_delete=models.SET_NULL, null=True, blank=True, related_name='preauth_requests')
+
     # ── Patient Details ──────────────────────────────────────
     patient_id = models.CharField(max_length=20, verbose_name='Patient/Member ID')
     patient_name = models.CharField(max_length=120, verbose_name='Patient Full Name', default='')

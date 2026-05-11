@@ -25,6 +25,7 @@
                 <div class="card-body p-4">
                     <form method="post" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}
+                        {{ form.patient }}
 
                         {% if form.non_field_errors %}
                         <div class="alert alert-danger">
@@ -33,6 +34,48 @@
                             {% endfor %}
                         </div>
                         {% endif %}
+
+                        <!-- Section: Who was involved -->
+                        <h6 class="fw-bold text-muted text-uppercase mb-3">
+                            <i class="fas fa-user-circle text-primary me-1"></i> Who was involved?
+                        </h6>
+                        <div class="row g-3 mb-4 p-3 bg-light rounded-3">
+                            <div class="col-md-4">
+                                <label for="{{ form.involved_type.id_for_label }}" class="form-label fw-bold small text-uppercase">Party Type</label>
+                                {{ form.involved_type }}
+                            </div>
+                            <div id="employee_select_div" class="col-md-8">
+                                <label for="{{ form.involved_employee.id_for_label }}" class="form-label fw-bold small text-uppercase">Select Employee</label>
+                                {{ form.involved_employee }}
+                            </div>
+                            <div id="contractor_input_div" class="col-md-8 d-none">
+                                <label for="{{ form.involved_contractor.id_for_label }}" class="form-label fw-bold small text-uppercase">Contractor Name</label>
+                                {{ form.involved_contractor }}
+                            </div>
+                        </div>
+
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const typeSelect = document.getElementById('{{ form.involved_type.id_for_label }}');
+                                const employeeDiv = document.getElementById('employee_select_div');
+                                const contractorDiv = document.getElementById('contractor_input_div');
+                                
+                                function toggleInvolvedFields() {
+                                    const val = typeSelect.value;
+                                    employeeDiv.classList.add('d-none');
+                                    contractorDiv.classList.add('d-none');
+                                    
+                                    if (val === 'EMPLOYEE') {
+                                        employeeDiv.classList.remove('d-none');
+                                    } else if (val === 'CONTRACTOR') {
+                                        contractorDiv.classList.remove('d-none');
+                                    }
+                                }
+                                
+                                typeSelect.addEventListener('change', toggleInvolvedFields);
+                                toggleInvolvedFields(); // Run on load
+                            });
+                        </script>
 
                         <!-- Section: What Happened -->
                         <h6 class="fw-bold text-muted text-uppercase mb-3">

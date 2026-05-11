@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     'mdh_intranet.training_compliance',
     'mdh_intranet.quality_audit',
     'mdh_intranet.analytics',
+    'mdh_intranet.finance',
     'widget_tweaks',
 ]
 

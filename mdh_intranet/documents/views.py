@@ -100,7 +100,9 @@ def download_document(request, pk):
     # Serve file
     try:
         response = FileResponse(document.file.open('rb'), as_attachment=True)
-        response['Content-Disposition'] = f'attachment; filename="{document.file.name.split("/")[-1]}"'
+        filename = document.file.name.split('/')[-1]
+        from urllib.parse import quote
+        response['Content-Disposition'] = f'attachment; filename="{quote(filename)}"; filename*=utf-8\'\'{quote(filename)}'
         return response
     except Exception as e:
         messages.error(request, 'Error downloading file.')

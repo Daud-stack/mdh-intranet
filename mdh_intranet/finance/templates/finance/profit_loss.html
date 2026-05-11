@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load finance_extras %}
+
+{% block title %}Profit & Loss Statement - OpsHub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-5 align-items-center">
+        <div class="col-md-8">
+            <h4 class="text-muted fw-medium mb-1">Financial Reporting</h4>
+            <h1 class="display-6 fw-bold tracking-tight">Profit & Loss Statement</h1>
+            <p class="text-muted mb-0">Period: {{ period }}</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <button onclick="window.print()" class="btn btn-outline-dark rounded-pill px-4">
+                <i class="fas fa-print me-2"></i>Print Report
+            </button>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+        <div class="card-body p-0">
+            <table class="table mb-0">
+                <thead class="bg-primary text-white">
+                    <tr>
+                        <th class="ps-4 py-3">Accounts</th>
+                        <th class="pe-4 py-3 text-end">Amount (USD)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- REVENUE SECTION -->
+                    <tr class="bg-light">
+                        <td colspan="2" class="ps-4 fw-bold text-primary py-3">REVENUE</td>
+                    </tr>
+                    {% for item in rev_data %}
+                    <tr>
+                        <td class="ps-5">{{ item.account.name }}</td>
+                        <td class="pe-4 text-end">{{ item.balance|abs_val|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="2" class="ps-5 text-muted italic">No revenue recorded for this period.</td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="border-top-2">
+                        <td class="ps-4 fw-bold">TOTAL REVENUE</td>
+                        <td class="pe-4 text-end fw-bold text-success">{{ total_rev|abs_val|floatformat:2 }}</td>
+                    </tr>
+
+                    <!-- EXPENSES SECTION -->
+                    <tr class="bg-light">
+                        <td colspan="2" class="ps-4 fw-bold text-danger py-3">OPERATING EXPENSES</td>
+                    </tr>
+                    {% for item in exp_data %}
+                    <tr>
+                        <td class="ps-5">{{ item.account.name }}</td>
+                        <td class="pe-4 text-end">({{ item.balance|abs_val|floatformat:2 }})</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="2" class="ps-5 text-muted italic">No expenses recorded for this period.</td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="border-top-2">
+                        <td class="ps-4 fw-bold">TOTAL EXPENSES</td>
+                        <td class="pe-4 text-end fw-bold text-danger">({{ total_exp|abs_val|floatformat:2 }})</td>
+                    </tr>
+
+                    <!-- NET INCOME SECTION -->
+                    <tr class="bg-dark text-white border-top border-4">
+                        <td class="ps-4 py-3 fw-bold fs-5">NET PROFIT / (LOSS)</td>
+                        <td class="pe-4 py-3 text-end fw-bold fs-5">USD {{ net_income|floatformat:2 }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="alert alert-info border-0 rounded-4 shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+            <i class="fas fa-info-circle fa-2x"></i>
+            <div>
+                <h6 class="fw-bold mb-1">Accounting Note</h6>
+                <p class="mb-0 small">This report is generated in real-time from posted journal entries. All amounts are normalized to USD based on the exchange rates at the time of transaction.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .btn, .alert, .navbar, .breadcrumb {
+            display: none !important;
+        }
+        .container {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+    }
+    .border-top-2 {
+        border-top: 2px solid #dee2e6 !important;
+    }
+</style>
+{% endblock %}

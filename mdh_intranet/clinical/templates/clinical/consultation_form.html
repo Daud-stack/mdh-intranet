@@ -50,7 +50,12 @@
                                 <label class="form-label small fw-bold text-muted text-uppercase mb-0">Assessment & Diagnosis</label>
                                 <div class="d-flex align-items-center gap-2">
                                     <span class="small text-muted">Primary ICD-11:</span>
-                                    <input type="text" name="icd11_diagnosis" class="form-control form-control-sm border-primary border-opacity-25" style="width: 100px;" placeholder="e.g. 1A00">
+                                    <div class="input-group input-group-sm" style="width: 200px;">
+                                        <input type="text" name="icd11_diagnosis" id="icdCodeField" class="form-control border-primary border-opacity-25" placeholder="e.g. 1A00">
+                                        <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#icdSearchModal">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             {{ form.assessment }}
@@ -310,6 +315,37 @@
     </form>
 </div>
 
+<!-- ICD Search Modal -->
+<div class="modal fade" id="icdSearchModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg overflow-hidden" style="border-radius: 20px;">
+            <div class="modal-header bg-primary text-white border-0 p-4">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-search-plus me-2"></i> ICD-11 Diagnosis Lookup
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="input-group input-group-lg mb-4 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                    <span class="input-group-text bg-white border-0"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" id="icdQueryInput" class="form-control border-0" placeholder="Search by disease name or code..." autocomplete="off">
+                </div>
+                
+                <div id="icdResultsWrapper" class="overflow-auto" style="max-height: 400px;">
+                    <div class="text-center py-5 text-muted" id="initialState">
+                        <i class="fas fa-book-medical display-4 mb-3 opacity-25"></i>
+                        <p>Search the ICD-11 reference database</p>
+                    </div>
+                    <div class="list-group list-group-flush shadow-sm rounded-3" id="icdResultsList"></div>
+                </div>
+            </div>
+            <div class="modal-footer bg-white border-0 p-3">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <template id="medRowTemplate">
     <div class="med-row p-3 border rounded-4 mb-3 bg-light bg-opacity-25 position-relative shadow-sm animate-fade-in">
         <button type="button" class="btn btn-sm btn-link text-danger position-absolute top-0 end-0 me-1 mt-1 remove-row"><i class="fas fa-times"></i></button>
@@ -394,6 +430,85 @@
 
 <script>
     const patient_id = "{{ patient.id }}";
+    
+    // ICD-11 Search Logic
+    document.addEventListener('DOMContentLoaded', function() {
+        const queryInput = document.getElementById('icdQueryInput');
+        const resultsList = document.getElementById('icdResultsList');
+        const initialState = document.getElementById('initialState');
+        const icdCodeField = document.getElementById('icdCodeField');
+        const assessmentField = document.querySelector('textarea[name="assessment"]');
+        const modal = document.getElementById('icdSearchModal');
+        
+        let debounceTimer;
+        
+        queryInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            const query = this.value.trim();
+            
+            if (query.length < 2) {
+                resultsList.innerHTML = '';
+                initialState.style.display = 'block';
+                return;
+            }
+            
+            debounceTimer = setTimeout(() => {
+                fetch(`{% url 'icd11_tools:api_search' %}?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        renderResults(data.results);
+                    })
+                    .catch(err => console.error('ICD Search error:', err));
+            }, 300);
+        });
+        
+        function renderResults(results) {
+            initialState.style.display = 'none';
+            resultsList.innerHTML = '';
+            
+            if (results.length === 0) {
+                resultsList.innerHTML = `
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-search-minus mb-2 opacity-50"></i>
+                        <p>No matches found.</p>
+                    </div>`;
+                return;
+            }
+            
+            results.forEach(res => {
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'list-group-item list-group-item-action border-0 py-3 px-4 mb-1 rounded-3';
+                item.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="flex-grow-1 text-start">
+                            <div class="fw-bold text-primary mb-1">${res.code}</div>
+                            <div class="small text-muted text-wrap">${res.description}</div>
+                        </div>
+                        <i class="fas fa-plus-circle text-primary opacity-50"></i>
+                    </div>`;
+                
+                item.onclick = function() {
+                    icdCodeField.value = res.code;
+                    // If assessment is empty, pre-fill with description
+                    if (!assessmentField.value.trim()) {
+                        assessmentField.value = res.description;
+                    }
+                    bootstrap.Modal.getInstance(modal).hide();
+                    
+                    // Visual feedback
+                    icdCodeField.classList.add('is-valid');
+                    setTimeout(() => icdCodeField.classList.remove('is-valid'), 2000);
+                };
+                
+                resultsList.appendChild(item);
+            });
+        }
+
+        modal.addEventListener('shown.bs.modal', function () {
+            queryInput.focus();
+        });
+    });
     
     document.addEventListener('input', function(e) {
         if(e.target.classList.contains('med-input')) {

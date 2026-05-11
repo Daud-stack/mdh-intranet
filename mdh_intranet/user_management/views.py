@@ -80,6 +80,7 @@ def user_detail(request, pk):
     
     context = {
         'view_user': user,
+        'involved_incidents': user.involved_incidents.all().order_by('-date_reported'),
     }
     return render(request, 'user_management/user_detail.html', context)
 

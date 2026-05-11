@@ -20,7 +20,7 @@ class RequestForm(forms.ModelForm):
     class Meta:
         model = PreauthorizationRequest
         fields = [
-            'patient_id', 'patient_name', 'patient_dob', 'patient_gender', 'patient_phone',
+            'patient_link', 'patient_id', 'patient_name', 'patient_dob', 'patient_gender', 'patient_phone',
             'scheme', 'scheme_plan', 'member_number', 'principal_name', 'relationship',
             'diagnosis', 'icd_code', 'procedure', 'procedure_code', 'clinical_notes', 'is_emergency',
             'referring_doctor', 'attending_doctor', 'facility_name',
@@ -28,6 +28,7 @@ class RequestForm(forms.ModelForm):
             'supporting_document',
         ]
         widgets = {
+            'patient_link': forms.HiddenInput(),
             'patient_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. PAT-001'}),
             'patient_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Full name as on medical aid card'}),
             'patient_dob': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
@@ -109,7 +110,22 @@ def create_request(request):
             messages.success(request, 'Preauthorization request submitted! You can now send it to the medical aid.')
             return redirect('medical_aid:detail', pk=req.pk)
     else:
-        form = RequestForm()
+        initial = {}
+        patient_id = request.GET.get('patient_id')
+        if patient_id:
+            from mdh_intranet.clinical.models import Patient
+            patient = get_object_or_404(Patient, pk=patient_id)
+            initial = {
+                'patient_link': patient.pk,
+                'patient_id': f"P{patient.id:05d}",
+                'patient_name': f"{patient.first_name} {patient.last_name}",
+                'patient_dob': patient.date_of_birth,
+                'patient_gender': 'Male' if patient.gender == 'M' else ('Female' if patient.gender == 'F' else 'Other'),
+                'patient_phone': patient.phone_number,
+                'scheme': patient.medical_aid_name,
+                'member_number': patient.medical_aid_number,
+            }
+        form = RequestForm(initial=initial)
     return render(request, 'medical_aid/create.html', {'form': form})
 
 
@@ -310,11 +326,12 @@ def export_excel(request, pk):
     """Download the preauth form as an Excel file."""
     req = get_object_or_404(PreauthorizationRequest, pk=pk)
     buffer, filename = _generate_excel(req)
+    from urllib.parse import quote
     response = HttpResponse(
         buffer.getvalue(),
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
-    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    response['Content-Disposition'] = f'attachment; filename="{quote(filename)}"; filename*=utf-8\'\'{quote(filename)}'
     return response
 
 

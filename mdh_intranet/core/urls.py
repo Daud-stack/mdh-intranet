@@ -28,4 +28,6 @@ urlpatterns = [
     # SOP Acknowledgements
     path('acknowledge/<int:sop_id>/', views.sop_acknowledge, name='sop_acknowledge'),
     path('acknowledgements/', views.sop_acknowledgement_report, name='acknowledgement_report'),
+    # Secure Download
+    path('download/<str:app_label>/<str:model_name>/<int:pk>/<str:field_name>/', views.download_file, name='download_file'),
 ]

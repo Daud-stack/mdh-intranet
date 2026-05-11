@@ -347,12 +347,13 @@ def export_sop_docx(request, pk):
     doc.save(buffer)
     buffer.seek(0)
 
+    from urllib.parse import quote
     response = HttpResponse(
         buffer.getvalue(),
         content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     )
     filename = f"SOP_{sop.pk}_{sop.title[:30].replace(' ', '_')}.docx"
-    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    response['Content-Disposition'] = f'attachment; filename="{quote(filename)}"; filename*=utf-8\'\'{quote(filename)}'
     return response
 
 
@@ -389,9 +390,10 @@ def export_sop_pdf(request, pk):
         return HttpResponse('Error generating PDF', status=500)
 
     buffer.seek(0)
+    from urllib.parse import quote
     response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
     filename = f"SOP_{sop.pk}_{sop.title[:30].replace(' ', '_')}.pdf"
-    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    response['Content-Disposition'] = f'attachment; filename="{quote(filename)}"; filename*=utf-8\'\'{quote(filename)}'
     return response
 
 

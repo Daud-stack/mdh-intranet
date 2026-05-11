@@ -36,6 +36,20 @@ class Incident(models.Model):
         ('emergency', 'Emergency'),
     ]
 
+    INVOLVED_TYPE_CHOICES = [
+        ('PATIENT', 'Patient'),
+        ('EMPLOYEE', 'Employee / Staff'),
+        ('CONTRACTOR', 'Contractor'),
+        ('VISITOR', 'Visitor'),
+        ('OTHER', 'Other / Property'),
+    ]
+
+    # Connections
+    involved_type = models.CharField(max_length=20, choices=INVOLVED_TYPE_CHOICES, default='OTHER')
+    patient = models.ForeignKey('clinical.Patient', on_delete=models.SET_NULL, null=True, blank=True, related_name='incidents')
+    involved_employee = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='involved_incidents')
+    involved_contractor = models.CharField(max_length=200, blank=True, help_text="Name of contractor or company involved")
+    
     # Core fields
     title = models.CharField(max_length=200)
     category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default='other')

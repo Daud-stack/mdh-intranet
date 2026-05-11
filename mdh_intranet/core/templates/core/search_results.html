@@ -190,6 +190,29 @@
     </div>
     {% endif %}
 
+    {% if results.icd_codes %}
+    <!-- ICD-11 Codes -->
+    <div class="glass-card border-0 overflow-hidden mb-4 border-start border-4 border-primary">
+        <div class="p-3 border-bottom d-flex align-items-center gap-2" style="background: #f8fafc;">
+            <i class="fas fa-stethoscope text-primary"></i>
+            <h6 class="fw-bold mb-0">ICD-11 Medical Codes</h6>
+            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill ms-auto">{{ results.icd_codes|length }}</span>
+        </div>
+        {% for code in results.icd_codes %}
+        <a href="{% url 'icd11_tools:detail' code.pk %}" class="d-flex align-items-center gap-3 p-3 border-bottom text-decoration-none text-dark hover-bg-light">
+            <div class="p-2 rounded-3 bg-primary bg-opacity-10">
+                <i class="fas fa-hashtag text-primary"></i>
+            </div>
+            <div>
+                <h6 class="mb-0 fw-bold text-primary">{{ code.code }}</h6>
+                <p class="mb-0 small text-muted">{{ code.description }}</p>
+                <small class="text-muted opacity-75">Chapter: {{ code.chapter }}</small>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     {% if total == 0 %}
     <div class="glass-card border-0 p-5 text-center">
         <i class="fas fa-search fa-3x text-muted opacity-25 mb-3"></i>

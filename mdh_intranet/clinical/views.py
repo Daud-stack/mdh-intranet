@@ -108,6 +108,8 @@ def patient_detail(request, pk):
         'latest_vitals': latest_vitals,
         'allergies': allergies,
         'conditions': conditions,
+        'preauth_requests': patient.preauth_requests.all().order_by('-created_at'),
+        'incidents': patient.incidents.all().order_by('-date_reported'),
     })
 
 @login_required

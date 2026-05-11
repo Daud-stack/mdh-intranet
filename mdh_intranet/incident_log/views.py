@@ -73,7 +73,29 @@ def create_incident(request):
             messages.success(request, f'Incident {incident.incident_number} reported successfully!')
             return redirect('incident_log:detail', pk=incident.pk)
     else:
-        form = IncidentForm()
+        initial = {}
+        patient_id = request.GET.get('patient_id')
+        if patient_id:
+            from mdh_intranet.clinical.models import Patient
+            patient = get_object_or_404(Patient, pk=patient_id)
+            initial = {
+                'patient': patient.pk,
+                'involved_type': 'PATIENT',
+                'location': 'Clinical / Ward',
+                'persons_involved': f"Patient: {patient.first_name} {patient.last_name} (#P{patient.id:05d})"
+            }
+        
+        employee_id = request.GET.get('employee_id')
+        if employee_id:
+            from django.contrib.auth.models import User
+            employee = get_object_or_404(User, pk=employee_id)
+            initial = {
+                'involved_employee': employee.pk,
+                'involved_type': 'EMPLOYEE',
+                'location': 'Office / Dept',
+                'persons_involved': f"Staff: {employee.get_full_name() or employee.username}"
+            }
+        form = IncidentForm(initial=initial)
 
     return render(request, 'incident_log/create.html', {'form': form})
 

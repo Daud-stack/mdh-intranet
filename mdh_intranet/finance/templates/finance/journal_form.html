@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}{{ title }} - OpsHub Finance{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-5">
+        <div class="col-12">
+            <h4 class="text-muted fw-medium mb-1">Accounting Entry</h4>
+            <h1 class="display-6 fw-bold tracking-tight">{{ title }}</h1>
+        </div>
+    </div>
+
+    <form method="post" id="journal-form">
+        {% csrf_token %}
+        
+        <!-- Header Section -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold text-uppercase text-muted">Date</label>
+                        {{ form.date }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-uppercase text-muted">Description</label>
+                        {{ form.description }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold text-uppercase text-muted">Reference</label>
+                        {{ form.reference }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Line Items Section -->
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+            <div class="card-header bg-light py-3 border-bottom">
+                <h6 class="mb-0 fw-bold"><i class="fas fa-list me-2"></i>Transaction Lines</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0" id="item-table">
+                    <thead class="bg-white small text-uppercase fw-bold text-muted">
+                        <tr>
+                            <th class="ps-4" style="width: 250px;">Account</th>
+                            <th>Description</th>
+                            <th style="width: 150px;">Debit</th>
+                            <th style="width: 150px;">Credit</th>
+                            <th style="width: 100px;">Currency</th>
+                            <th class="pe-4 text-center">Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{ formset.management_form }}
+                        {% for item_form in formset %}
+                        <tr class="item-row">
+                            <td class="ps-4">
+                                {{ item_form.id }}
+                                {{ item_form.account|add_class:"form-select rounded-pill" }}
+                            </td>
+                            <td>{{ item_form.description|add_class:"form-control rounded-pill" }}</td>
+                            <td>{{ item_form.debit|add_class:"form-control rounded-pill text-end" }}</td>
+                            <td>{{ item_form.credit|add_class:"form-control rounded-pill text-end" }}</td>
+                            <td>{{ item_form.currency|add_class:"form-select rounded-pill" }}</td>
+                            <td class="pe-4 text-center">
+                                {% if item_form.instance.pk %}
+                                {{ item_form.DELETE }}
+                                {% endif %}
+                                <button type="button" class="btn btn-sm btn-outline-danger rounded-circle">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-white py-3 border-top d-flex justify-content-between align-items-center">
+                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" id="add-item">
+                    <i class="fas fa-plus me-1"></i>Add Line Item
+                </button>
+                <div class="d-flex gap-4 fw-bold">
+                    <div>Total Debit: <span id="total-debit" class="text-primary">0.00</span></div>
+                    <div>Total Credit: <span id="total-credit" class="text-primary">0.00</span></div>
+                    <div>Difference: <span id="difference" class="text-danger">0.00</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 justify-content-end">
+            <a href="{% url 'finance:journal_list' %}" class="btn btn-light rounded-pill px-4">Cancel</a>
+            <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm" id="save-btn">
+                Post Transaction <i class="fas fa-paper-plane ms-2"></i>
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Basic Balancing Logic
+    function updateTotals() {
+        let debits = 0;
+        let credits = 0;
+        
+        document.querySelectorAll('input[name$="-debit"]').forEach(input => {
+            debits += parseFloat(input.value) || 0;
+        });
+        
+        document.querySelectorAll('input[name$="-credit"]').forEach(input => {
+            credits += parseFloat(input.value) || 0;
+        });
+        
+        const diff = Math.abs(debits - credits);
+        
+        document.getElementById('total-debit').textContent = debits.toFixed(2);
+        document.getElementById('total-credit').textContent = credits.toFixed(2);
+        document.getElementById('difference').textContent = diff.toFixed(2);
+        
+        const saveBtn = document.getElementById('save-btn');
+        if (diff < 0.01 && (debits + credits) > 0) {
+            document.getElementById('difference').className = 'text-success';
+            saveBtn.disabled = false;
+        } else {
+            document.getElementById('difference').className = 'text-danger';
+            // Optional: don't disable if we want to allow saving draft
+        }
+    }
+
+    document.addEventListener('input', function(e) {
+        if (e.target.name.includes('debit') || e.target.name.includes('credit')) {
+            updateTotals();
+        }
+    });
+
+    updateTotals();
+</script>
+{% endblock %}

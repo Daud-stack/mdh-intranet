@@ -29,6 +29,7 @@ from mdh_intranet.projects.models import Project
 from mdh_intranet.leave_management.models import LeaveRequest
 from mdh_intranet.capa.models import CAPARecord
 from mdh_intranet.clinical.models import Patient, Consultation
+from mdh_intranet.icd11_tools.models import ICDCode
 from mdh_intranet.quality_audit.models import AuditSubmission, AuditTemplate
 
 import csv
@@ -429,7 +430,7 @@ def global_search(request):
     """Search across all modules."""
     query = request.GET.get('q', '').strip()
     results = {'sops': [], 'documents': [], 'incidents': [],
-               'tickets': [], 'projects': [], 'capas': [], 'patients': []}
+               'tickets': [], 'projects': [], 'capas': [], 'patients': [], 'icd_codes': []}
     total = 0
 
     if len(query) >= 2:
@@ -483,6 +484,13 @@ def global_search(request):
         results['capas'] = capas
         total += capas.count()
 
+        # ICD-11 Codes
+        icd_codes = ICDCode.objects.filter(
+            Q(code__icontains=query) | Q(description__icontains=query)
+        )[:10]
+        results['icd_codes'] = icd_codes
+        total += icd_codes.count()
+
         # Log the search
         log_action(request.user, 'export', description=f'Searched: "{query}"',
                    module='search', ip_address=get_client_ip(request))
@@ -531,6 +539,15 @@ def api_search(request):
             'url': f'/clinical/patients/{p.pk}/',
         })
 
+    # ICD-11 Codes
+    for icd in ICDCode.objects.filter(Q(code__icontains=query) | Q(description__icontains=query))[:5]:
+        suggestions.append({
+            'title': f"ICD: {icd.code} - {icd.description[:50]}",
+            'type': 'Medical Coding',
+            'icon': 'fas fa-stethoscope',
+            'url': f'/icd/code/{icd.pk}/',
+        })
+
     return JsonResponse({'results': suggestions[:15]})
 
 
@@ -577,6 +594,50 @@ def sop_acknowledgement_report(request):
         'total_staff': total_staff,
     }
     return render(request, 'core/acknowledgement_report.html', context)
+
+
+# ─── SECURE FILE SERVING ───────────────────────────────────────
+
+from django.http import FileResponse, HttpResponseForbidden
+
+@login_required
+def download_file(request, app_label, model_name, pk, field_name):
+    """
+    Securely serves any FileField/ImageField from any model.
+    Usage: /core/download/app_label/model_name/pk/field_name/
+    """
+    try:
+        content_type = ContentType.objects.get(app_label=app_label, model=model_name.lower())
+        model_class = content_type.model_class()
+        instance = get_object_or_404(model_class, pk=pk)
+        
+        # Get the field
+        file_field = getattr(instance, field_name, None)
+        
+        if not file_field or not hasattr(file_field, 'url'):
+            return HttpResponseForbidden("Invalid file field.")
+        
+        if not file_field:
+            return HttpResponseForbidden("No file attached.")
+
+        # Log the download
+        log_action(request.user, 'export', instance, 
+                   description=f"Downloaded file: {field_name}",
+                   module=app_label,
+                   ip_address=get_client_ip(request))
+
+        # Serve the file
+        response = FileResponse(file_field.open('rb'), as_attachment=True)
+        # Handle filename with spaces/special chars safely
+        filename = file_field.name.split('/')[-1]
+        from urllib.parse import quote
+        response['Content-Disposition'] = f'attachment; filename="{quote(filename)}"; filename*=utf-8\'\'{quote(filename)}'
+        
+        return response
+
+    except Exception as e:
+        messages.error(request, f"Download failed: {str(e)}")
+        return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
 

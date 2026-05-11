@@ -7,12 +7,17 @@ class IncidentForm(forms.ModelForm):
     class Meta:
         model = Incident
         fields = [
+            'patient', 'involved_type', 'involved_employee', 'involved_contractor',
             'title', 'category', 'severity', 'priority',
             'location', 'date_occurred',
             'description', 'persons_involved', 'witnesses',
             'immediate_action', 'attachment',
         ]
         widgets = {
+            'patient': forms.HiddenInput(),
+            'involved_employee': forms.Select(attrs={'class': 'form-select'}),
+            'involved_type': forms.Select(attrs={'class': 'form-select'}),
+            'involved_contractor': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Acme Maintenance Co.'}),
             'attachment': forms.FileInput(attrs={
                 'class': 'form-control',
             }),

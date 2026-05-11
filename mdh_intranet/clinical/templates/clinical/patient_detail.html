@@ -53,6 +53,16 @@
                            </div>
                        </div>
                    </div>
+
+                   <div class="section-title small text-uppercase fw-bold text-muted mb-2 opacity-75">Ops & Safety</div>
+                   <div class="d-grid gap-2 mb-3">
+                       <a href="{% url 'medical_aid:create' %}?patient_id={{ patient.pk }}" class="btn btn-light border rounded-pill btn-sm text-start px-3 shadow-sm">
+                           <i class="fas fa-file-invoice-dollar text-primary me-2"></i> Request Preauth
+                       </a>
+                       <a href="{% url 'incident_log:create' %}?patient_id={{ patient.pk }}" class="btn btn-light border rounded-pill btn-sm text-start px-3 shadow-sm">
+                           <i class="fas fa-exclamation-triangle text-warning me-2"></i> Report Incident
+                       </a>
+                   </div>
                    
                    <div class="section-title small text-uppercase fw-bold text-muted mb-2 opacity-75">Contact & Coverage</div>
                    <div class="d-flex justify-content-between py-2 border-bottom border-light">
@@ -277,6 +287,64 @@
                         </div>
                         {% endfor %}
                     </div>
+                </div>
+            </div>
+
+            <div class="glass-card border-0 shadow-sm p-0 overflow-hidden mb-4 animate-fade-in">
+                <div class="p-3 bg-light border-bottom d-flex align-items-center justify-content-between">
+                    <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-file-invoice-dollar text-primary me-2"></i>Medical Aid Preauthorizations</h6>
+                    <span class="badge bg-primary rounded-pill">{{ preauth_requests|length }} Requests</span>
+                </div>
+                <div class="p-3">
+                    {% for req in preauth_requests %}
+                    <div class="d-flex align-items-center justify-content-between p-3 border rounded-3 mb-2 bg-white hover-shadow transition-all">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-primary bg-opacity-10 text-primary p-2 rounded-circle">
+                                <i class="fas fa-file-medical"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold small">{{ req.procedure }}</div>
+                                <div class="text-muted" style="font-size: 0.7rem;">{{ req.scheme }} · Ref: PA-{{ req.pk|stringformat:"04d" }}</div>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge {% if req.status == 'APPROVED' %}bg-success{% elif req.status == 'REJECTED' %}bg-danger{% else %}bg-warning{% endif %} rounded-pill mb-1" style="font-size: 0.65rem;">
+                                {{ req.get_status_display }}
+                            </span>
+                            <div class="small"><a href="{% url 'medical_aid:detail' req.pk %}" class="text-primary text-decoration-none fw-bold" style="font-size: 0.7rem;">View <i class="fas fa-chevron-right ms-1"></i></a></div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4 text-muted small italic">No preauthorization requests found for this patient.</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="glass-card border-0 shadow-sm p-0 overflow-hidden mb-4 animate-fade-in">
+                <div class="p-3 bg-light border-bottom d-flex align-items-center justify-content-between">
+                    <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-exclamation-triangle text-warning me-2"></i>Safety & Incident Reports</h6>
+                    <span class="badge bg-warning text-dark rounded-pill">{{ incidents|length }} Reports</span>
+                </div>
+                <div class="p-3">
+                    {% for inc in incidents %}
+                    <div class="d-flex align-items-center justify-content-between p-3 border rounded-3 mb-2 bg-white hover-shadow transition-all border-start border-4 border-{{ inc.severity|lower }}">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-warning bg-opacity-10 text-warning p-2 rounded-circle">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold small">{{ inc.title }}</div>
+                                <div class="text-muted" style="font-size: 0.7rem;">{{ inc.category }} · {{ inc.date_reported|date:"d M Y" }}</div>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-light text-dark border rounded-pill mb-1" style="font-size: 0.65rem;">{{ inc.status }}</span>
+                            <div class="small"><a href="{% url 'incident_log:detail' inc.pk %}" class="text-warning text-decoration-none fw-bold" style="font-size: 0.7rem;">View <i class="fas fa-chevron-right ms-1"></i></a></div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4 text-muted small italic">No safety incidents reported for this patient.</div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
